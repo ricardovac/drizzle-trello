@@ -7,6 +7,10 @@ import {
   useMantineTheme,
   ActionIcon,
   rem,
+  Checkbox,
+  SimpleGrid,
+  HoverCard,
+  useMantineColorScheme,
 } from "@mantine/core";
 import {
   ChevronRight,
@@ -14,9 +18,9 @@ import {
   LogIn,
   LogOut,
   MessageCircle,
+  Palette,
   Settings,
   Star,
-  SwitchCameraIcon,
 } from "lucide-react";
 import Image from "next/image";
 import { type Session } from "next-auth";
@@ -24,19 +28,21 @@ import Link from "next/link";
 
 export function UserMenu({ session }: { session: Session | null }) {
   const theme = useMantineTheme();
+  const { setColorScheme, colorScheme } =
+    useMantineColorScheme();
   return (
     <Group justify="center">
       <Menu
         withArrow
         width={300}
         position="bottom"
-        transitionProps={{ transition: "pop" }}
+        transitionProps={{ transition: "fade" }}
         withinPortal
       >
         <Menu.Target>
           <ActionIcon variant="transparent">
             <Image
-              src={session?.user.image ?? ""}
+              src={session?.user.image ?? "/static/default-profile.jpg"}
               width={30}
               height={30}
               style={{ borderRadius: "100%" }}
@@ -45,59 +51,62 @@ export function UserMenu({ session }: { session: Session | null }) {
           </ActionIcon>
         </Menu.Target>
         <Menu.Dropdown>
-          <Menu.Item
-            rightSection={
-              <ChevronRight style={{ width: rem(16), height: rem(16) }} />
-            }
-          >
-            <Group>
-              <Avatar
-                radius="xl"
-                src={session?.user.image ?? ""}
-              />
+          {session && (
+            <>
+              <Menu.Item
+                rightSection={
+                  <ChevronRight style={{ width: rem(16), height: rem(16) }} />
+                }
+              >
+                <Group>
+                  <Avatar
+                    radius="xl"
+                    src={session?.user.image ?? "/static/default-profile.jpg"}
+                  />
 
-              <div>
-                <Text fw={500}>{session?.user.name}</Text>
-                <Text size="xs" c="dimmed">
-                  {session?.user.email ?? ""}
-                </Text>
-              </div>
-            </Group>
-          </Menu.Item>
+                  <div>
+                    <Text fw={500}>{session?.user.name}</Text>
+                    <Text size="xs" c="dimmed">
+                      {session?.user.email}
+                    </Text>
+                  </div>
+                </Group>
+              </Menu.Item>
 
-          <Menu.Divider />
+              <Menu.Divider />
 
-          <Menu.Item
-            leftSection={
-              <ListTodo
-                style={{ width: rem(16), height: rem(16) }}
-                color={theme.colors.red[6]}
-              />
-            }
-          >
-            Meus quadros
-          </Menu.Item>
-          <Menu.Item
-            leftSection={
-              <Star
-                style={{ width: rem(16), height: rem(16) }}
-                color={theme.colors.yellow[6]}
-              />
-            }
-          >
-            Cartões importantes
-          </Menu.Item>
-          <Menu.Item
-            leftSection={
-              <MessageCircle
-                style={{ width: rem(16), height: rem(16) }}
-                color={theme.colors.blue[6]}
-              />
-            }
-          >
-            Mensagens
-          </Menu.Item>
-
+              <Menu.Item
+                leftSection={
+                  <ListTodo
+                    style={{ width: rem(16), height: rem(16) }}
+                    color={theme.colors.red[6]}
+                  />
+                }
+              >
+                Meus quadros
+              </Menu.Item>
+              <Menu.Item
+                leftSection={
+                  <Star
+                    style={{ width: rem(16), height: rem(16) }}
+                    color={theme.colors.yellow[6]}
+                  />
+                }
+              >
+                Cartões importantes
+              </Menu.Item>
+              <Menu.Item
+                leftSection={
+                  <MessageCircle
+                    style={{ width: rem(16), height: rem(16) }}
+                    color={theme.colors.blue[6]}
+                  />
+                }
+              >
+                Mensagens
+              </Menu.Item>
+            </>
+          )}
           <Menu.Label>Settings</Menu.Label>
           <Menu.Item
             leftSection={
@@ -106,19 +115,62 @@ export function UserMenu({ session }: { session: Session | null }) {
           >
             Configurações
           </Menu.Item>
-          <Menu.Item
-            leftSection={
-              <SwitchCameraIcon style={{ width: rem(16), height: rem(16) }} />
-            }
+
+          <HoverCard
+            position="left-start"
+            withArrow
+            shadow="md"
+            trapFocus
+            width="target"
           >
-            Trocar de conta
-          </Menu.Item>
+            <HoverCard.Target>
+              <Menu.Item
+                leftSection={
+                  <Palette style={{ width: rem(16), height: rem(16) }} />
+                }
+                rightSection={
+                  <ChevronRight style={{ width: rem(16), height: rem(16) }} />
+                }
+              >
+                Tema
+              </Menu.Item>
+            </HoverCard.Target>
+            <HoverCard.Dropdown>
+              <SimpleGrid cols={1} spacing={10}>
+                <Checkbox
+                  label="Luz"
+                  color="gray"
+                  checked={colorScheme === "light"}
+                  onChange={() => {
+                    setColorScheme("light");
+                  }}
+                />
+                <Checkbox
+                  label="Escuro"
+                  color="gray"
+                  checked={colorScheme === "dark"}
+                  onChange={() => {
+                    setColorScheme("dark");
+                  }}
+                />
+                <Checkbox
+                  label="Tema do navegador"
+                  color="gray"
+                  checked={colorScheme === "auto"}
+                  onChange={() => {
+                    setColorScheme("auto");
+                  }}
+                />
+              </SimpleGrid>
+            </HoverCard.Dropdown>
+          </HoverCard>
+
           <Menu.Divider />
 
           <Menu.Label>Danger zone</Menu.Label>
           <Link href={session ? "/api/auth/signout" : "/api/auth/signin"}>
             <Menu.Item
-              color="red"
+              color={session ? "red" : "blue"}
               leftSection={
                 session ? (
                   <LogOut style={{ width: rem(16), height: rem(16) }} />

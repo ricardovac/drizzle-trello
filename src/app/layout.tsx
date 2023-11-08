@@ -27,10 +27,10 @@ export default async function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        <ColorSchemeScript />
+        <ColorSchemeScript defaultColorScheme="auto"/>
       </head>
       <body>
-        <MantineProvider theme={theme} defaultColorScheme="dark">
+        <MantineProvider theme={theme} defaultColorScheme="auto">
           <Navigation session={session}/>
           <TRPCReactProvider headers={headers()}>{children}</TRPCReactProvider>
         </MantineProvider>

@@ -1,32 +1,69 @@
 "use client";
-import { Autocomplete, Group, Burger, rem, Flex, Box } from "@mantine/core";
+import {
+  Autocomplete,
+  Group,
+  Burger,
+  rem,
+  Flex,
+  HoverCard,
+  Center,
+  Box,
+  useMantineTheme,
+  Text,
+  Anchor,
+  Divider,
+  SimpleGrid,
+  Button,
+  UnstyledButton,
+  ThemeIcon,
+} from "@mantine/core";
 import classes from "~/styles/header-search.module.css";
-import Link from "next/link";
-import { Search } from "lucide-react";
+import { Book, ChevronDown, Code, Coins, Search } from "lucide-react";
 import { useDisclosure } from "@mantine/hooks";
 import { UserMenu } from "./user-menu";
 import { type Session } from "next-auth";
-import { useState } from "react";
 
-const links = [
-  { link: "/desks", label: "Áreas de trabalho" },
-  { link: "/likes", label: "Marcado com estrela" },
-  { link: "/more", label: "Mais" },
+const mockdata = [
+  {
+    icon: Code,
+    title: "Meu quadro 1",
+    description: "Tarefas para o teste automatizados",
+  },
+  {
+    icon: Coins,
+    title: "Quadro teste",
+    description: "Lorem ipsum dolor sit amet, qu.",
+  },
+  {
+    icon: Book,
+    title: "Meu quadro 2",
+    description: "Tarefas para o backend",
+  },
 ];
 
 export function Navigation({ session }: { session: Session | null }) {
   const [opened, { toggle }] = useDisclosure(false);
-  const [searchBarSize, setSearchBarSize] = useState(16);
+  const theme = useMantineTheme();
 
-  const items = links.map((link) => (
-    <Link
-      key={link.label}
-      href={link.link}
-      className={classes.link}
-      onClick={(event) => event.preventDefault()}
-    >
-      {link.label}
-    </Link>
+  const links = mockdata.map((item) => (
+    <UnstyledButton className={classes.subLink} key={item.title}>
+      <Group wrap="nowrap" align="flex-start">
+        <ThemeIcon size={34} variant="default" radius="md">
+          <item.icon
+            style={{ width: rem(22), height: rem(22) }}
+            color={theme.colors.blue[6]}
+          />
+        </ThemeIcon>
+        <div>
+          <Text size="sm" fw={500}>
+            {item.title}
+          </Text>
+          <Text size="xs" c="dimmed">
+            {item.description}
+          </Text>
+        </div>
+      </Group>
+    </UnstyledButton>
   ));
 
   return (
@@ -43,8 +80,63 @@ export function Navigation({ session }: { session: Session | null }) {
             Kanban
           </Group>
 
-          <Group ml="sm" gap={5} className={classes.links} visibleFrom="sm">
-            {items}
+          <Group h="100%" gap={10} visibleFrom="sm" ml={20}>
+            <a href="#">
+              <Button h={30}>Criar</Button>
+            </a>
+            <HoverCard
+              width={600}
+              position="bottom-start"
+              radius="md"
+              shadow="md"
+              withinPortal
+            >
+              <HoverCard.Target>
+                <a href="#" className={classes.link}>
+                  <Center inline>
+                    <Box component="span" mr={5}>
+                      Quadros
+                    </Box>
+                    <ChevronDown
+                      style={{ width: rem(16), height: rem(16) }}
+                      color={theme.colors.blue[6]}
+                    />
+                  </Center>
+                </a>
+              </HoverCard.Target>
+
+              <HoverCard.Dropdown style={{ overflow: "hidden" }}>
+                <Group justify="space-between" px="md">
+                  <Text fw={500}>Quadros recentes</Text>
+                  <Anchor href="#" fz="xs">
+                    Ver todos
+                  </Anchor>
+                </Group>
+
+                <Divider my="sm" />
+
+                <SimpleGrid cols={2} spacing={20}>
+                  {links}
+                </SimpleGrid>
+
+                <div className={classes.dropdownFooter}>
+                  <Group justify="space-between" mt={20}>
+                    <div>
+                      <Text fw={500} fz="sm">
+                        Ver quadros importantes
+                      </Text>
+                      <Text size="xs" c="dimmed">
+                        Quadros importantes são marcados com estrela
+                      </Text>
+                    </div>
+                    <Button variant="default">Importantes</Button>
+                  </Group>
+                </div>
+              </HoverCard.Dropdown>
+            </HoverCard>
+            <a href="#" className={classes.link}>
+              Templates
+            </a>
           </Group>
         </Flex>
 
@@ -52,13 +144,10 @@ export function Navigation({ session }: { session: Session | null }) {
           <Autocomplete
             className={classes.search}
             placeholder="Pesquisar"
-            size="sm"
-            leftSection={
-              <Search style={{ width: rem(searchBarSize), height: rem(16) }} />
-            }
-            data={["Cartões"]}
-            visibleFrom="xs"
-            onFocus={() => setSearchBarSize(32)}
+            rightSectionPointerEvents="all"
+            leftSection={<Search style={{ width: rem(16), height: rem(16) }} />}
+            data={[{ group: "Quadros recentes", items: ["Meu quadro"] }]}
+            maxDropdownHeight={200}
           />
           <UserMenu session={session} />
         </Group>
