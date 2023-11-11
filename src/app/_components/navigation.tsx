@@ -5,7 +5,6 @@ import {
   Burger,
   rem,
   Flex,
-  HoverCard,
   Center,
   Box,
   useMantineTheme,
@@ -16,12 +15,17 @@ import {
   Button,
   UnstyledButton,
   ThemeIcon,
+  Popover,
+  PopoverTarget,
+  PopoverDropdown,
 } from "@mantine/core";
 import classes from "~/styles/header-search.module.css";
 import { Book, ChevronDown, Code, Coins, Search } from "lucide-react";
 import { useDisclosure } from "@mantine/hooks";
 import { UserMenu } from "./user-menu";
 import { type Session } from "next-auth";
+import Link from "next/link";
+import CreateBoardPopover from "./create-board-popover";
 
 const mockdata = [
   {
@@ -77,21 +81,18 @@ export function Navigation({ session }: { session: Session | null }) {
               size="sm"
               hiddenFrom="sm"
             />
-            Kanban
+            Trello Clone
           </Group>
 
           <Group h="100%" gap={10} visibleFrom="sm" ml={20}>
-            <a href="#">
-              <Button h={30}>Criar</Button>
-            </a>
-            <HoverCard
+            <Popover
               width={600}
               position="bottom-start"
               radius="md"
               shadow="md"
               withinPortal
             >
-              <HoverCard.Target>
+              <PopoverTarget>
                 <a href="#" className={classes.link}>
                   <Center inline>
                     <Box component="span" mr={5}>
@@ -103,9 +104,9 @@ export function Navigation({ session }: { session: Session | null }) {
                     />
                   </Center>
                 </a>
-              </HoverCard.Target>
+              </PopoverTarget>
 
-              <HoverCard.Dropdown style={{ overflow: "hidden" }}>
+              <PopoverDropdown style={{ overflow: "hidden" }}>
                 <Group justify="space-between" px="md">
                   <Text fw={500}>Quadros recentes</Text>
                   <Anchor href="#" fz="xs">
@@ -132,16 +133,25 @@ export function Navigation({ session }: { session: Session | null }) {
                     <Button variant="default">Importantes</Button>
                   </Group>
                 </div>
-              </HoverCard.Dropdown>
-            </HoverCard>
-            <a href="#" className={classes.link}>
+              </PopoverDropdown>
+            </Popover>
+            <Link href="#" className={classes.link}>
               Templates
-            </a>
+            </Link>
+            <Popover>
+              <PopoverTarget>
+                <Button h={30}>Criar</Button>
+              </PopoverTarget>
+              <PopoverDropdown>
+                <CreateBoardPopover />
+              </PopoverDropdown>
+            </Popover>
           </Group>
         </Flex>
 
         <Group>
           <Autocomplete
+            visibleFrom="sm"
             className={classes.search}
             placeholder="Pesquisar"
             rightSectionPointerEvents="all"

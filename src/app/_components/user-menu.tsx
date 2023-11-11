@@ -36,7 +36,7 @@ export function UserMenu({ session }: { session: Session | null }) {
         withArrow
         width={300}
         position="bottom"
-        transitionProps={{ transition: "fade" }}
+        transitionProps={{ transition: "pop" }}
         withinPortal
       >
         <Menu.Target>

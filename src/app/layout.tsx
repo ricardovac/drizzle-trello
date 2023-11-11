@@ -10,7 +10,7 @@ import { Navigation } from "./_components/navigation";
 import { getServerAuthSession } from "~/server/auth";
 
 export const metadata = {
-  title: "drizzle-kanban",
+  title: "drizzle-trello",
   description: "A task management app built with tRPC and Next.js",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };
