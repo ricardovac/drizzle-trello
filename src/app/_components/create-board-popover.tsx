@@ -1,3 +1,4 @@
+"use client";
 import {
   Flex,
   Text,
@@ -7,16 +8,31 @@ import {
   Paper,
 } from "@mantine/core";
 import { useState } from "react";
-import Image from 'next/image'
+import Image from "next/image";
+import { api } from "~/trpc/react";
+import { useRouter } from "next/navigation";
 
 export default function CreateBoardPopover() {
-  const [isCreateBoardOpen, setIsCreateBoardOpen] = useState(false);
-  const [value, onChange] = useState("rgba(47, 119, 150, 0.7)");
+  const [background, onChange] = useState("rgba(47, 119, 150, 0.7)");
+  const [title, setTitle] = useState("");
+  const utils = api.useUtils();
+  const router = useRouter();
 
+  const createBoard = api.board.create.useMutation({
+    onSuccess: () => {
+      setTitle("");
+    },
+    onMutate: async (variables) => {
+      await Promise.all([
+        utils.board.invalidate(),
+        router.push(`/b/${variables.title}`),
+      ]);
+    },
+  });
   return (
     <Flex justify="center" align="center" direction="column" gap={5}>
       <Text fw={500}>Criar quadro</Text>
-      <Paper p="md" style={{ backgroundColor: value }} shadow="xs">
+      <Paper p="md" style={{ backgroundColor: background }} shadow="xs">
         <Image
           src="/assets/board.svg"
           alt="Board SVG"
@@ -29,7 +45,7 @@ export default function CreateBoardPopover() {
       </Text>
       <ColorPicker
         format="hex"
-        value={value}
+        value={background}
         onChange={onChange}
         withPicker={false}
         swatches={[
@@ -54,9 +70,19 @@ export default function CreateBoardPopover() {
         description="Dê um nome ao seu quadro"
         required
         variant="default"
-        onClick={() => setIsCreateBoardOpen(!isCreateBoardOpen)}
+        value={title}
+        onChange={(e) => setTitle(e.currentTarget.value)}
       />
-      <Button fullWidth>Criar</Button>
+      <Button
+        fullWidth
+        loading={createBoard?.isLoading}
+        loaderProps={{ type: "bars" }}
+        onClick={() => {
+          createBoard?.mutate({ title, background });
+        }}
+      >
+        Criar
+      </Button>
     </Flex>
   );
 }

@@ -22,17 +22,16 @@ export default async function RootLayout({
 }) {
   const session = await getServerAuthSession();
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-    >
+    <html lang="en" suppressHydrationWarning>
       <head>
-        <ColorSchemeScript defaultColorScheme="auto"/>
+        <ColorSchemeScript defaultColorScheme="auto" />
       </head>
       <body>
         <MantineProvider theme={theme} defaultColorScheme="auto">
-          <Navigation session={session}/>
-          <TRPCReactProvider headers={headers()}>{children}</TRPCReactProvider>
+          <TRPCReactProvider headers={headers()}>
+            <Navigation session={session} />
+            {children}
+          </TRPCReactProvider>
         </MantineProvider>
       </body>
     </html>

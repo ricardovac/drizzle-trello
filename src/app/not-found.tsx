@@ -1,5 +1,6 @@
-import { Container, Title, Text, Button, Group } from '@mantine/core';
-import classes from '~/styles/404.module.css';
+import { Container, Title, Text, Button, Group } from "@mantine/core";
+import Link from "next/link";
+import classes from "~/styles/404.module.css";
 
 export default function NotFoundPage() {
   return (
@@ -7,14 +8,20 @@ export default function NotFoundPage() {
       <div className={classes.inner}>
         <Illustration className={classes.image} />
         <div className={classes.content}>
-          <Title className={classes.title}>
-            Nada aqui
-          </Title>
-          <Text c="dimmed" size="lg" ta="center" className={classes.description}>
-            A página que você está procurando não existe ou foi movida para outro lugar.
+          <Title className={classes.title}>Nada aqui</Title>
+          <Text
+            c="dimmed"
+            size="lg"
+            ta="center"
+            className={classes.description}
+          >
+            A página que você está procurando não existe ou foi movida para
+            outro lugar.
           </Text>
           <Group justify="center">
-            <Button size="md">Voltar para página inicial</Button>
+            <Link href="/">
+              <Button size="md">Voltar para página inicial</Button>
+            </Link>
           </Group>
         </div>
       </div>
@@ -22,7 +29,7 @@ export default function NotFoundPage() {
   );
 }
 
-export function Illustration(props: React.ComponentPropsWithoutRef<'svg'>) {
+export function Illustration(props: React.ComponentPropsWithoutRef<"svg">) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 362 145" {...props}>
       <path

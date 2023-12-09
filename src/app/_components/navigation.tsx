@@ -81,7 +81,7 @@ export function Navigation({ session }: { session: Session | null }) {
               size="sm"
               hiddenFrom="sm"
             />
-            Trello Clone
+            <Link href="/">Trello Clone</Link>
           </Group>
 
           <Group h="100%" gap={10} visibleFrom="sm" ml={20}>

@@ -13,20 +13,21 @@ import { type AdapterAccount } from "next-auth/adapters";
 
 export const mysqlTable = mysqlTableCreator((name) => `trello-clone_${name}`);
 
-export const posts = mysqlTable(
-  "post",
+export const boards = mysqlTable(
+  "boards",
   {
     id: bigint("id", { mode: "number" }).primaryKey().autoincrement(),
-    name: varchar("name", { length: 256 }),
+    title: varchar("title", { length: 256 }).notNull(),
     createdById: varchar("createdById", { length: 255 }).notNull(),
     createdAt: timestamp("created_at")
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
     updatedAt: timestamp("updatedAt").onUpdateNow(),
+    background: varchar("color", { length: 255 }),
   },
   (example) => ({
     createdByIdIdx: index("createdById_idx").on(example.createdById),
-    nameIndex: index("name_idx").on(example.name),
+    titleIndex: index("title_idx").on(example.title),
   }),
 );
 
