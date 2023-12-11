@@ -10,23 +10,20 @@ import {
 import { useState } from "react";
 import Image from "next/image";
 import { api } from "~/trpc/react";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 
 export default function CreateBoardPopover() {
   const [background, onChange] = useState("rgba(47, 119, 150, 0.7)");
   const [title, setTitle] = useState("");
   const utils = api.useUtils();
-  const router = useRouter();
+  // const router = useRouter();
 
   const createBoard = api.board.create.useMutation({
     onSuccess: () => {
       setTitle("");
     },
-    onMutate: async (variables) => {
-      await Promise.all([
-        utils.board.invalidate(),
-        router.push(`/b/${variables.title}`),
-      ]);
+    onMutate: async () => {
+      await Promise.all([utils.board.invalidate()]);
     },
   });
   return (
