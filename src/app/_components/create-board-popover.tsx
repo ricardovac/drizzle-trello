@@ -10,13 +10,11 @@ import {
 import { useState } from "react";
 import Image from "next/image";
 import { api } from "~/trpc/react";
-// import { useRouter } from "next/navigation";
 
 export default function CreateBoardPopover() {
   const [background, onChange] = useState("rgba(47, 119, 150, 0.7)");
   const [title, setTitle] = useState("");
   const utils = api.useUtils();
-  // const router = useRouter();
 
   const createBoard = api.board.create.useMutation({
     onSuccess: () => {
@@ -26,6 +24,7 @@ export default function CreateBoardPopover() {
       await Promise.all([utils.board.invalidate()]);
     },
   });
+
   return (
     <Flex justify="center" align="center" direction="column" gap={5}>
       <Text fw={500}>Criar quadro</Text>

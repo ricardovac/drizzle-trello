@@ -22,7 +22,7 @@ export default function Home() {
   const loadingArray = Array.from<undefined>({ length: 4 });
 
   return (
-    <Container my="md" size="lg">
+    <Container size="lg" mt={20}>
       <Flex gap="md">
         <NavbarLinksGroup />
         <Flex direction="column" gap={4}>

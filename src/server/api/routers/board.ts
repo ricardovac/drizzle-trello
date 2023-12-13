@@ -30,6 +30,7 @@ export const boardRouter = createTRPCRouter({
       return {
         title: board.title,
         background: board.background,
+        user: ctx.session.user,
       };
     }),
   all: protectedProcedure

@@ -25,11 +25,32 @@ export const boards = mysqlTable(
     updatedAt: timestamp("updatedAt").onUpdateNow(),
     background: varchar("color", { length: 255 }),
   },
-  (example) => ({
-    createdByIdIdx: index("createdById_idx").on(example.createdById),
-    titleIndex: index("title_idx").on(example.title),
+  (table) => ({
+    createdByIdIdx: index("createdById_idx").on(table.createdById),
+    titleIndex: index("title_idx").on(table.title),
   }),
 );
+
+export const boardsRelations = relations(boards, ({ many }) => ({
+  lists: many(lists),
+}));
+
+export const lists = mysqlTable(
+  "lists",
+  {
+    id: bigint("id", { mode: "number" }).primaryKey().autoincrement(),
+    title: varchar("title", { length: 256 }).notNull(),
+    boardId: bigint("boardId", { mode: "number" }).notNull(),
+  },
+  (table) => ({
+    boardIdIdx: index("boardId_idx").on(table.boardId),
+    titleIndex: index("title_idx").on(table.title),
+  }),
+);
+
+export const listsRelations = relations(lists, ({ one }) => ({
+  board: one(boards, { fields: [lists.boardId], references: [boards.id] }),
+}));
 
 export const users = mysqlTable("user", {
   id: varchar("id", { length: 255 }).notNull().primaryKey(),

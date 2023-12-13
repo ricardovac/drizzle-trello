@@ -30,7 +30,7 @@ export default async function RootLayout({
         <MantineProvider theme={theme} defaultColorScheme="auto">
           <TRPCReactProvider headers={headers()}>
             <Navigation session={session} />
-            {children}
+            <div style={{ paddingTop: "3rem" }}>{children}</div>
           </TRPCReactProvider>
         </MantineProvider>
       </body>

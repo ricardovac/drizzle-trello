@@ -45,7 +45,11 @@ const mockdata = [
   },
 ];
 
-export function Navigation({ session }: { session: Session | null }) {
+interface NavigationProps {
+  session: Session | null;
+}
+
+export function Navigation({ session }: NavigationProps) {
   const [opened, { toggle }] = useDisclosure(false);
   const theme = useMantineTheme();
 

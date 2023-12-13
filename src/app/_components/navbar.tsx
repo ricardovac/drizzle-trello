@@ -5,7 +5,6 @@ import {
   Box,
   Collapse,
   ThemeIcon,
-  Text,
   UnstyledButton,
   rem,
 } from "@mantine/core";
@@ -28,16 +27,15 @@ export function LinksGroup({
 }: LinksGroupProps) {
   const hasLinks = Array.isArray(links);
   const [opened, setOpened] = useState(initiallyOpened ?? false);
-  const items = (hasLinks ? links : []).map((link) => (
-    <Text<"a">
-      component="a"
-      className={classes.link}
-      href={link.link}
+  const [active, setActive] = useState<number | null>(null);
+  const items = (hasLinks ? links : []).map((link, index) => (
+    <NavbarLink
+      {...link}
       key={link.label}
-      onClick={(event) => event.preventDefault()}
-    >
-      {link.label}
-    </Text>
+      active={index === active}
+      onClick={() => setActive(index)}
+      text={link.label}
+    />
   ));
 
   return (
@@ -75,8 +73,8 @@ const mockdata = {
   icon: Calendar,
   links: [
     { label: "Quadros", link: "/" },
-    { label: "Importantes", link: "/" },
-    { label: "Pomodoro", link: "/" },
+    { label: "Importantes", link: "/important" },
+    { label: "Pomodoro", link: "/pomodoro" },
   ],
   initiallyOpened: true,
 };
@@ -86,5 +84,26 @@ export function NavbarLinksGroup() {
     <Box mih={220} p="md">
       <LinksGroup {...mockdata} />
     </Box>
+  );
+}
+
+interface NavbarLinkProps {
+  active?: boolean;
+  onClick?(): void;
+  text: string;
+}
+
+function NavbarLink({ text, active, onClick }: NavbarLinkProps) {
+  return (
+    <UnstyledButton
+      onClick={() => {
+        if (onClick) onClick();
+      }}
+      className={classes.link}
+      data-active={active ?? undefined}
+      bg={active ? "blue" : "transparent"}
+    >
+      {text}
+    </UnstyledButton>
   );
 }
