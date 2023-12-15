@@ -12,16 +12,14 @@ import Image from "next/image";
 import { api } from "~/trpc/react";
 
 export default function CreateBoardPopover() {
-  const [background, onChange] = useState("rgba(47, 119, 150, 0.7)");
+  const [background, onChange] = useState("");
   const [title, setTitle] = useState("");
   const utils = api.useUtils();
 
   const createBoard = api.board.create.useMutation({
     onSuccess: () => {
+      void utils.board.all.invalidate();
       setTitle("");
-    },
-    onMutate: async () => {
-      await Promise.all([utils.board.invalidate()]);
     },
   });
 

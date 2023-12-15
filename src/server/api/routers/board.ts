@@ -7,7 +7,7 @@ import {
 } from "~/server/api/trpc";
 import { boards } from "~/server/db/schema";
 import { TRPCError } from "@trpc/server";
-import { eq, gte, sql } from "drizzle-orm";
+import { eq, gte, sql, desc } from "drizzle-orm";
 
 export const boardRouter = createTRPCRouter({
   get: protectedProcedure
@@ -61,6 +61,7 @@ export const boardRouter = createTRPCRouter({
         })
         .from(boards)
         .where(eq(boards.createdById, session.user.id))
+        .orderBy(desc(boards.createdAt))
         .limit(input.limit);
 
       const cursor = input.cursor;

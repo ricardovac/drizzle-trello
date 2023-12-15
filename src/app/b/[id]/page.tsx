@@ -12,6 +12,7 @@ import { api } from "~/trpc/server";
 export default async function Page({ params }: { params: { id: number } }) {
   const id = Number(params.id);
   const board = await api.board.get.query({ id });
+
   return (
     <BoardAppShell board={board}>
       <Popover width={300} withArrow trapFocus shadow="md" position="bottom">

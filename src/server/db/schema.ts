@@ -17,8 +17,8 @@ export const boards = mysqlTable(
   "boards",
   {
     id: bigint("id", { mode: "number" }).primaryKey().autoincrement(),
-    title: varchar("title", { length: 256 }).notNull(),
-    createdById: varchar("createdById", { length: 255 }).notNull(),
+    title: varchar("title", { length: 256 }).notNull().unique(),
+    createdById: varchar("createdById", { length: 255 }).notNull().unique(),
     createdAt: timestamp("created_at")
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
