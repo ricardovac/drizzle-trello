@@ -89,7 +89,6 @@ export const boardRouter = createTRPCRouter({
         totalCount,
       };
     }),
-
   create: protectedProcedure
     .input(z.object({ title: z.string().min(2), background: z.string() }))
     .mutation(async ({ ctx, input }) => {
@@ -101,7 +100,6 @@ export const boardRouter = createTRPCRouter({
 
       return newBoard;
     }),
-
   latest: publicProcedure.query(({ ctx }) => {
     return ctx.db.query.boards.findFirst({
       orderBy: (boards, { desc }) => [desc(boards.createdAt)],

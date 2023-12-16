@@ -1,4 +1,4 @@
-"use client";
+'use client';
 import {
   Autocomplete,
   Group,
@@ -18,30 +18,30 @@ import {
   Popover,
   PopoverTarget,
   PopoverDropdown,
-} from "@mantine/core";
-import classes from "~/styles/header-search.module.css";
-import { Book, ChevronDown, Code, Coins, Search } from "lucide-react";
-import { useDisclosure } from "@mantine/hooks";
-import { UserMenu } from "./user-menu";
-import { type Session } from "next-auth";
-import Link from "next/link";
-import CreateBoardPopover from "./create-board-popover";
+} from '@mantine/core';
+import classes from '~/styles/header-search.module.css';
+import { Book, ChevronDown, Code, Coins, Search } from 'lucide-react';
+import { useDisclosure } from '@mantine/hooks';
+import { UserMenu } from './user-menu';
+import { type Session } from 'next-auth';
+import Link from 'next/link';
+import CreateBoardPopover from './create-board-popover';
 
 const mockdata = [
   {
     icon: Code,
-    title: "Meu quadro 1",
-    description: "Tarefas para o teste automatizados",
+    title: 'Meu quadro 1',
+    description: 'Tarefas para o teste automatizados',
   },
   {
     icon: Coins,
-    title: "Quadro teste",
-    description: "Lorem ipsum dolor sit amet, qu.",
+    title: 'Quadro teste',
+    description: 'Lorem ipsum dolor sit amet, qu.',
   },
   {
     icon: Book,
-    title: "Meu quadro 2",
-    description: "Tarefas para o backend",
+    title: 'Meu quadro 2',
+    description: 'Tarefas para o backend',
   },
 ];
 
@@ -57,10 +57,7 @@ export function Navigation({ session }: NavigationProps) {
     <UnstyledButton className={classes.subLink} key={item.title}>
       <Group wrap="nowrap" align="flex-start">
         <ThemeIcon size={34} variant="default" radius="md">
-          <item.icon
-            style={{ width: rem(22), height: rem(22) }}
-            color={theme.colors.blue[6]}
-          />
+          <item.icon style={{ width: rem(22), height: rem(22) }} color={theme.colors.blue[6]} />
         </ThemeIcon>
         <div>
           <Text size="sm" fw={500}>
@@ -76,26 +73,15 @@ export function Navigation({ session }: NavigationProps) {
 
   return (
     <header className={classes.header}>
-      <Flex h={"50px"} justify={"space-between"} align={"center"}>
+      <Flex h={'50px'} justify={'space-between'} align={'center'}>
         <Flex align="center">
           <Group>
-            <Burger
-              opened={opened}
-              onClick={toggle}
-              size="sm"
-              hiddenFrom="sm"
-            />
+            <Burger opened={opened} onClick={toggle} size="sm" hiddenFrom="sm" />
             <Link href="/">Trello Clone</Link>
           </Group>
 
           <Group h="100%" gap={10} visibleFrom="sm" ml={20}>
-            <Popover
-              width={600}
-              position="bottom-start"
-              radius="md"
-              shadow="md"
-              withinPortal
-            >
+            <Popover width={600} position="bottom-start" radius="md" shadow="md" withinPortal>
               <PopoverTarget>
                 <a href="#" className={classes.link}>
                   <Center inline>
@@ -110,7 +96,7 @@ export function Navigation({ session }: NavigationProps) {
                 </a>
               </PopoverTarget>
 
-              <PopoverDropdown style={{ overflow: "hidden" }}>
+              <PopoverDropdown style={{ overflow: 'hidden' }}>
                 <Group justify="space-between" px="md">
                   <Text fw={500}>Quadros recentes</Text>
                   <Anchor href="#" fz="xs">
@@ -142,14 +128,9 @@ export function Navigation({ session }: NavigationProps) {
             <Link href="#" className={classes.link}>
               Templates
             </Link>
-            <Popover>
-              <PopoverTarget>
-                <Button h={30}>Criar</Button>
-              </PopoverTarget>
-              <PopoverDropdown>
-                <CreateBoardPopover />
-              </PopoverDropdown>
-            </Popover>
+            <CreateBoardPopover>
+              <Button h={30}>Criar</Button>
+            </CreateBoardPopover>
           </Group>
         </Flex>
 
@@ -160,7 +141,7 @@ export function Navigation({ session }: NavigationProps) {
             placeholder="Pesquisar"
             rightSectionPointerEvents="all"
             leftSection={<Search style={{ width: rem(16), height: rem(16) }} />}
-            data={[{ group: "Quadros recentes", items: ["Meu quadro"] }]}
+            data={[{ group: 'Quadros recentes', items: ['Meu quadro'] }]}
             maxDropdownHeight={200}
           />
           <UserMenu session={session} />

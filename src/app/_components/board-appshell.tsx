@@ -1,28 +1,18 @@
-"use client";
-import { AppShell, Skeleton } from "@mantine/core";
-import { type RouterOutputs } from "~/trpc/shared";
+import { AppShell, AppShellMain, AppShellNavbar, Flex } from '@mantine/core';
+import { type SingleBoard } from '~/utils/types';
 
 interface BoardAppShellProps {
-  board?: RouterOutputs["board"]["get"];
+  board?: SingleBoard;
   children: React.ReactNode;
 }
 
 export default function BoardAppShell({ children, board }: BoardAppShellProps) {
   return (
-    <AppShell
-      header={{ height: 50 }}
-      navbar={{ width: 300, breakpoint: "sm" }}
-      padding="md"
-    >
-      <AppShell.Navbar p="md">
-        Área de trabalho de {board?.user.name}
-        {Array(15)
-          .fill(0)
-          .map((_, index) => (
-            <Skeleton key={index} h={28} mt="sm" animate={false} />
-          ))}
-      </AppShell.Navbar>
-      <AppShell.Main bg={board?.background ?? ""} pt={20}>{children}</AppShell.Main>
+    <AppShell header={{ height: 50 }} navbar={{ width: 300, breakpoint: 'sm' }} padding="md">
+      <AppShellNavbar p="md">Área de trabalho de {board?.user.name}</AppShellNavbar>
+      <AppShellMain bg={board?.background ?? ''} pt={20}>
+        <Flex gap={8}>{children}</Flex>
+      </AppShellMain>
     </AppShell>
   );
 }

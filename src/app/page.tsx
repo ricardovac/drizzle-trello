@@ -1,9 +1,10 @@
 "use client";
-import { Container, Flex, Text, Group } from "@mantine/core";
+import { Container, Flex, Paper, Text } from "@mantine/core";
 import { NavbarLinksGroup } from "./_components/navbar";
 import { api } from "~/trpc/react";
 import BoardCard from "./_components/board-card";
 import { useMemo } from "react";
+import CreateBoardPopover from "./_components/create-board-popover";
 
 export default function Home() {
   const { data, isLoading, isFetchingNextPage } =
@@ -27,7 +28,12 @@ export default function Home() {
         <NavbarLinksGroup />
         <Flex direction="column" gap={4}>
           <Text>SUAS ÁREAS DE TRABALHO</Text>
-          <Group grow>
+          <Flex maw={900} wrap="wrap">
+            <CreateBoardPopover>
+              <Paper p="xl" bg="gray" style={{ cursor: "pointer" }}>
+                <Text>Criar novo quadro</Text>
+              </Paper>
+            </CreateBoardPopover>
             {(isLoading ? loadingArray : dataToShow)?.map((board, idx) => (
               <BoardCard
                 key={isLoading ? idx : board?.id}
@@ -35,8 +41,7 @@ export default function Home() {
                 loading={isLoading}
               />
             ))}
-          </Group>
-
+          </Flex>
           {isFetchingNextPage && <BoardCard loading />}
         </Flex>
       </Flex>
