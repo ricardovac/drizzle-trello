@@ -1,22 +1,18 @@
-import { DrizzleAdapter } from "@auth/drizzle-adapter";
-import {
-  getServerSession,
-  type DefaultSession,
-  type NextAuthOptions,
-} from "next-auth";
-import GoogleProvider from "next-auth/providers/google";
+import { DrizzleAdapter } from '@auth/drizzle-adapter';
+import { getServerSession, type DefaultSession, type NextAuthOptions } from 'next-auth';
+import GoogleProvider from 'next-auth/providers/google';
 
-import { env } from "~/env.mjs";
-import { db } from "~/server/db";
-import { mysqlTable } from "./db/schema";
+import { env } from '~/env.mjs';
+import { db } from '~/server/db';
+import { mysqlTable } from './db/schema';
 
-declare module "next-auth" {
+declare module 'next-auth' {
   interface Session extends DefaultSession {
     user: {
       id: string;
       // ...other properties
       // role: UserRole;
-    } & DefaultSession["user"];
+    } & DefaultSession['user'];
   }
 
   // interface User {
@@ -42,6 +38,7 @@ export const authOptions: NextAuthOptions = {
       clientSecret: env.GOOGLE_CLIENT_SECRET,
     }),
   ],
+  debug: env.NODE_ENV === 'development' ? true : false,
 };
 
 /**

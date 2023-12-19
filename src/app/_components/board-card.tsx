@@ -19,7 +19,9 @@ export default function BoardCard({ board, loading = false }: BoardCardProps) {
           {isHexColor(board?.background ?? '') ? (
             <Paper py="xl" style={{ backgroundColor: board?.background ?? '' }} />
           ) : (
-            <Image src={board?.background ?? ''} alt="Board SVG" width={160} height={90} />
+            board?.background && (
+              <Image src={board?.background} alt="Board SVG" width={160} height={90} />
+            )
           )}
         </Card.Section>
 

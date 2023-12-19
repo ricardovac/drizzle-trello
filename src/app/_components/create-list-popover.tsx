@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { api } from '~/trpc/react';
 
 interface CreateListPopoverProps {
-  boardId: number;
+  boardId: string;
 }
 
 export default function CreateListPopover({ boardId }: CreateListPopoverProps) {
@@ -14,7 +14,7 @@ export default function CreateListPopover({ boardId }: CreateListPopoverProps) {
   const utils = api.useUtils();
   const { mutate, error } = api.list.create.useMutation({
     onSuccess: async () => {
-      await utils.list.all.invalidate();
+      await utils.list.all.invalidate({ boardId });
       setIsPopoverOpened(false);
       form.reset();
     },

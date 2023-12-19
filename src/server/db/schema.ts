@@ -1,6 +1,6 @@
+import { createId } from '@paralleldrive/cuid2';
 import { relations, sql } from 'drizzle-orm';
 import {
-  bigint,
   index,
   int,
   mysqlTableCreator,
@@ -11,23 +11,22 @@ import {
 } from 'drizzle-orm/mysql-core';
 import { type AdapterAccount } from 'next-auth/adapters';
 
-export const mysqlTable = mysqlTableCreator((name) => `trello-clone_${name}`);
+export const mysqlTable = mysqlTableCreator((name) => `trello_clone_${name}`);
 
 export const boards = mysqlTable(
   'boards',
   {
-    id: bigint('id', { mode: 'number' }).primaryKey().autoincrement(),
+    id: varchar('id', { length: 128 }).$defaultFn(() => createId()),
     title: varchar('title', { length: 256 }).notNull(),
     createdById: varchar('createdById', { length: 255 }).notNull(),
     createdAt: timestamp('created_at')
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
     updatedAt: timestamp('updatedAt').onUpdateNow(),
-    background: varchar('color', { length: 255 }),
+    background: varchar('color', { length: 128 }),
   },
-  (table) => ({
-    createdByIdIdx: index('createdById_idx').on(table.createdById),
-    titleIndex: index('title_idx').on(table.title),
+  (boards) => ({
+    createdByIdIdx: index('createdById_idx').on(boards.createdById),
   }),
 );
 
@@ -38,17 +37,34 @@ export const boardsRelations = relations(boards, ({ many }) => ({
 export const lists = mysqlTable(
   'lists',
   {
-    id: bigint('id', { mode: 'number' }).primaryKey().autoincrement(),
-    title: varchar('title', { length: 256 }).notNull().unique(),
-    boardId: bigint('boardId', { mode: 'number' }).notNull(),
+    id: varchar('id', { length: 128 }).$defaultFn(() => createId()),
+    title: varchar('title', { length: 256 }).notNull(),
+    boardId: varchar('boardId', { length: 256 }).notNull(),
   },
-  (table) => ({
-    titleIndex: index('title_idx').on(table.title),
+  (lists) => ({
+    boardIdIdx: index('boardId_idx').on(lists.boardId),
   }),
 );
 
 export const listsRelations = relations(lists, ({ one }) => ({
   board: one(boards, { fields: [lists.boardId], references: [boards.id] }),
+}));
+
+export const cards = mysqlTable(
+  'cards',
+  {
+    id: varchar('id', { length: 128 }).$defaultFn(() => createId()),
+    title: varchar('title', { length: 256 }).notNull(),
+    description: text('description'),
+    listId: varchar('listId', { length: 256 }).notNull(),
+  },
+  (cards) => ({
+    listIdIdx: index('listId_idx').on(cards.listId),
+  }),
+);
+
+export const cardsRelations = relations(cards, ({ one }) => ({
+  list: one(lists, { fields: [cards.listId], references: [lists.id] }),
 }));
 
 export const users = mysqlTable('user', {

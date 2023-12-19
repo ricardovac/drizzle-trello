@@ -6,7 +6,7 @@ import { createTRPCRouter, protectedProcedure } from '../trpc';
 
 export const listRouter = createTRPCRouter({
   create: protectedProcedure
-    .input(z.object({ title: z.string(), boardId: z.number() }))
+    .input(z.object({ title: z.string(), boardId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { db, session } = ctx;
 
@@ -28,7 +28,7 @@ export const listRouter = createTRPCRouter({
         .values({ title: input.title, boardId: input.boardId })
         .execute();
     }),
-  all: protectedProcedure.input(z.object({ boardId: z.number() })).query(async ({ ctx, input }) => {
+  all: protectedProcedure.input(z.object({ boardId: z.string() })).query(async ({ ctx, input }) => {
     const { db } = ctx;
 
     const listsQuery = await db
@@ -39,4 +39,15 @@ export const listRouter = createTRPCRouter({
 
     return listsQuery;
   }),
+  edit: protectedProcedure
+    .input(z.object({ id: z.string(), title: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { db } = ctx;
+
+      return await db
+        .update(lists)
+        .set({ title: input.title })
+        .where(eq(lists.id, input.id))
+        .execute();
+    }),
 });

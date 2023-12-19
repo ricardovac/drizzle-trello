@@ -1,38 +1,32 @@
-import { z } from "zod";
+import { z } from 'zod';
 
-import {
-  createTRPCRouter,
-  protectedProcedure,
-  publicProcedure,
-} from "~/server/api/trpc";
-import { boards } from "~/server/db/schema";
-import { TRPCError } from "@trpc/server";
-import { eq, gte, sql, desc } from "drizzle-orm";
+import { TRPCError } from '@trpc/server';
+import { desc, eq, gte, sql } from 'drizzle-orm';
+import { createTRPCRouter, protectedProcedure, publicProcedure } from '~/server/api/trpc';
+import { boards } from '~/server/db/schema';
 
 export const boardRouter = createTRPCRouter({
-  get: protectedProcedure
-    .input(z.object({ id: z.number() }))
-    .query(async ({ ctx, input }) => {
-      const boardsQuery = await ctx.db
-        .select({ title: boards.title, background: boards.background })
-        .from(boards)
-        .where(eq(boards.id, input.id))
-        .limit(1);
+  get: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+    const boardsQuery = await ctx.db
+      .select({ title: boards.title, background: boards.background })
+      .from(boards)
+      .where(eq(boards.id, input.id))
+      .limit(1);
 
-      const board = boardsQuery[0];
+    const board = boardsQuery[0];
 
-      if (!board) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-        });
-      }
+    if (!board) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+      });
+    }
 
-      return {
-        title: board.title,
-        background: board.background,
-        user: ctx.session.user,
-      };
-    }),
+    return {
+      title: board.title,
+      background: board.background,
+      user: ctx.session.user,
+    };
+  }),
   all: protectedProcedure
     .input(
       z.object({
@@ -46,11 +40,11 @@ export const boardRouter = createTRPCRouter({
       const limit = input.limit ?? 20;
       const countRows = await db
         .select({
-          board_count: sql<number>`count(${boards.id})`.as("board_count"),
+          board_count: sql<number>`count(${boards.id})`.as('board_count'),
         })
         .from(boards);
       const totalCount = countRows[0]?.board_count;
-      if (totalCount === undefined) throw new Error("totalCount is undefined");
+      if (totalCount === undefined) throw new Error('totalCount is undefined');
 
       let boardsQuery = db
         .select({
