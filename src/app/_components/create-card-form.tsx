@@ -2,7 +2,7 @@
 import { Button, Card, CardSection, Flex, Input, Textarea } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { Plus, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { api } from '~/trpc/react';
 import { type List, type SingleList } from '~/utils/types';
 
@@ -47,7 +47,9 @@ export default function CreateCardForm({ lists }: ListCardProps) {
             )}
           </CardSection>
 
-          {openedCardId === list.id && <CardForm list={list} setOpenedCardId={setOpenedCardId} />}
+          {openedCardId === list.id && (
+            <CardForm list={list} setOpenedCardId={setOpenedCardId} openedCardId={openedCardId} />
+          )}
         </Card>
       ))}
     </>
@@ -57,10 +59,12 @@ export default function CreateCardForm({ lists }: ListCardProps) {
 interface CreateCardFormProps {
   list: SingleList;
   setOpenedCardId: (value: null | string) => void;
+  openedCardId: string | null;
 }
 
-function CardForm({ list, setOpenedCardId }: CreateCardFormProps) {
+function CardForm({ list, setOpenedCardId, openedCardId = '' }: CreateCardFormProps) {
   const { mutate: createCard } = api.card.create.useMutation();
+  const ref = useRef<HTMLTextAreaElement>(null);
   const form = useForm({
     initialValues: {
       cardTitle: '',
@@ -69,6 +73,11 @@ function CardForm({ list, setOpenedCardId }: CreateCardFormProps) {
       cardTitle: (value) => (value ? undefined : 'Insira um título para o cartão'),
     },
   });
+
+  useEffect(() => {
+    if (openedCardId && ref.current) ref.current.focus();
+  }, [ref, openedCardId]);
+
   return (
     <form
       onSubmit={form.onSubmit((values) => {
@@ -79,8 +88,9 @@ function CardForm({ list, setOpenedCardId }: CreateCardFormProps) {
         placeholder="Insira um título para este cartão..."
         variant="filled"
         {...form.getInputProps('title')}
+        ref={ref}
       />
-      <Flex justify="space-between" mt={10}>
+      <Flex justify="space-between" mt={10} gap={8}>
         <Button type="submit">Adicionar um cartã́o</Button>
         <Button variant="subtle" onClick={() => setOpenedCardId(null)}>
           <X />

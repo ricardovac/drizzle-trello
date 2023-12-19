@@ -2,7 +2,7 @@
 import { Button, Card, CardSection, Flex, Input } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { Plus, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { api } from '~/trpc/react';
 
 interface CreateListPopoverProps {
@@ -26,7 +26,9 @@ export default function CreateListForm({ boardId }: CreateListPopoverProps) {
           </Button>
         )}
       </CardSection>
-      {isListInputOpen && <ListForm boardId={boardId} setIsListInputOpen={setIsListInputOpen} />}
+      {isListInputOpen && (
+        <ListForm boardId={boardId} setIsListInputOpen={setIsListInputOpen} isListInputOpen />
+      )}
     </Card>
   );
 }
@@ -34,10 +36,12 @@ export default function CreateListForm({ boardId }: CreateListPopoverProps) {
 interface CreateListFormProps {
   boardId: string;
   setIsListInputOpen: (value: boolean) => void;
+  isListInputOpen: boolean;
 }
 
-function ListForm({ boardId, setIsListInputOpen }: CreateListFormProps) {
+function ListForm({ boardId, setIsListInputOpen, isListInputOpen = false }: CreateListFormProps) {
   const utils = api.useUtils();
+  const ref = useRef<HTMLInputElement>(null);
   const { mutate } = api.list.create.useMutation({
     onSuccess: async () => {
       await utils.list.all.invalidate({ boardId });
@@ -54,9 +58,19 @@ function ListForm({ boardId, setIsListInputOpen }: CreateListFormProps) {
       title: (value) => (value ? undefined : 'Insira um título para a lista'),
     },
   });
+
+  useEffect(() => {
+    if (isListInputOpen && ref.current) ref.current.focus();
+  }, [ref, isListInputOpen]);
+
   return (
     <form onSubmit={form.onSubmit((values) => mutate({ title: values.title, boardId }))}>
-      <Input placeholder="Insira o título da lista..." size="md" {...form.getInputProps('title')} />
+      <Input
+        placeholder="Insira o título da lista..."
+        size="md"
+        {...form.getInputProps('title')}
+        ref={ref}
+      />
       <Flex mt={10} align="center" gap={8}>
         <Button type="submit">Adicionar lista</Button>
         <Button variant="subtle" onClick={() => setIsListInputOpen(false)}>

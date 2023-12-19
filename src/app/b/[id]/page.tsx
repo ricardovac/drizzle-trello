@@ -20,7 +20,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   return (
     <BoardAppShell board={board}>
-      <Flex gap={8}>
+      <Flex gap={8} align="flex-start">
         <CreateCardForm lists={lists} />
         <CreateListForm boardId={id} />
       </Flex>
