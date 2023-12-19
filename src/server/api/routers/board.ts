@@ -22,6 +22,7 @@ export const boardRouter = createTRPCRouter({
     }
 
     return {
+      id: input.id,
       title: board.title,
       background: board.background,
       user: ctx.session.user,

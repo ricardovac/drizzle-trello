@@ -1,7 +1,15 @@
+import { Flex } from '@mantine/core';
+import dynamic from 'next/dynamic';
 import BoardAppShell from '~/app/_components/board-appshell';
-import CreateListPopover from '~/app/_components/create-list-popover';
-import ListCard from '~/app/_components/list-card';
 import { api } from '~/trpc/server';
+
+const CreateCardForm = dynamic(() => import('~/app/_components/create-card-form'), {
+  ssr: false,
+});
+const CreateListForm = dynamic(() => import('~/app/_components/create-list-form'), {
+  ssr: false,
+  loading: () => <div>loading...</div>,
+});
 
 export default async function Page({ params }: { params: { id: string } }) {
   const id = params.id;
@@ -12,8 +20,10 @@ export default async function Page({ params }: { params: { id: string } }) {
 
   return (
     <BoardAppShell board={board}>
-      <ListCard lists={lists} />
-      <CreateListPopover boardId={id} />
+      <Flex gap={8}>
+        <CreateCardForm lists={lists} />
+        <CreateListForm boardId={id} />
+      </Flex>
     </BoardAppShell>
   );
 }

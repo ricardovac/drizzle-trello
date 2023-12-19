@@ -1,17 +1,17 @@
-import '~/styles/globals.css';
 import '@mantine/core/styles.css';
+import '~/styles/globals.css';
 
 import { headers } from 'next/headers';
 
-import { TRPCReactProvider } from '~/trpc/react';
 import { ColorSchemeScript, MantineProvider } from '@mantine/core';
-import { theme } from '~/lib/theme';
-import { Navigation } from './_components/navigation';
-import { getServerAuthSession } from '~/server/auth';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Inter } from 'next/font/google';
+import { theme } from '~/lib/theme';
+import { getServerAuthSession } from '~/server/auth';
+import { TRPCReactProvider } from '~/trpc/react';
+import { Navigation } from './_components/navigation';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
+const inter = Inter({ subsets: ['latin'], display: 'swap' });
 
 export const metadata = {
   title: 'drizzle-trello',

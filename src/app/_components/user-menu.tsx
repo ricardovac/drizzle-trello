@@ -1,17 +1,17 @@
-"use client";
+'use client';
 import {
-  Menu,
-  Group,
-  Text,
-  Avatar,
-  useMantineTheme,
   ActionIcon,
-  rem,
+  Avatar,
   Checkbox,
-  SimpleGrid,
+  Group,
   HoverCard,
+  Menu,
+  SimpleGrid,
+  Text,
+  rem,
   useMantineColorScheme,
-} from "@mantine/core";
+  useMantineTheme,
+} from '@mantine/core';
 import {
   ChevronRight,
   ListTodo,
@@ -21,32 +21,32 @@ import {
   Palette,
   Settings,
   Star,
-} from "lucide-react";
-import Image from "next/image";
-import { type Session } from "next-auth";
-import Link from "next/link";
+} from 'lucide-react';
+import { type Session } from 'next-auth';
+import Image from 'next/image';
+import Link from 'next/link';
 
 export function UserMenu({ session }: { session: Session | null }) {
   const theme = useMantineTheme();
-  const { setColorScheme, colorScheme } =
-    useMantineColorScheme();
+  const { setColorScheme, colorScheme } = useMantineColorScheme();
   return (
     <Group justify="center">
       <Menu
         withArrow
         width={300}
         position="bottom"
-        transitionProps={{ transition: "pop" }}
+        transitionProps={{ transition: 'pop' }}
         withinPortal
       >
         <Menu.Target>
           <ActionIcon variant="transparent">
             <Image
-              src={session?.user.image ?? "/static/default-profile.jpg"}
+              src={session?.user.image ?? '/static/default-profile.jpg'}
               width={30}
               height={30}
-              style={{ borderRadius: "100%" }}
+              style={{ borderRadius: '100%' }}
               alt="User Profile Picture"
+              quality={50}
             />
           </ActionIcon>
         </Menu.Target>
@@ -54,15 +54,10 @@ export function UserMenu({ session }: { session: Session | null }) {
           {session && (
             <>
               <Menu.Item
-                rightSection={
-                  <ChevronRight style={{ width: rem(16), height: rem(16) }} />
-                }
+                rightSection={<ChevronRight style={{ width: rem(16), height: rem(16) }} />}
               >
                 <Group>
-                  <Avatar
-                    radius="xl"
-                    src={session?.user.image ?? "/static/default-profile.jpg"}
-                  />
+                  <Avatar radius="xl" src={session?.user.image ?? '/static/default-profile.jpg'} />
 
                   <div>
                     <Text fw={500}>{session?.user.name}</Text>
@@ -108,29 +103,15 @@ export function UserMenu({ session }: { session: Session | null }) {
             </>
           )}
           <Menu.Label>Settings</Menu.Label>
-          <Menu.Item
-            leftSection={
-              <Settings style={{ width: rem(16), height: rem(16) }} />
-            }
-          >
+          <Menu.Item leftSection={<Settings style={{ width: rem(16), height: rem(16) }} />}>
             Configurações
           </Menu.Item>
 
-          <HoverCard
-            position="left-start"
-            withArrow
-            shadow="md"
-            trapFocus
-            width="target"
-          >
+          <HoverCard position="left-start" withArrow shadow="md" trapFocus width="target">
             <HoverCard.Target>
               <Menu.Item
-                leftSection={
-                  <Palette style={{ width: rem(16), height: rem(16) }} />
-                }
-                rightSection={
-                  <ChevronRight style={{ width: rem(16), height: rem(16) }} />
-                }
+                leftSection={<Palette style={{ width: rem(16), height: rem(16) }} />}
+                rightSection={<ChevronRight style={{ width: rem(16), height: rem(16) }} />}
               >
                 Tema
               </Menu.Item>
@@ -140,25 +121,25 @@ export function UserMenu({ session }: { session: Session | null }) {
                 <Checkbox
                   label="Luz"
                   color="gray"
-                  checked={colorScheme === "light"}
+                  checked={colorScheme === 'light'}
                   onChange={() => {
-                    setColorScheme("light");
+                    setColorScheme('light');
                   }}
                 />
                 <Checkbox
                   label="Escuro"
                   color="gray"
-                  checked={colorScheme === "dark"}
+                  checked={colorScheme === 'dark'}
                   onChange={() => {
-                    setColorScheme("dark");
+                    setColorScheme('dark');
                   }}
                 />
                 <Checkbox
                   label="Tema do navegador"
                   color="gray"
-                  checked={colorScheme === "auto"}
+                  checked={colorScheme === 'auto'}
                   onChange={() => {
-                    setColorScheme("auto");
+                    setColorScheme('auto');
                   }}
                 />
               </SimpleGrid>
@@ -168,9 +149,9 @@ export function UserMenu({ session }: { session: Session | null }) {
           <Menu.Divider />
 
           <Menu.Label>Danger zone</Menu.Label>
-          <Link href={session ? "/api/auth/signout" : "/api/auth/signin"}>
+          <Link href={session ? '/api/auth/signout' : '/api/auth/signin'}>
             <Menu.Item
-              color={session ? "red" : "blue"}
+              color={session ? 'red' : 'blue'}
               leftSection={
                 session ? (
                   <LogOut style={{ width: rem(16), height: rem(16) }} />
@@ -179,7 +160,7 @@ export function UserMenu({ session }: { session: Session | null }) {
                 )
               }
             >
-              {session ? "Sair" : "Entrar"}
+              {session ? 'Sair' : 'Entrar'}
             </Menu.Item>
           </Link>
         </Menu.Dropdown>

@@ -6,7 +6,7 @@ import { createTRPCRouter, protectedProcedure } from '../trpc';
 
 export const cardRouter = createTRPCRouter({
   create: protectedProcedure
-    .input(z.object({ title: z.string(), description: z.string(), listId: z.string() }))
+    .input(z.object({ title: z.string(), description: z.string().nullish(), listId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { db, session } = ctx;
 

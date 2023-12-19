@@ -1,9 +1,9 @@
 'use client';
-import { Flex, Text, Button, ColorPicker, TextInput, Paper, Popover } from '@mantine/core';
-import { useState } from 'react';
-import Image from 'next/image';
-import { api } from '~/trpc/react';
+import { Button, ColorPicker, Flex, Paper, Popover, Text, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
+import Image from 'next/image';
+import { useState } from 'react';
+import { api } from '~/trpc/react';
 
 interface CreateBoardPopoverProps {
   children: React.ReactNode;
@@ -17,20 +17,14 @@ export default function CreateBoardPopover({ children }: CreateBoardPopoverProps
     initialValues: {
       title: '',
     },
-    validate: (values) => {
-      const errors: Record<string, string> = {};
-      if (!values.title) {
-        errors.title = 'Insira um título';
-      }
-
-      return errors;
+    validate: {
+      title: (value) => (value ? undefined : 'Insira um título'),
     },
   });
-
   const { mutate, isLoading } = api.board.create.useMutation({
-    onSuccess: async () => {
-      await utils.board.all.invalidate();
+    onSuccess: () => {
       form.reset();
+      void utils.board.all.invalidate();
     },
   });
 
