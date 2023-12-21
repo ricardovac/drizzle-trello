@@ -1,18 +1,20 @@
 'use client';
-import { Button, Card, CardSection, Flex, Input, Textarea } from '@mantine/core';
+import { ActionIcon, Button, Card, CardSection, Flex, Input, Textarea } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { Plus, X } from 'lucide-react';
+import { useFocusWithin } from '@mantine/hooks';
+import { MoreHorizontal, Plus, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { api } from '~/trpc/react';
 import { type List, type SingleList } from '~/utils/types';
 
 interface ListCardProps {
-  lists: List;
+  initialLists: List;
 }
 
-export default function CreateCardForm({ lists }: ListCardProps) {
+export default function CreateCardForm({ initialLists }: ListCardProps) {
   const [openedCardId, setOpenedCardId] = useState<string | null>(null);
   const { mutate: editList } = api.list.edit.useMutation();
+  const { ref: focusWithinRef, focused } = useFocusWithin();
 
   const form = useForm({
     initialValues: {
@@ -22,20 +24,25 @@ export default function CreateCardForm({ lists }: ListCardProps) {
 
   return (
     <>
-      {lists.map((list, idx) => (
-        <Card key={idx}>
+      {initialLists.map((list, idx) => (
+        <Card key={idx} radius="md" w={272}>
           <CardSection px={20} pb={12}>
-            <Input
-              variant="unstyled"
-              size="md"
-              defaultValue={list.title}
-              onChange={(e) => form.setFieldValue('title', e.currentTarget.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  editList({ id: list.id!, title: form.values.listTitle });
-                }
-              }}
-            />
+            <Flex justify="space-between" align="center">
+              <Input
+                variant={focused ? 'filled' : 'unstyled'}
+                ref={focusWithinRef}
+                defaultValue={list.title}
+                onChange={(e) => form.setFieldValue('title', e.currentTarget.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    editList({ id: list.id!, title: form.values.listTitle });
+                  }
+                }}
+              />
+              <ActionIcon variant="subtle" aria-label="HorizontalCardIcon">
+                <MoreHorizontal />
+              </ActionIcon>
+            </Flex>
             {openedCardId !== list.id && (
               <Button
                 leftSection={<Plus />}

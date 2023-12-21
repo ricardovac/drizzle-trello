@@ -37,31 +37,33 @@ export default function CreateBoardPopover({ children }: CreateBoardPopoverProps
           <Paper p="md" style={{ backgroundColor: background }} shadow="xs">
             <Image src="/assets/board.svg" alt="Board SVG" width={160} height={90} />
           </Paper>
+
           <Text fw={500} w={200} size="sm">
             Tela de fundo
           </Text>
-          <ColorPicker
-            format="hex"
-            value={background}
-            onChange={onChange}
-            withPicker={false}
-            swatches={[
-              '#25262b',
-              '#868e96',
-              '#fa5252',
-              '#e64980',
-              '#be4bdb',
-              '#7950f2',
-              '#4c6ef5',
-              '#228be6',
-              '#15aabf',
-              '#12b886',
-              '#40c057',
-              '#82c91e',
-              '#fab005',
-              '#fd7e14',
-            ]}
-          />
+          <Flex w={200} wrap="wrap" justify="center" gap={8}>
+            <ColorPicker
+              format="hex"
+              value={background}
+              onChange={onChange}
+              withPicker={false}
+              swatches={[
+                '#25262b',
+                '#868e96',
+                '#fa5252',
+                '#e64980',
+                '#be4bdb',
+                '#7950f2',
+                '#4c6ef5',
+                '#228be6',
+                '#12b886',
+                '#40c057',
+                '#82c91e',
+                '#fab005',
+                '#fd7e14',
+              ]}
+            />
+          </Flex>
           <form onSubmit={form.onSubmit((values) => mutate({ title: values.title, background }))}>
             <TextInput
               label="Título do quadro"

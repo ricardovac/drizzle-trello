@@ -11,6 +11,7 @@ const config = {
   optimizeFonts: true,
   images: {
     domains: [
+      'images.pexels.com',
       'cdn.discordapp.com',
       'cdn.discord.com',
       'lh3.googleusercontent.com',

@@ -2,6 +2,7 @@
 import { Button, Card, CardSection, Flex, Input } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { Plus, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { api } from '~/trpc/react';
 
@@ -10,7 +11,7 @@ interface CreateListPopoverProps {
 }
 
 export default function CreateListForm({ boardId }: CreateListPopoverProps) {
-  const [isListInputOpen, setIsListInputOpen] = useState(false);
+  const [isListInputOpen, setIsListInputOpen] = useState<boolean>(false);
 
   return (
     <Card>
@@ -40,13 +41,16 @@ interface CreateListFormProps {
 }
 
 function ListForm({ boardId, setIsListInputOpen, isListInputOpen = false }: CreateListFormProps) {
-  const utils = api.useUtils();
   const ref = useRef<HTMLInputElement>(null);
+
+  const apiUtils = api.useUtils();
+  const router = useRouter();
   const { mutate } = api.list.create.useMutation({
     onSuccess: async () => {
-      await utils.list.all.invalidate({ boardId });
-      setIsListInputOpen(false);
       form.reset();
+      router.refresh();
+      await apiUtils.list.all.invalidate({ boardId });
+      setIsListInputOpen(false);
     },
   });
 

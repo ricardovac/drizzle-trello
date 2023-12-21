@@ -1,31 +1,32 @@
 'use client';
 import {
-  Autocomplete,
-  Group,
-  Burger,
-  rem,
-  Flex,
-  Center,
-  Box,
-  useMantineTheme,
-  Text,
   Anchor,
-  Divider,
-  SimpleGrid,
+  Autocomplete,
+  Box,
+  Burger,
   Button,
-  UnstyledButton,
-  ThemeIcon,
+  Center,
+  Divider,
+  Flex,
+  Group,
   Popover,
-  PopoverTarget,
   PopoverDropdown,
+  PopoverTarget,
+  SimpleGrid,
+  Text,
+  ThemeIcon,
+  UnstyledButton,
+  rem,
+  useMantineTheme,
 } from '@mantine/core';
-import classes from '~/styles/header-search.module.css';
-import { Book, ChevronDown, Code, Coins, Search } from 'lucide-react';
 import { useDisclosure } from '@mantine/hooks';
-import { UserMenu } from './user-menu';
+import { Book, ChevronDown, Code, Coins, Search } from 'lucide-react';
 import { type Session } from 'next-auth';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import classes from '~/styles/header-search.module.css';
 import CreateBoardPopover from './create-board-popover';
+import { UserMenu } from './user-menu';
 
 const mockdata = [
   {
@@ -52,6 +53,9 @@ interface NavigationProps {
 export function Navigation({ session }: NavigationProps) {
   const [opened, { toggle }] = useDisclosure(false);
   const theme = useMantineTheme();
+  const router = useRouter();
+
+  if (!session) void router.push('/api/auth/signin');
 
   const links = mockdata.map((item) => (
     <UnstyledButton className={classes.subLink} key={item.title}>
