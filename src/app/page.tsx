@@ -16,6 +16,8 @@ export default function Home() {
   );
   const dataToShow = useMemo(() => data?.pages.flatMap((page) => page.items), [data]);
 
+  if (dataToShow?.length === 0) return <></>;
+
   const loadingArray = Array.from<undefined>({ length: 2 });
 
   return (
@@ -23,7 +25,7 @@ export default function Home() {
       <Flex gap="md">
         <NavbarLinksGroup />
         <Flex direction="column" gap={4}>
-          <Text>SUAS ÁREAS DE TRABALHO</Text>
+          <Text>Seus quadros</Text>
           <Flex maw={900} wrap="wrap" align="center" gap={8}>
             <CreateBoardPopover>
               <Button variant="default" miw={200} mih={120}>
@@ -35,8 +37,8 @@ export default function Home() {
             {(isLoading ? loadingArray : dataToShow)?.map((board, idx) => (
               <BoardCard key={isLoading ? idx : board?.id} board={board} loading={isLoading} />
             ))}
+            {isFetchingNextPage && <BoardCard loading />}
           </Flex>
-          {isFetchingNextPage && <BoardCard loading />}
         </Flex>
       </Flex>
     </Container>

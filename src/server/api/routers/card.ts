@@ -11,7 +11,7 @@ export const cardRouter = createTRPCRouter({
       const { db, session } = ctx;
 
       const list = await db
-        .select({ id: lists.id, createdById: lists.boardId })
+        .select({ id: lists.id, createdById: lists.createdById })
         .from(lists)
         .where(eq(lists.id, input.listId))
         .limit(1);

@@ -1,11 +1,26 @@
 'use client';
-import { ActionIcon, Button, Card, CardSection, Flex, Input, Textarea } from '@mantine/core';
+import {
+  ActionIcon,
+  Button,
+  Card,
+  CardSection,
+  Flex,
+  Input,
+  Skeleton,
+  Stack,
+  Textarea,
+} from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { useFocusWithin } from '@mantine/hooks';
 import { MoreHorizontal, Plus, X } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
 import { api } from '~/trpc/react';
 import { type List, type SingleList } from '~/utils/types';
+
+const ListCard = dynamic(() => import('./list-card'), {
+  ssr: false,
+  loading: () => <Skeleton height={38} radius="md" />,
+});
 
 interface ListCardProps {
   initialLists: List;
@@ -14,7 +29,6 @@ interface ListCardProps {
 export default function CreateCardForm({ initialLists }: ListCardProps) {
   const [openedCardId, setOpenedCardId] = useState<string | null>(null);
   const { mutate: editList } = api.list.edit.useMutation();
-  const { ref: focusWithinRef, focused } = useFocusWithin();
 
   const form = useForm({
     initialValues: {
@@ -25,14 +39,14 @@ export default function CreateCardForm({ initialLists }: ListCardProps) {
   return (
     <>
       {initialLists.map((list, idx) => (
-        <Card key={idx} radius="md" w={272}>
-          <CardSection px={20} pb={12}>
+        <Card key={idx} radius="md" w={272} bg="dark">
+          <CardSection px={12} pb={12}>
             <Flex justify="space-between" align="center">
               <Input
-                variant={focused ? 'filled' : 'unstyled'}
-                ref={focusWithinRef}
+                size="md"
+                variant="unstyled"
                 defaultValue={list.title}
-                onChange={(e) => form.setFieldValue('title', e.currentTarget.value)}
+                onChange={(e) => form.setFieldValue('listTitle', e.currentTarget.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     editList({ id: list.id!, title: form.values.listTitle });
@@ -43,6 +57,11 @@ export default function CreateCardForm({ initialLists }: ListCardProps) {
                 <MoreHorizontal />
               </ActionIcon>
             </Flex>
+            {list.cards && (
+              <Stack gap={8}>
+                <ListCard card={list.cards} />
+              </Stack>
+            )}
             {openedCardId !== list.id && (
               <Button
                 leftSection={<Plus />}
@@ -70,7 +89,11 @@ interface CreateCardFormProps {
 }
 
 function CardForm({ list, setOpenedCardId, openedCardId = '' }: CreateCardFormProps) {
-  const { mutate: createCard } = api.card.create.useMutation();
+  const createCard = api.card.create.useMutation({
+    onSuccess: () => {
+      setOpenedCardId(null);
+    },
+  });
   const ref = useRef<HTMLTextAreaElement>(null);
   const form = useForm({
     initialValues: {
@@ -88,17 +111,19 @@ function CardForm({ list, setOpenedCardId, openedCardId = '' }: CreateCardFormPr
   return (
     <form
       onSubmit={form.onSubmit((values) => {
-        createCard({ listId: list.id!, title: values.cardTitle });
+        createCard.mutate({ listId: list.id!, title: values.cardTitle });
       })}
     >
       <Textarea
         placeholder="Insira um título para este cartão..."
         variant="filled"
-        {...form.getInputProps('title')}
+        {...form.getInputProps('cardTitle')}
         ref={ref}
       />
       <Flex justify="space-between" mt={10} gap={8}>
-        <Button type="submit">Adicionar um cartã́o</Button>
+        <Button type="submit" loading={createCard.isLoading}>
+          Adicionar um cartã́o
+        </Button>
         <Button variant="subtle" onClick={() => setOpenedCardId(null)}>
           <X />
         </Button>

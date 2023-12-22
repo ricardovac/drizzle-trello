@@ -39,6 +39,7 @@ export const theme = createTheme({
     },
     Popover: {
       defaultProps: {
+        transitionProps: { duration: 0 },
         withinPortal: true,
         shadow: 'lg',
       },

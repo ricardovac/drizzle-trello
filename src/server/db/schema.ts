@@ -40,14 +40,16 @@ export const lists = mysqlTable(
     id: varchar('id', { length: 128 }).$defaultFn(() => createId()),
     title: varchar('title', { length: 256 }).notNull(),
     boardId: varchar('boardId', { length: 256 }).notNull(),
+    createdById: varchar('createdById', { length: 255 }).notNull(),
   },
   (lists) => ({
     boardIdIdx: index('boardId_idx').on(lists.boardId),
   }),
 );
 
-export const listsRelations = relations(lists, ({ one }) => ({
+export const listsRelations = relations(lists, ({ one, many }) => ({
   board: one(boards, { fields: [lists.boardId], references: [boards.id] }),
+  cards: many(cards),
 }));
 
 export const cards = mysqlTable(

@@ -4,6 +4,8 @@ export type List = RouterOutputs['list']['all'];
 export type SingleList = RouterOutputs['list']['all'][number];
 export type SingleBoard = RouterOutputs['board']['get'];
 export type InfiniteBoard = RouterOutputs['board']['all']['items'][number];
+export type Card = Pick<SingleList, 'cards'>['cards'];
+export type SingleCard = Pick<SingleList, 'cards'>['cards'][0];
 
 export interface PexelsResponse {
   page: number;

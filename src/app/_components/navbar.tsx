@@ -1,15 +1,8 @@
-"use client";
-import { useState } from "react";
-import {
-  Group,
-  Box,
-  Collapse,
-  ThemeIcon,
-  UnstyledButton,
-  rem,
-} from "@mantine/core";
-import classes from "~/styles/navbar-linksgroup.module.css";
-import { Calendar, ChevronRight } from "lucide-react";
+'use client';
+import { Box, Collapse, Group, ThemeIcon, UnstyledButton, rem } from '@mantine/core';
+import { Calendar, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
+import classes from '~/styles/navbar-linksgroup.module.css';
 
 interface LinksGroupProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -19,12 +12,7 @@ interface LinksGroupProps {
   links?: { label: string; link: string }[];
 }
 
-export function LinksGroup({
-  icon: Icon,
-  label,
-  initiallyOpened,
-  links,
-}: LinksGroupProps) {
+export function LinksGroup({ icon: Icon, label, initiallyOpened, links }: LinksGroupProps) {
   const hasLinks = Array.isArray(links);
   const [opened, setOpened] = useState(initiallyOpened ?? false);
   const [active, setActive] = useState<number | null>(null);
@@ -40,12 +28,9 @@ export function LinksGroup({
 
   return (
     <>
-      <UnstyledButton
-        onClick={() => setOpened((o) => !o)}
-        className={classes.control}
-      >
+      <UnstyledButton onClick={() => setOpened((o) => !o)} className={classes.control}>
         <Group justify="space-between" gap={0}>
-          <Box style={{ display: "flex", alignItems: "center" }} mr={6}>
+          <Box style={{ display: 'flex', alignItems: 'center' }} mr={6}>
             <ThemeIcon variant="light" size={30}>
               <Icon style={{ width: rem(18), height: rem(18) }} />
             </ThemeIcon>
@@ -57,7 +42,7 @@ export function LinksGroup({
               style={{
                 width: rem(16),
                 height: rem(16),
-                transform: opened ? "rotate(-90deg)" : "none",
+                transform: opened ? 'rotate(-90deg)' : 'none',
               }}
             />
           )}
@@ -72,9 +57,9 @@ const mockdata = {
   label: `Área de trabalho de Ricardo`,
   icon: Calendar,
   links: [
-    { label: "Quadros", link: "/" },
-    { label: "Importantes", link: "/important" },
-    { label: "Pomodoro", link: "/pomodoro" },
+    { label: 'Quadros', link: '/' },
+    { label: 'Importantes', link: '/important' },
+    { label: 'Pomodoro', link: '/pomodoro' },
   ],
   initiallyOpened: true,
 };
@@ -101,7 +86,7 @@ function NavbarLink({ text, active, onClick }: NavbarLinkProps) {
       }}
       className={classes.link}
       data-active={active ?? undefined}
-      bg={active ? "blue" : "transparent"}
+      bg={active ? 'blue' : 'transparent'}
     >
       {text}
     </UnstyledButton>

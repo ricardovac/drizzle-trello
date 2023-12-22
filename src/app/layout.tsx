@@ -25,7 +25,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="en" suppressHydrationWarning>
       <head>
         <ColorSchemeScript defaultColorScheme="auto" />
-        <meta name="viewport" content="minimum-scale=0.75, initial-scale=1, width=device-width" />
       </head>
       <body className={inter.className}>
         <MantineProvider theme={theme} defaultColorScheme="auto">

@@ -1,18 +1,12 @@
 import { Flex } from '@mantine/core';
-import dynamic from 'next/dynamic';
 import BoardAppShell from '~/app/_components/board-appshell';
+import CreateCardForm from '~/app/_components/create-card-form';
+import CreateListForm from '~/app/_components/create-list-form';
 import { api } from '~/trpc/server';
 
 interface BoardPageProps {
   params: { id: string };
 }
-
-const CreateCardForm = dynamic(() => import('~/app/_components/create-card-form'), {
-  ssr: false,
-});
-const CreateListForm = dynamic(() => import('~/app/_components/create-list-form'), {
-  ssr: false,
-});
 
 export default async function Page({ params }: BoardPageProps) {
   const id = params.id;

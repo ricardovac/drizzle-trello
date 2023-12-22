@@ -25,17 +25,18 @@ export const listRouter = createTRPCRouter({
 
       return await db
         .insert(lists)
-        .values({ title: input.title, boardId: input.boardId })
+        .values({ title: input.title, boardId: input.boardId, createdById: session.user.id })
         .execute();
     }),
   all: protectedProcedure.input(z.object({ boardId: z.string() })).query(async ({ ctx, input }) => {
     const { db } = ctx;
 
-    const listsQuery = await db
-      .select({ id: lists.id, title: lists.title, boardId: lists.boardId })
-      .from(lists)
-      .where(eq(lists.boardId, input.boardId))
-      .execute();
+    const listsQuery = await db.query.lists.findMany({
+      where(fields) {
+        return eq(fields.boardId, input.boardId);
+      },
+      with: { cards: true },
+    });
 
     return listsQuery;
   }),

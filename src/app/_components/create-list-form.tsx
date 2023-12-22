@@ -69,12 +69,7 @@ function ListForm({ boardId, setIsListInputOpen, isListInputOpen = false }: Crea
 
   return (
     <form onSubmit={form.onSubmit((values) => mutate({ title: values.title, boardId }))}>
-      <Input
-        placeholder="Insira o título da lista..."
-        size="md"
-        {...form.getInputProps('title')}
-        ref={ref}
-      />
+      <Input placeholder="Insira o título da lista..." {...form.getInputProps('title')} ref={ref} />
       <Flex mt={10} align="center" gap={8}>
         <Button type="submit">Adicionar lista</Button>
         <Button variant="subtle" onClick={() => setIsListInputOpen(false)}>
