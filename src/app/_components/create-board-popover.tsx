@@ -11,8 +11,6 @@ interface CreateBoardPopoverProps {
 
 export default function CreateBoardPopover({ children }: CreateBoardPopoverProps) {
   const [background, onChange] = useState('');
-  const utils = api.useUtils();
-
   const form = useForm({
     initialValues: {
       title: '',
@@ -21,10 +19,24 @@ export default function CreateBoardPopover({ children }: CreateBoardPopoverProps
       title: (value) => (value ? undefined : 'Insira um título'),
     },
   });
+  const utils = api.useUtils();
   const { mutate, isLoading } = api.board.create.useMutation({
-    onSuccess: () => {
-      form.reset();
-      void utils.board.all.invalidate();
+    onMutate: async () => {
+      await utils.board.all.cancel({ limit: 10 });
+
+      const prevData = utils.board.all.getData({ limit: 10 });
+
+      utils.board.all.setData({ limit: 10 }, (prev) => ({
+        ...prev!,
+      }));
+
+      return { prevData };
+    },
+    onError: (err, newList, context) => {
+      utils.board.all.setData({ limit: 10 }, context?.prevData);
+    },
+    onSettled: () => {
+      void utils.board.all.invalidate({ limit: 10 });
     },
   });
 

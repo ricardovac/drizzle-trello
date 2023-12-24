@@ -31,7 +31,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <TRPCReactProvider headers={headers()}>
             <Navigation session={session} />
             <div style={{ paddingTop: '3rem' }}>{children}</div>
-            <ReactQueryDevtools />
+            <ReactQueryDevtools initialIsOpen={false} />
           </TRPCReactProvider>
         </MantineProvider>
       </body>

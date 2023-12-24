@@ -1,10 +1,14 @@
 'use client';
 import { Button, Center, Container, Flex, Text } from '@mantine/core';
+import dynamic from 'next/dynamic';
 import { useMemo } from 'react';
 import { api } from '~/trpc/react';
 import BoardCard from './_components/board-card';
-import CreateBoardPopover from './_components/create-board-popover';
 import { NavbarLinksGroup } from './_components/navbar';
+
+const CreateBoardPopover = dynamic(() => import('./_components/create-board-popover'), {
+  ssr: false,
+});
 
 export default function Home() {
   const { data, isLoading, isFetchingNextPage } = api.board.all.useInfiniteQuery(

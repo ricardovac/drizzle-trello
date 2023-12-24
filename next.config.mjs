@@ -8,14 +8,32 @@ await import('./src/env.mjs');
 const config = {
   reactStrictMode: true,
   swcMinify: true,
-  optimizeFonts: true,
+  experimental: {
+    optimizePackageImports: ['@mantine/core', '@mantine/forms', '@mantine/hooks'],
+    scrollRestoration: true,
+  },
   images: {
-    domains: [
-      'images.pexels.com',
-      'cdn.discordapp.com',
-      'cdn.discord.com',
-      'lh3.googleusercontent.com',
-      'avatars.githubusercontent.com',
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.pexels.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.discordapp.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.discord.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com',
+      },
     ],
   },
 };
