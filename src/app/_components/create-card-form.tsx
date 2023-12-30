@@ -2,17 +2,13 @@
 import { DragDropContext, Draggable, Droppable, type DropResult } from '@hello-pangea/dnd';
 import { ActionIcon, Button, Card, CardSection, Flex, Input, Text, Textarea } from '@mantine/core';
 import { useForm } from '@mantine/form';
+import { useClickOutside } from '@mantine/hooks';
 import cx from 'clsx';
 import { MoreHorizontal, Plus, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import classes from '~/styles/dbdlist.module.css';
 import { api } from '~/trpc/react';
 import { type List, type SingleList } from '~/utils/types';
-
-// const ListCard = dynamic(() => import('./list-card'), {
-//   ssr: false,
-//   loading: () => <Skeleton height={38} radius="md" />,
-// });
 
 interface ListCardProps {
   initialLists: List;
@@ -24,69 +20,94 @@ interface onDragEndProps {
   setColumns: (value: List) => void;
 }
 
-const onDragEnd = ({ result, columns, setColumns }: onDragEndProps) => {
-  if (!result.destination) return;
-  const { source, destination } = result;
-
-  if (source.droppableId !== destination.droppableId) {
-    const sourceColumn = columns[source.droppableId as unknown as number];
-    const destColumn = columns[destination.droppableId as unknown as number];
-    const sourceItems = [...(sourceColumn?.cards ?? [])];
-    const destItems = [...(destColumn?.cards ?? [])];
-    const [removed] = sourceItems.splice(source.index, 1);
-    if (removed) destItems.splice(destination.index, 0, removed);
-    setColumns({
-      ...columns,
-      [source.droppableId]: {
-        ...sourceColumn,
-        cards: sourceItems,
-      },
-      [destination.droppableId]: {
-        ...destColumn,
-        cards: destItems,
-      },
-    });
-  } else {
-    const column = columns[source.droppableId as unknown as number];
-    const copiedItems = [...(column?.cards ?? [])];
-    const [removed] = copiedItems.splice(source.index, 1);
-    if (removed) copiedItems.splice(destination.index, 0, removed);
-    setColumns({
-      ...columns,
-      [source.droppableId]: {
-        ...column,
-        cards: copiedItems,
-      },
-    });
-  }
-};
-
 export default function CreateCardForm({ initialLists }: ListCardProps) {
   const [openedCardId, setOpenedCardId] = useState<string | null>(null);
-  // i probably need to do a edit mutation to this instead of useState
+  const [isInputFocused, setIsInputFocused] = useState<string | null>(null);
   const [columns, setColumns] = useState(initialLists);
-  const { mutate: editList } = api.list.edit.useMutation();
+  const cardRef = useClickOutside(() => setOpenedCardId(null));
+
+  const editList = api.list.edit.useMutation();
+  const updateCardList = api.list.editCardList.useMutation();
 
   const form = useForm({
     initialValues: {
       listTitle: '',
     },
+    validate: {
+      listTitle: (value) => (value ? '' : 'Insira um título para a lista'),
+    },
   });
+
+  const onDragEnd = ({ result, columns, setColumns }: onDragEndProps) => {
+    if (!result.destination) return;
+    const { source, destination } = result;
+
+    if (source.droppableId !== destination.droppableId) {
+      const sourceColumn = columns[source.droppableId as unknown as number];
+      const destColumn = columns[destination.droppableId as unknown as number];
+      const sourceItems = [...(sourceColumn?.cards ?? [])];
+      const destItems = [...(destColumn?.cards ?? [])];
+      const [removed] = sourceItems.splice(source.index, 1);
+      if (removed) {
+        destItems.splice(destination.index, 0, removed);
+      }
+      updateCardList.mutate({
+        cardId: removed?.id ?? "",
+        newListId: destColumn?.id ?? '',
+      });
+      setColumns({
+        ...columns,
+        [source.droppableId]: {
+          ...sourceColumn,
+          cards: sourceItems,
+        },
+        [destination.droppableId]: {
+          ...destColumn,
+          cards: destItems,
+        },
+      });
+    } else {
+      const column = columns[source.droppableId as unknown as number];
+      const copiedItems = [...(column?.cards ?? [])];
+      const [removed] = copiedItems.splice(source.index, 1);
+      if (removed) {
+        copiedItems.splice(destination.index, 0, removed);
+      }
+      updateCardList.mutate({
+        cardId: removed?.id ?? "",
+        newOrder: destination.index,
+      });
+      setColumns({
+        ...columns,
+        [source.droppableId]: {
+          ...column,
+          cards: copiedItems,
+        },
+      });
+    }
+  };
 
   return (
     <DragDropContext onDragEnd={(result) => onDragEnd({ result, columns, setColumns })}>
       {Object.entries(columns).map(([columnId, column], _) => (
-        <Card key={columnId} radius="md" w={272} bg="dark">
+        <Card key={columnId} radius="md" w={272} bg="dark" id="listCard" ref={cardRef}>
           <CardSection px={12} pb={12}>
-            <Flex justify="space-between" align="center">
+            <Flex justify="space-between" align="center" my={8} gap={8}>
               <Input
+                radius="md"
                 size="md"
-                variant="unstyled"
+                variant={isInputFocused === column.id ? 'filled' : 'unstyled'}
+                onFocus={(e) => {
+                  setIsInputFocused(column.id);
+                  e.currentTarget.select();
+                }}
+                onBlur={() => setIsInputFocused(null)}
                 defaultValue={column.title}
                 onChange={(e) => form.setFieldValue('listTitle', e.currentTarget.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    editList({ id: column.id!, title: form.values.listTitle });
+                    editList.mutate({ id: column.id!, title: form.values.listTitle });
+                    setIsInputFocused(null);
                   }
                 }}
               />
@@ -99,7 +120,7 @@ export default function CreateCardForm({ initialLists }: ListCardProps) {
                 <div
                   {...provided.droppableProps}
                   ref={provided.innerRef}
-                  style={{ minHeight: '20px' }}
+                  style={{ minHeight: '10px' }}
                 >
                   {column.cards.map((card, index) => (
                     <Draggable index={index} key={card.id} draggableId={card.id ?? ''}>

@@ -59,6 +59,7 @@ export const cards = mysqlTable(
     title: varchar('title', { length: 256 }).notNull(),
     description: text('description'),
     listId: varchar('listId', { length: 256 }).notNull(),
+    order: int('order'),
   },
   (cards) => ({
     listIdIdx: index('listId_idx').on(cards.listId),

@@ -16,12 +16,11 @@ export default function BoardAppShell({ children, board }: BoardAppShellProps) {
         className="scroll-container"
         hideScrollbars={false}
         horizontal
-        ignoreElements="#appShellChildren"
+        ignoreElements="#listCard"
+        style={{ backgroundColor: board?.background ?? '' }}
       >
-        <AppShellMain pt={20} bg={board?.background ?? ''}>
-          <Flex gap={8} id="appShellChildren">
-            {children}
-          </Flex>
+        <AppShellMain pt={20}>
+          <Flex gap={8}>{children}</Flex>
         </AppShellMain>
       </ScrollContainer>
     </AppShell>

@@ -1,6 +1,7 @@
 'use client';
 import { Button, Card, CardSection, Flex, Input } from '@mantine/core';
 import { useForm } from '@mantine/form';
+import { useClickOutside } from '@mantine/hooks';
 import { Plus, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
@@ -12,14 +13,16 @@ interface CreateListPopoverProps {
 
 export default function CreateListForm({ boardId }: CreateListPopoverProps) {
   const [isListInputOpen, setIsListInputOpen] = useState<boolean>(false);
+  const cardRef = useClickOutside(() => setIsListInputOpen(false));
 
   return (
-    <Card>
-      <CardSection p={10}>
+    <Card bg="dark" ref={cardRef}>
+      <CardSection>
         {!isListInputOpen && (
           <Button
             leftSection={<Plus />}
             variant="default"
+            bg="dark"
             opacity={0.8}
             onClick={() => setIsListInputOpen((o) => !o)}
           >
@@ -69,12 +72,18 @@ function ListForm({ boardId, setIsListInputOpen, isListInputOpen = false }: Crea
 
   return (
     <form onSubmit={form.onSubmit((values) => mutate({ title: values.title, boardId }))}>
-      <Input placeholder="Insira o título da lista..." {...form.getInputProps('title')} ref={ref} />
-      <Flex mt={10} align="center" gap={8}>
-        <Button type="submit">Adicionar lista</Button>
-        <Button variant="subtle" onClick={() => setIsListInputOpen(false)}>
-          <X />
-        </Button>
+      <Flex gap={8} direction="column" mt={18}>
+        <Input
+          placeholder="Insira o título da lista..."
+          {...form.getInputProps('title')}
+          ref={ref}
+        />{' '}
+        <Flex align="center" justify="space-between">
+          <Button type="submit">Adicionar lista</Button>
+          <Button variant="subtle" onClick={() => setIsListInputOpen(false)}>
+            <X />
+          </Button>
+        </Flex>
       </Flex>
     </form>
   );
