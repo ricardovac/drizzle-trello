@@ -16,7 +16,9 @@ export const mysqlTable = mysqlTableCreator((name) => `trello_clone_${name}`);
 export const boards = mysqlTable(
   'boards',
   {
-    id: varchar('id', { length: 128 }).$defaultFn(() => createId()),
+    id: varchar('id', { length: 128 })
+      .$defaultFn(() => createId())
+      .primaryKey(),
     title: varchar('title', { length: 256 }).notNull(),
     createdById: varchar('createdById', { length: 255 }).notNull(),
     createdAt: timestamp('created_at')
@@ -37,10 +39,16 @@ export const boardsRelations = relations(boards, ({ many }) => ({
 export const lists = mysqlTable(
   'lists',
   {
-    id: varchar('id', { length: 128 }).$defaultFn(() => createId()),
+    id: varchar('id', { length: 128 })
+      .$defaultFn(() => createId())
+      .primaryKey(),
     title: varchar('title', { length: 256 }).notNull(),
     boardId: varchar('boardId', { length: 256 }).notNull(),
     createdById: varchar('createdById', { length: 255 }).notNull(),
+    createdAt: timestamp('created_at')
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp('updatedAt').onUpdateNow(),
   },
   (lists) => ({
     boardIdIdx: index('boardId_idx').on(lists.boardId),
@@ -55,11 +63,13 @@ export const listsRelations = relations(lists, ({ one, many }) => ({
 export const cards = mysqlTable(
   'cards',
   {
-    id: varchar('id', { length: 128 }).$defaultFn(() => createId()),
+    id: varchar('id', { length: 128 })
+      .$defaultFn(() => createId())
+      .primaryKey(),
     title: varchar('title', { length: 256 }).notNull(),
     description: text('description'),
     listId: varchar('listId', { length: 256 }).notNull(),
-    order: int('order'),
+    position: int('position').notNull(),
   },
   (cards) => ({
     listIdIdx: index('listId_idx').on(cards.listId),

@@ -1,8 +1,14 @@
 'use client';
-import { DragDropContext, Draggable, Droppable, type DropResult } from '@hello-pangea/dnd';
+import {
+  DragDropContext,
+  Draggable,
+  Droppable,
+  type DraggableStateSnapshot,
+  type DraggableStyle,
+  type DropResult,
+} from '@hello-pangea/dnd';
 import { ActionIcon, Button, Card, CardSection, Flex, Input, Text, Textarea } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { useClickOutside } from '@mantine/hooks';
 import cx from 'clsx';
 import { MoreHorizontal, Plus, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -12,6 +18,7 @@ import { type List, type SingleList } from '~/utils/types';
 
 interface ListCardProps {
   initialLists: List;
+  boardId: string;
 }
 
 interface onDragEndProps {
@@ -20,21 +27,36 @@ interface onDragEndProps {
   setColumns: (value: List) => void;
 }
 
-export default function CreateCardForm({ initialLists }: ListCardProps) {
+function getStyle(style: DraggableStyle, snapshot: DraggableStateSnapshot) {
+  if (!snapshot.isDropAnimating) {
+    return style;
+  }
+  return {
+    ...style,
+    transitionDuration: `0.001s`,
+  };
+}
+
+export default function CreateCardForm({ initialLists, boardId }: ListCardProps) {
   const [openedCardId, setOpenedCardId] = useState<string | null>(null);
   const [isInputFocused, setIsInputFocused] = useState<string | null>(null);
-  const [columns, setColumns] = useState(initialLists);
-  const cardRef = useClickOutside(() => setOpenedCardId(null));
 
-  const editList = api.list.edit.useMutation();
-  const updateCardList = api.list.editCardList.useMutation();
+  const editTitle = api.list.editTitle.useMutation();
+  const moveCard = api.list.moveCard.useMutation();
+
+  const { data: listData } = api.list.all.useQuery(
+    { boardId },
+    {
+      initialData: initialLists,
+      // refetchInterval: 10_000,
+    },
+  );
+
+  const [columns, setColumns] = useState(listData);
 
   const form = useForm({
     initialValues: {
       listTitle: '',
-    },
-    validate: {
-      listTitle: (value) => (value ? '' : 'Insira um título para a lista'),
     },
   });
 
@@ -48,13 +70,9 @@ export default function CreateCardForm({ initialLists }: ListCardProps) {
       const sourceItems = [...(sourceColumn?.cards ?? [])];
       const destItems = [...(destColumn?.cards ?? [])];
       const [removed] = sourceItems.splice(source.index, 1);
-      if (removed) {
+      if (removed?.id) {
         destItems.splice(destination.index, 0, removed);
       }
-      updateCardList.mutate({
-        cardId: removed?.id ?? "",
-        newListId: destColumn?.id ?? '',
-      });
       setColumns({
         ...columns,
         [source.droppableId]: {
@@ -66,6 +84,14 @@ export default function CreateCardForm({ initialLists }: ListCardProps) {
           cards: destItems,
         },
       });
+
+      if (!removed?.id || !destColumn?.id) return;
+
+      moveCard.mutate({
+        cardId: removed.id,
+        newListId: destColumn.id,
+        newCardPosition: destination.index,
+      });
     } else {
       const column = columns[source.droppableId as unknown as number];
       const copiedItems = [...(column?.cards ?? [])];
@@ -73,10 +99,6 @@ export default function CreateCardForm({ initialLists }: ListCardProps) {
       if (removed) {
         copiedItems.splice(destination.index, 0, removed);
       }
-      updateCardList.mutate({
-        cardId: removed?.id ?? "",
-        newOrder: destination.index,
-      });
       setColumns({
         ...columns,
         [source.droppableId]: {
@@ -90,7 +112,7 @@ export default function CreateCardForm({ initialLists }: ListCardProps) {
   return (
     <DragDropContext onDragEnd={(result) => onDragEnd({ result, columns, setColumns })}>
       {Object.entries(columns).map(([columnId, column], _) => (
-        <Card key={columnId} radius="md" w={272} bg="dark" id="listCard" ref={cardRef}>
+        <Card key={columnId} radius="md" w={272} bg="dark" id="listCard">
           <CardSection px={12} pb={12}>
             <Flex justify="space-between" align="center" my={8} gap={8}>
               <Input
@@ -106,7 +128,7 @@ export default function CreateCardForm({ initialLists }: ListCardProps) {
                 onChange={(e) => form.setFieldValue('listTitle', e.currentTarget.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    editList.mutate({ id: column.id!, title: form.values.listTitle });
+                    editTitle.mutate({ id: column.id!, title: form.values.listTitle });
                     setIsInputFocused(null);
                   }
                 }}
@@ -134,6 +156,7 @@ export default function CreateCardForm({ initialLists }: ListCardProps) {
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
                             ref={provided.innerRef}
+                            style={getStyle(provided.draggableProps.style ?? {}, snapshot)}
                           >
                             <Text className={classes.symbol}>{card.title}</Text>
                           </div>

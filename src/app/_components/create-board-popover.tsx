@@ -32,7 +32,7 @@ export default function CreateBoardPopover({ children }: CreateBoardPopoverProps
 
       return { prevData };
     },
-    onError: (err, newList, context) => {
+    onError: (_, __, context) => {
       utils.board.all.setData({ limit: 10 }, context?.prevData);
     },
     onSettled: () => {

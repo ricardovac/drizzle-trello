@@ -45,14 +45,39 @@ interface CreateListFormProps {
 
 function ListForm({ boardId, setIsListInputOpen, isListInputOpen = false }: CreateListFormProps) {
   const ref = useRef<HTMLInputElement>(null);
-
-  const apiUtils = api.useUtils();
+  const utils = api.useUtils();
   const router = useRouter();
+
   const { mutate } = api.list.create.useMutation({
-    onSuccess: async () => {
+    onMutate: async (newList) => {
+      await utils.list.all.cancel({ boardId });
+
+      const previousList = utils.list.all.getData({ boardId });
+
+      const newListWith = {
+        ...newList,
+        id: '',
+        createdById: '',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        cards: [],
+      };
+
+      utils.list.all.setData(
+        { boardId },
+        previousList ? [...previousList, newListWith] : [newListWith],
+      );
+
+      return { previousList };
+    },
+    onError: (_, __, context) => {
+      utils.list.all.setData({ boardId }, context?.previousList);
+    },
+    onSettled: async () => {
+      await utils.list.all.invalidate({ boardId });
+
       form.reset();
       router.refresh();
-      await apiUtils.list.all.invalidate({ boardId });
       setIsListInputOpen(false);
     },
   });
@@ -76,6 +101,7 @@ function ListForm({ boardId, setIsListInputOpen, isListInputOpen = false }: Crea
         <Input
           placeholder="Insira o título da lista..."
           {...form.getInputProps('title')}
+          name="title"
           ref={ref}
         />{' '}
         <Flex align="center" justify="space-between">

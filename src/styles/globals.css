@@ -2,12 +2,24 @@
   text-decoration: none;
 }
 
+:root {
+  color-scheme: var(--mantine-color-scheme);
+}
+
 html,
 body {
   height: 100%;
 }
 
 body {
+  font-family: var(--mantine-font-family);
+  font-size: var(--mantine-font-size-md);
+  line-height: var(--mantine-line-height);
+  background-color: var(--mantine-color-body);
+  color: var(--mantine-color-text);
+
+  -webkit-font-smoothing: var(--mantine-webkit-font-smoothing);
+  -moz-osx-font-smoothing: var(--mantine-moz-font-smoothing);
   margin: 0;
 }
 

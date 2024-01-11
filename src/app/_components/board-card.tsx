@@ -12,7 +12,10 @@ export default function BoardCard({ board, loading = false }: BoardCardProps) {
   const isHexColor = (hex: string): boolean => hex.startsWith('#') && hex.length === 7;
 
   return (
-    <Link href={`/b/${board?.id}`} style={loading ? { pointerEvents: 'none' } : {}}>
+    <Link
+      href={`/b/${board?.id}`}
+      style={loading ? { pointerEvents: 'none' } : {}}
+    >
       <Skeleton visible={loading}>
         <Card pos="relative" miw={200} mih={120}>
           <Card.Section>

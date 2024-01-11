@@ -3,6 +3,7 @@ import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { boards, cards, lists } from '~/server/db/schema';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
+import { TRPCClientError } from '@trpc/client';
 
 export const listRouter = createTRPCRouter({
   create: protectedProcedure
@@ -23,71 +24,73 @@ export const listRouter = createTRPCRouter({
         });
       }
 
-      return await db
-        .insert(lists)
-        .values({ title: input.title, boardId: input.boardId, createdById: session.user.id })
-        .execute();
+      try {
+        await db
+          .insert(lists)
+          .values({ title: input.title, boardId: input.boardId, createdById: session.user.id })
+          .execute();
+      } catch (error) {
+        throw new TRPCClientError('Error creating list');
+      }
     }),
   all: protectedProcedure.input(z.object({ boardId: z.string() })).query(async ({ ctx, input }) => {
     const { db } = ctx;
 
     const listsQuery = await db.query.lists.findMany({
+      orderBy: (lists, {asc}) => [asc(lists.createdAt)],
       where(fields) {
         return eq(fields.boardId, input.boardId);
       },
-      with: { cards: true },
+      with: {
+        cards: {
+          orderBy(_, operators) {
+            return [operators.asc(cards.position)];
+          },
+        },
+      },
     });
 
     return listsQuery;
   }),
-  edit: protectedProcedure
+  editTitle: protectedProcedure
     .input(
       z.object({
         id: z.string(),
-        title: z.string().optional(),
+        title: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const { db } = ctx;
+      const { id, title } = input;
 
-      if (input.title === '') {
-        throw new TRPCError({
-          code: 'BAD_REQUEST',
-          message: 'No title provided',
-        });
+      if (title === '') throw new TRPCClientError('Title cannot be empty');
+
+      try {
+        await db.update(lists).set({ title }).where(eq(lists.id, id)).execute();
+      } catch (error) {
+        throw new TRPCClientError('Error updating list');
       }
-
-      return await db
-        .update(lists)
-        .set({ title: input.title })
-        .where(eq(lists.id, input.id))
-        .execute();
     }),
-  editCardList: protectedProcedure
+  moveCard: protectedProcedure
     .input(
       z.object({
         cardId: z.string(),
-        newListId: z.string().optional(),
-        newOrder: z.number().optional(),
+        newListId: z.string(),
+        newCardPosition: z.number().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const { db } = ctx;
+      const { cardId, newListId, newCardPosition } = input;
 
-      if (!!input.newOrder) {
-        return await db
+      try {
+        await db
           .update(cards)
-          .set({ order: input.newOrder })
-          .where(eq(cards.id, input.cardId))
+          .set({ listId: newListId, position: newCardPosition })
+          .where(eq(cards.id, cardId))
           .execute();
-      }
-
-      if (!!input.newListId) {
-        return await db
-          .update(cards)
-          .set({ listId: input.newListId })
-          .where(eq(cards.id, input.cardId))
-          .execute();
+      } catch (error) {
+        throw new TRPCClientError('Error updating card list');
       }
     }),
 });

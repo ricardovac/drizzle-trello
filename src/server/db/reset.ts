@@ -24,6 +24,7 @@ async function reset() {
   });
 
   console.log('Database emptied');
+  return;
 }
 
 reset().catch((e) => console.error(e));
