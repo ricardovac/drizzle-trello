@@ -22,8 +22,9 @@ export default function CreateListForm({ boardId }: CreateListPopoverProps) {
         <Button
           leftSection={<Plus />}
           ref={cardRef}
-          variant="filled"
+          variant="white"
           onClick={() => setIsListInputOpen((o) => !o)}
+          opacity={0.6}
         >
           Adicionar uma lista
         </Button>

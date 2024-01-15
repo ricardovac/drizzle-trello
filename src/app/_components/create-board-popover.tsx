@@ -1,5 +1,15 @@
 'use client';
-import { Button, ColorPicker, Flex, Paper, Popover, Text, TextInput } from '@mantine/core';
+import {
+  Button,
+  Center,
+  ColorPicker,
+  Flex,
+  Paper,
+  Popover,
+  Stack,
+  Text,
+  TextInput,
+} from '@mantine/core';
 import { useForm } from '@mantine/form';
 import Image from 'next/image';
 import React from 'react';
@@ -51,11 +61,14 @@ export default function CreateBoardPopover({ children }: CreateBoardPopoverProps
     },
   });
 
+  const isSubmitButtonDisabled = !form.values.title;
+
   return (
     <Popover>
       <Popover.Target>{children}</Popover.Target>
       <Popover.Dropdown>
         <Flex justify="center" direction="column" gap={5}>
+          <Center>Criar quadro</Center>
           <BoardPreview background={form.values.background} />
 
           <Text fw={500} size="sm">
@@ -66,27 +79,29 @@ export default function CreateBoardPopover({ children }: CreateBoardPopoverProps
               mutate({ title: values.title, background: values.background }),
             )}
           >
-            <Flex gap={12}>
-              {defaultImages.map((image) => (
-                <Image
-                  key={image}
-                  onClick={() => form.setFieldValue('background', image)}
-                  src={image}
-                  width={50}
-                  height={30}
-                  alt="Board Image"
-                  quality={10}
-                  priority
-                  style={{ cursor: 'pointer' }}
-                />
-              ))}
-            </Flex>
-            <ColorPicker
-              format="hex"
-              withPicker={false}
-              swatches={defaultColors}
-              {...form.getInputProps('background')}
-            />
+            <Stack>
+              <Flex gap={12}>
+                {defaultImages.map((image) => (
+                  <Image
+                    key={image}
+                    onClick={() => form.setFieldValue('background', image)}
+                    src={image}
+                    width={50}
+                    height={30}
+                    alt="Board Image"
+                    quality={10}
+                    priority
+                    style={{ cursor: 'pointer' }}
+                  />
+                ))}
+              </Flex>
+              <ColorPicker
+                format="hex"
+                withPicker={false}
+                swatches={defaultColors}
+                {...form.getInputProps('background')}
+              />
+            </Stack>
             {form.errors.background && (
               <Text c="red" size="sm">
                 {form.errors.background}
@@ -99,7 +114,14 @@ export default function CreateBoardPopover({ children }: CreateBoardPopoverProps
               placeholder="Insira o título do quadro"
               {...form.getInputProps('title')}
             />
-            <Button fullWidth loading={isLoading} loaderProps={{ type: 'bars' }} type="submit">
+            <Button
+              fullWidth
+              mt={8}
+              loading={isLoading}
+              disabled={isSubmitButtonDisabled}
+              loaderProps={{ type: 'bars' }}
+              type="submit"
+            >
               Criar
             </Button>
           </form>

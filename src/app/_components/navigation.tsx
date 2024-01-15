@@ -7,6 +7,7 @@ import {
   Button,
   Center,
   Divider,
+  em,
   Flex,
   Group,
   Menu,
@@ -20,7 +21,7 @@ import {
   UnstyledButton,
   useMantineTheme,
 } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
+import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import {
   Book,
   BookTemplate,
@@ -29,6 +30,7 @@ import {
   Coins,
   Frame,
   PersonStanding,
+  Plus,
   Search,
 } from 'lucide-react';
 import { type Session } from 'next-auth';
@@ -102,7 +104,7 @@ export function Navigation({ session }: NavigationProps) {
                 <a href="#" className={classes.link}>
                   <Center inline>
                     <Box component="span" mr={5}>
-                      Quadros
+                      Áreas de trabalho
                     </Box>
                     <ChevronDown
                       style={{ width: rem(16), height: rem(16) }}
@@ -172,10 +174,18 @@ function CreateMenuPopover({
   menuOpened: boolean;
   setMenuOpened: (opened: boolean) => void;
 }) {
+  const isMobile = useMediaQuery(`(max-width: ${em(1200)})`);
+
   return (
     <Menu shadow="md" width={400} opened={menuOpened} onChange={setMenuOpened}>
       <Menu.Target>
-        <Button>Criar</Button>
+        {isMobile ? (
+          <Button>
+            <Plus />
+          </Button>
+        ) : (
+          <Button>Criar</Button>
+        )}
       </Menu.Target>
 
       <Menu.Dropdown>

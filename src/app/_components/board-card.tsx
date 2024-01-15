@@ -1,4 +1,5 @@
-import { Box, Paper, Skeleton, Text } from '@mantine/core';
+import { Box, Overlay, Paper, Skeleton, Text } from '@mantine/core';
+import { useHover } from '@mantine/hooks';
 import Link from 'next/link';
 import { isHexColor } from '~/utils/isHexColor';
 import { type InfiniteBoard } from '~/utils/types';
@@ -9,10 +10,13 @@ interface BoardCardProps {
 }
 
 export default function BoardCard({ board, loading = false }: BoardCardProps) {
+  const { hovered, ref } = useHover<HTMLAnchorElement>();
+
   return (
     <Box>
       <Skeleton visible={loading}>
         <Paper
+          ref={ref}
           w={200}
           h={100}
           p="sm"
@@ -27,6 +31,7 @@ export default function BoardCard({ board, loading = false }: BoardCardProps) {
           }}
         >
           <Text c="white">{board?.title}</Text>
+          {hovered && <Overlay color="#000" backgroundOpacity={0.4} />}
         </Paper>
       </Skeleton>
     </Box>

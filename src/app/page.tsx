@@ -23,17 +23,18 @@ export default function Home() {
       <Flex gap="md">
         <NavbarLinksGroup />
         <Flex direction="column" gap={4}>
-          <Text>Seus quadros</Text>
+          <strong>SUAS ÁREAS DE TRABALHO</strong>
+
           <Flex maw={900} wrap="wrap" align="center" gap={8}>
+            {(isLoading ? loadingArray : dataToShow)?.map((board, idx) => (
+              <BoardCard key={isLoading ? idx : board?.id} board={board} loading={isLoading} />
+            ))}
+            {isFetchingNextPage && <BoardCard loading />}
             <CreateBoardPopover>
               <Button variant="default" miw={200} mih={100}>
                 <Text c="white">Criar novo quadro</Text>
               </Button>
             </CreateBoardPopover>
-            {(isLoading ? loadingArray : dataToShow)?.map((board, idx) => (
-              <BoardCard key={isLoading ? idx : board?.id} board={board} loading={isLoading} />
-            ))}
-            {isFetchingNextPage && <BoardCard loading />}
           </Flex>
         </Flex>
       </Flex>

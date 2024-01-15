@@ -58,8 +58,8 @@ const mockdata = {
   icon: Calendar,
   links: [
     { label: 'Quadros', link: '/' },
-    { label: 'Importantes', link: '/important' },
-    { label: 'Pomodoro', link: '/pomodoro' },
+    { label: 'Templates', link: '/templates' },
+    { label: 'Ínicio', link: '/inicio' },
   ],
   initiallyOpened: true,
 };

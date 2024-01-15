@@ -1,14 +1,14 @@
-import {z} from 'zod';
+import { z } from 'zod';
 
-import {TRPCError} from '@trpc/server';
-import {desc, eq, gte, sql} from 'drizzle-orm';
-import {createTRPCRouter, protectedProcedure, publicProcedure} from '~/server/api/trpc';
-import {boards} from '~/server/db/schema';
+import { TRPCError } from '@trpc/server';
+import { desc, eq, gte, sql } from 'drizzle-orm';
+import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
+import { boards } from '~/server/db/schema';
 
 export const boardRouter = createTRPCRouter({
-  get: protectedProcedure.input(z.object({id: z.string()})).query(async ({ctx, input}) => {
+  get: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
     const boardsQuery = await ctx.db
-      .select({title: boards.title, background: boards.background})
+      .select({ title: boards.title, background: boards.background })
       .from(boards)
       .where(eq(boards.id, input.id))
       .limit(1);
@@ -35,8 +35,8 @@ export const boardRouter = createTRPCRouter({
         cursor: z.string().nullish(),
       }),
     )
-    .query(async ({ctx, input}) => {
-      const {db, session} = ctx;
+    .query(async ({ ctx, input }) => {
+      const { db, session } = ctx;
 
       const limit = input.limit ?? 20;
       const countRows = await db
@@ -85,17 +85,12 @@ export const boardRouter = createTRPCRouter({
       };
     }),
   create: protectedProcedure
-    .input(z.object({title: z.string().min(2), background: z.string()}))
-    .mutation(async ({ctx, input}) => {
+    .input(z.object({ title: z.string().min(2), background: z.string() }))
+    .mutation(async ({ ctx, input }) => {
       return await ctx.db.insert(boards).values({
         title: input.title,
         background: input.background,
         createdById: ctx.session.user.id,
       });
     }),
-  latest: publicProcedure.query(({ctx}) => {
-    return ctx.db.query.boards.findFirst({
-      orderBy: (boards, {desc}) => [desc(boards.createdAt)],
-    });
-  }),
 });

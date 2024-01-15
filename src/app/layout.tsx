@@ -27,12 +27,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const session = await getServerAuthSession();
 
   return (
-    <html lang="en">
-      <body className={`font-sans ${inter.variable}`}>
+    <html lang="en" className={inter.className}>
+      <head>
+        <ColorSchemeScript defaultColorScheme="auto" />
+      </head>
+      <body>
         <ClientSessionProvider>
           <TRPCReactProvider headers={headers()}>
             <MantineProvider theme={theme}>
-              <ColorSchemeScript />
               <Navigation session={session} />
               <div style={{ paddingTop: '3rem' }}>{children}</div>
               <ReactQueryDevtools initialIsOpen={false} />
