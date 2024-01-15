@@ -1,26 +1,20 @@
 'use client';
-import { Button, Center, Container, Flex, Text } from '@mantine/core';
-import dynamic from 'next/dynamic';
+import { Button, Container, Flex, Text } from '@mantine/core';
 import { useMemo } from 'react';
 import { api } from '~/trpc/react';
 import BoardCard from './_components/board-card';
+import CreateBoardPopover from './_components/create-board-popover';
 import { NavbarLinksGroup } from './_components/navbar';
-
-const CreateBoardPopover = dynamic(() => import('./_components/create-board-popover'), {
-  ssr: false,
-});
 
 export default function Home() {
   const { data, isLoading, isFetchingNextPage } = api.board.all.useInfiniteQuery(
     { limit: 10 },
     {
-      refetchOnWindowFocus: false,
       getNextPageParam: (lastPage) => lastPage.nextCursor,
+      refetchOnWindowFocus: false,
     },
   );
   const dataToShow = useMemo(() => data?.pages.flatMap((page) => page.items), [data]);
-
-  if (dataToShow?.length === 0) return <></>;
 
   const loadingArray = Array.from<undefined>({ length: 2 });
 
@@ -32,10 +26,8 @@ export default function Home() {
           <Text>Seus quadros</Text>
           <Flex maw={900} wrap="wrap" align="center" gap={8}>
             <CreateBoardPopover>
-              <Button variant="default" miw={200} mih={120}>
-                <Center>
-                  <Text c="white">Criar novo quadro</Text>
-                </Center>
+              <Button variant="default" miw={200} mih={100}>
+                <Text c="white">Criar novo quadro</Text>
               </Button>
             </CreateBoardPopover>
             {(isLoading ? loadingArray : dataToShow)?.map((board, idx) => (

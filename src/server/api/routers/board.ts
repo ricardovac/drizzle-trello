@@ -1,14 +1,14 @@
-import { z } from 'zod';
+import {z} from 'zod';
 
-import { TRPCError } from '@trpc/server';
-import { desc, eq, gte, sql } from 'drizzle-orm';
-import { createTRPCRouter, protectedProcedure, publicProcedure } from '~/server/api/trpc';
-import { boards } from '~/server/db/schema';
+import {TRPCError} from '@trpc/server';
+import {desc, eq, gte, sql} from 'drizzle-orm';
+import {createTRPCRouter, protectedProcedure, publicProcedure} from '~/server/api/trpc';
+import {boards} from '~/server/db/schema';
 
 export const boardRouter = createTRPCRouter({
-  get: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+  get: protectedProcedure.input(z.object({id: z.string()})).query(async ({ctx, input}) => {
     const boardsQuery = await ctx.db
-      .select({ title: boards.title, background: boards.background })
+      .select({title: boards.title, background: boards.background})
       .from(boards)
       .where(eq(boards.id, input.id))
       .limit(1);
@@ -32,11 +32,11 @@ export const boardRouter = createTRPCRouter({
     .input(
       z.object({
         limit: z.number().min(1).max(100),
-        cursor: z.date().nullish(),
+        cursor: z.string().nullish(),
       }),
     )
-    .query(async ({ ctx, input }) => {
-      const { db, session } = ctx;
+    .query(async ({ctx, input}) => {
+      const {db, session} = ctx;
 
       const limit = input.limit ?? 20;
       const countRows = await db
@@ -61,14 +61,14 @@ export const boardRouter = createTRPCRouter({
 
       const cursor = input.cursor;
       if (cursor) {
-        boardsQuery = boardsQuery.where(gte(boards.createdAt, cursor));
+        boardsQuery = boardsQuery.where(gte(boards.id, cursor));
       }
       const items = await boardsQuery.execute();
 
       let nextCursor: typeof input.cursor | undefined = undefined;
       if (items.length > limit) {
         const nextItem = items.pop()!;
-        nextCursor = nextItem.createdAt;
+        nextCursor = nextItem.id;
       }
 
       const returnableItems = items.map((item) => ({
@@ -85,19 +85,17 @@ export const boardRouter = createTRPCRouter({
       };
     }),
   create: protectedProcedure
-    .input(z.object({ title: z.string().min(2), background: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const newBoard = await ctx.db.insert(boards).values({
+    .input(z.object({title: z.string().min(2), background: z.string()}))
+    .mutation(async ({ctx, input}) => {
+      return await ctx.db.insert(boards).values({
         title: input.title,
         background: input.background,
         createdById: ctx.session.user.id,
       });
-
-      return newBoard;
     }),
-  latest: publicProcedure.query(({ ctx }) => {
+  latest: publicProcedure.query(({ctx}) => {
     return ctx.db.query.boards.findFirst({
-      orderBy: (boards, { desc }) => [desc(boards.createdAt)],
+      orderBy: (boards, {desc}) => [desc(boards.createdAt)],
     });
   }),
 });

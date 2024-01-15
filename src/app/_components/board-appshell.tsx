@@ -11,13 +11,20 @@ interface BoardAppShellProps {
 export default function BoardAppShell({ children, board }: BoardAppShellProps) {
   return (
     <AppShell header={{ height: 50 }} navbar={{ width: 300, breakpoint: 'sm' }} padding="md">
-      <AppShellNavbar p="md">Área de trabalho de {board?.user.name}</AppShellNavbar>
+      <AppShellNavbar opacity={0.9} p="md">
+        Área de trabalho de {board?.user.name}
+      </AppShellNavbar>
       <ScrollContainer
         className="scroll-container"
         hideScrollbars={false}
         horizontal
         ignoreElements="#listCard"
-        style={{ backgroundColor: board?.background ?? '' }}
+        style={{
+          backgroundColor: board?.background,
+          backgroundImage: board?.background.startsWith('https://images.unsplash.com')
+            ? `url(${board?.background})`
+            : undefined,
+        }}
       >
         <AppShellMain pt={20}>
           <Flex gap={8}>{children}</Flex>

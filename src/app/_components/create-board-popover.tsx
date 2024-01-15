@@ -2,41 +2,52 @@
 import { Button, ColorPicker, Flex, Paper, Popover, Text, TextInput } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import Image from 'next/image';
-import { useState } from 'react';
+import React from 'react';
 import { api } from '~/trpc/react';
 
 interface CreateBoardPopoverProps {
   children: React.ReactNode;
 }
 
+const defaultImages = [
+  'https://images.unsplash.com/photo-1584009577996-0227b2358356?q=40&w=244&auto=format',
+  'https://images.unsplash.com/photo-1495805442109-bf1cf975750b?q=40&w=244&auto=format',
+  'https://images.unsplash.com/photo-1628521495179-ca4448a584d8?q=40&w=244&auto=format',
+  'https://images.unsplash.com/photo-1528141603775-81fd11f61682?q=40&w=244&auto=format',
+];
+
+const defaultColors = [
+  '#25262b',
+  '#868e96',
+  '#fa5252',
+  '#e64980',
+  '#be4bdb',
+  '#7950f2',
+  '#4c6ef5',
+  '#228be6',
+  '#12b886',
+  '#40c057',
+  '#82c91e',
+  '#fab005',
+  '#fd7e14',
+];
+
 export default function CreateBoardPopover({ children }: CreateBoardPopoverProps) {
-  const [background, onChange] = useState('');
   const form = useForm({
     initialValues: {
       title: '',
+      background: '',
     },
     validate: {
-      title: (value) => (value ? undefined : 'Insira um título'),
+      title: (value) => value.length < 2 && 'O titulo deve ter pelo menos 2 caracteres',
+      background: (value) => !value && 'Selecione um fundo',
     },
   });
   const utils = api.useUtils();
   const { mutate, isLoading } = api.board.create.useMutation({
-    onMutate: async () => {
-      await utils.board.all.cancel({ limit: 10 });
-
-      const prevData = utils.board.all.getData({ limit: 10 });
-
-      utils.board.all.setData({ limit: 10 }, (prev) => ({
-        ...prev!,
-      }));
-
-      return { prevData };
-    },
-    onError: (_, __, context) => {
-      utils.board.all.setData({ limit: 10 }, context?.prevData);
-    },
-    onSettled: () => {
-      void utils.board.all.invalidate({ limit: 10 });
+    onSuccess: async () => {
+      form.reset();
+      await utils.board.all.invalidate({ limit: 10 });
     },
   });
 
@@ -44,52 +55,50 @@ export default function CreateBoardPopover({ children }: CreateBoardPopoverProps
     <Popover>
       <Popover.Target>{children}</Popover.Target>
       <Popover.Dropdown>
-        <Flex justify="center" align="center" direction="column" gap={5}>
-          <Text fw={500}>Criar quadro</Text>
-          <Paper p="md" style={{ backgroundColor: background }} shadow="xs">
-            <Image src="/assets/board.svg" alt="Board SVG" width={160} height={90} />
-          </Paper>
+        <Flex justify="center" direction="column" gap={5}>
+          <BoardPreview background={form.values.background} />
 
-          <Text fw={500} w={200} size="sm">
+          <Text fw={500} size="sm">
             Tela de fundo
           </Text>
-          <Flex w={200} wrap="wrap" justify="center" gap={8}>
+          <form
+            onSubmit={form.onSubmit((values) =>
+              mutate({ title: values.title, background: values.background }),
+            )}
+          >
+            <Flex gap={12}>
+              {defaultImages.map((image) => (
+                <Image
+                  key={image}
+                  onClick={() => form.setFieldValue('background', image)}
+                  src={image}
+                  width={50}
+                  height={30}
+                  alt="Board Image"
+                  quality={10}
+                  priority
+                  style={{ cursor: 'pointer' }}
+                />
+              ))}
+            </Flex>
             <ColorPicker
               format="hex"
-              value={background}
-              onChange={onChange}
               withPicker={false}
-              swatches={[
-                '#25262b',
-                '#868e96',
-                '#fa5252',
-                '#e64980',
-                '#be4bdb',
-                '#7950f2',
-                '#4c6ef5',
-                '#228be6',
-                '#12b886',
-                '#40c057',
-                '#82c91e',
-                '#fab005',
-                '#fd7e14',
-              ]}
+              swatches={defaultColors}
+              {...form.getInputProps('background')}
             />
-          </Flex>
-          <form onSubmit={form.onSubmit((values) => mutate({ title: values.title, background }))}>
+            {form.errors.background && (
+              <Text c="red" size="sm">
+                {form.errors.background}
+              </Text>
+            )}
             <TextInput
               label="Título do quadro"
               description="Dê um nome ao seu quadro"
-              required
               variant="default"
               placeholder="Insira o título do quadro"
               {...form.getInputProps('title')}
             />
-            {form.errors.title && (
-              <Text c="red" size="xs">
-                {form.errors.title}
-              </Text>
-            )}
             <Button fullWidth loading={isLoading} loaderProps={{ type: 'bars' }} type="submit">
               Criar
             </Button>
@@ -97,5 +106,33 @@ export default function CreateBoardPopover({ children }: CreateBoardPopoverProps
         </Flex>
       </Popover.Dropdown>
     </Popover>
+  );
+}
+
+interface BoardPreviewProps {
+  background: string;
+}
+
+function BoardPreview({ background }: BoardPreviewProps) {
+  if (background.match(/^#([0-9a-f]{3}){1,2}$/)) {
+    return (
+      <Paper p="md" style={{ backgroundColor: background }}>
+        <Image src="/assets/board.svg" alt="Board SVG" width={160} height={90} />
+      </Paper>
+    );
+  }
+
+  if (background.startsWith('https://images.unsplash.com')) {
+    return (
+      <Paper p="md" style={{ backgroundImage: `url(${background})` }}>
+        <Image src="/assets/board.svg" alt="Board SVG" width={160} height={90} />
+      </Paper>
+    );
+  }
+
+  return (
+    <Paper p="md" style={{ backgroundColor: '--mantine-color-gray-0' }}>
+      <Image src="/assets/board.svg" alt="Board SVG" width={160} height={90} />
+    </Paper>
   );
 }

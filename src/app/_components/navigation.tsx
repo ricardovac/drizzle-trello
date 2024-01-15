@@ -9,23 +9,34 @@ import {
   Divider,
   Flex,
   Group,
+  Menu,
   Popover,
   PopoverDropdown,
   PopoverTarget,
+  rem,
   SimpleGrid,
   Text,
   ThemeIcon,
   UnstyledButton,
-  rem,
   useMantineTheme,
 } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-import { Book, ChevronDown, Code, Coins, Search } from 'lucide-react';
+import {
+  Book,
+  BookTemplate,
+  ChevronDown,
+  Code,
+  Coins,
+  Frame,
+  PersonStanding,
+  Search,
+} from 'lucide-react';
 import { type Session } from 'next-auth';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import CreateBoardPopover from '~/app/_components/create-board-popover';
 import classes from '~/styles/header-search.module.css';
-import CreateBoardPopover from './create-board-popover';
 import { UserMenu } from './user-menu';
 
 const mockdata = [
@@ -52,6 +63,7 @@ interface NavigationProps {
 
 export function Navigation({ session }: NavigationProps) {
   const [opened, { toggle }] = useDisclosure(false);
+  const [menuOpened, setMenuOpened] = useState(false);
   const theme = useMantineTheme();
   const router = useRouter();
 
@@ -132,9 +144,7 @@ export function Navigation({ session }: NavigationProps) {
             <Link href="#" className={classes.link}>
               Templates
             </Link>
-            <CreateBoardPopover>
-              <Button h={30}>Criar</Button>
-            </CreateBoardPopover>
+            <CreateMenuPopover menuOpened={menuOpened} setMenuOpened={setMenuOpened} />
           </Group>
         </Flex>
 
@@ -152,5 +162,44 @@ export function Navigation({ session }: NavigationProps) {
         </Group>
       </Flex>
     </header>
+  );
+}
+
+function CreateMenuPopover({
+  menuOpened,
+  setMenuOpened,
+}: {
+  menuOpened: boolean;
+  setMenuOpened: (opened: boolean) => void;
+}) {
+  return (
+    <Menu shadow="md" width={400} opened={menuOpened} onChange={setMenuOpened}>
+      <Menu.Target>
+        <Button>Criar</Button>
+      </Menu.Target>
+
+      <Menu.Dropdown>
+        <CreateBoardPopover>
+          <Menu.Item leftSection={<Frame style={{ width: rem(24), height: rem(24) }} />}>
+            Criar Quadro
+            <Text size="sm">
+              Um quadro é feito de cartões ordenados em listas. Use-o para gerenciar projetos,
+              controlar informações e organizar qualquer coisa.
+            </Text>
+          </Menu.Item>
+        </CreateBoardPopover>
+        <Menu.Item leftSection={<BookTemplate style={{ width: rem(24), height: rem(24) }} />}>
+          Começar com um template
+          <Text size="sm">Comece mais rápido com um template de quadro.</Text>
+        </Menu.Item>
+        <Menu.Item leftSection={<PersonStanding style={{ width: rem(24), height: rem(24) }} />}>
+          Criar Área de trabalho
+          <Text size="sm">
+            Uma Área de trabalho é um grupo de quadros e pessoas. Use-a para organizar sua empresa,
+            atividades paralelas, família ou amigos.
+          </Text>
+        </Menu.Item>
+      </Menu.Dropdown>
+    </Menu>
   );
 }

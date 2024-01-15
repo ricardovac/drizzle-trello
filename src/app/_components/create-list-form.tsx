@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
 'use client';
-import { Button, Card, CardSection, Flex, Input } from '@mantine/core';
+import { Button, Card, Flex, Input } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useClickOutside } from '@mantine/hooks';
 import { Plus, X } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { useEffect, useRef, useState } from 'react';
 import { api } from '~/trpc/react';
 
@@ -16,24 +17,21 @@ export default function CreateListForm({ boardId }: CreateListPopoverProps) {
   const cardRef = useClickOutside(() => setIsListInputOpen(false));
 
   return (
-    <Card bg="dark" ref={cardRef}>
-      <CardSection>
-        {!isListInputOpen && (
-          <Button
-            leftSection={<Plus />}
-            variant="default"
-            bg="dark"
-            opacity={0.8}
-            onClick={() => setIsListInputOpen((o) => !o)}
-          >
-            Adicionar uma lista
-          </Button>
-        )}
-      </CardSection>
+    <>
+      {!isListInputOpen && (
+        <Button
+          leftSection={<Plus />}
+          ref={cardRef}
+          variant="filled"
+          onClick={() => setIsListInputOpen((o) => !o)}
+        >
+          Adicionar uma lista
+        </Button>
+      )}
       {isListInputOpen && (
         <ListForm boardId={boardId} setIsListInputOpen={setIsListInputOpen} isListInputOpen />
       )}
-    </Card>
+    </>
   );
 }
 
@@ -46,38 +44,34 @@ interface CreateListFormProps {
 function ListForm({ boardId, setIsListInputOpen, isListInputOpen = false }: CreateListFormProps) {
   const ref = useRef<HTMLInputElement>(null);
   const utils = api.useUtils();
-  const router = useRouter();
+  const { data: session } = useSession();
+  const userId = session?.user.id ?? '';
+  const cardRef = useClickOutside(() => setIsListInputOpen(false));
 
   const { mutate } = api.list.create.useMutation({
-    onMutate: async (newList) => {
+    onMutate: async (newData) => {
       await utils.list.all.cancel({ boardId });
 
       const previousList = utils.list.all.getData({ boardId });
 
-      const newListWith = {
-        ...newList,
+      const newList = {
+        ...newData,
         id: '',
-        createdById: '',
+        createdById: userId,
         createdAt: new Date(),
         updatedAt: new Date(),
         cards: [],
       };
 
-      utils.list.all.setData(
-        { boardId },
-        previousList ? [...previousList, newListWith] : [newListWith],
-      );
+      utils.list.all.setData({ boardId }, previousList ? [...previousList, newList] : [newList]);
 
       return { previousList };
     },
     onError: (_, __, context) => {
       utils.list.all.setData({ boardId }, context?.previousList);
     },
-    onSettled: async () => {
-      await utils.list.all.invalidate({ boardId });
-
+    onSettled: () => {
       form.reset();
-      router.refresh();
       setIsListInputOpen(false);
     },
   });
@@ -96,21 +90,23 @@ function ListForm({ boardId, setIsListInputOpen, isListInputOpen = false }: Crea
   }, [ref, isListInputOpen]);
 
   return (
-    <form onSubmit={form.onSubmit((values) => mutate({ title: values.title, boardId }))}>
-      <Flex gap={8} direction="column" mt={18}>
-        <Input
-          placeholder="Insira o título da lista..."
-          {...form.getInputProps('title')}
-          name="title"
-          ref={ref}
-        />{' '}
-        <Flex align="center" justify="space-between">
-          <Button type="submit">Adicionar lista</Button>
-          <Button variant="subtle" onClick={() => setIsListInputOpen(false)}>
-            <X />
-          </Button>
+    <Card bg="dark" ref={cardRef}>
+      <form onSubmit={form.onSubmit((values) => mutate({ title: values.title, boardId }))}>
+        <Flex gap={8} direction="column">
+          <Input
+            placeholder="Insira o título da lista..."
+            {...form.getInputProps('title')}
+            name="title"
+            ref={ref}
+          />
+          <Flex align="center" justify="space-between">
+            <Button type="submit">Adicionar lista</Button>
+            <Button variant="subtle" onClick={() => setIsListInputOpen(false)}>
+              <X />
+            </Button>
+          </Flex>
         </Flex>
-      </Flex>
-    </form>
+      </form>
+    </Card>
   );
 }

@@ -15,13 +15,13 @@ export const theme = createTheme({
       },
     }),
     HoverCard: {
-      defaultProps: { withinPortal: true },
+      defaultProps: { withinPortal: false },
     },
     Card: {
-      defaultProps: { withBorder: true },
+      defaultProps: { withBorder: false },
     },
     Paper: {
-      defaultProps: { withBorder: true },
+      defaultProps: { withBorder: false },
     },
     Modal: {
       defaultProps: { overlayBlur: 4 },

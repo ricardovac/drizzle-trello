@@ -1,9 +1,9 @@
+import { TRPCClientError } from '@trpc/client';
 import { TRPCError } from '@trpc/server';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { boards, cards, lists } from '~/server/db/schema';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
-import { TRPCClientError } from '@trpc/client';
 
 export const listRouter = createTRPCRouter({
   create: protectedProcedure
@@ -36,8 +36,8 @@ export const listRouter = createTRPCRouter({
   all: protectedProcedure.input(z.object({ boardId: z.string() })).query(async ({ ctx, input }) => {
     const { db } = ctx;
 
-    const listsQuery = await db.query.lists.findMany({
-      orderBy: (lists, {asc}) => [asc(lists.createdAt)],
+    return await db.query.lists.findMany({
+      orderBy: (lists, { asc }) => [asc(lists.createdAt)],
       where(fields) {
         return eq(fields.boardId, input.boardId);
       },
@@ -49,8 +49,6 @@ export const listRouter = createTRPCRouter({
         },
       },
     });
-
-    return listsQuery;
   }),
   editTitle: protectedProcedure
     .input(
@@ -71,26 +69,21 @@ export const listRouter = createTRPCRouter({
         throw new TRPCClientError('Error updating list');
       }
     }),
-  moveCard: protectedProcedure
+  updateCardPosition: protectedProcedure
     .input(
       z.object({
-        cardId: z.string(),
-        newListId: z.string(),
-        newCardPosition: z.number().optional(),
+        id: z.string(),
+        position: z.number(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const { db } = ctx;
-      const { cardId, newListId, newCardPosition } = input;
+      const { id, position } = input;
 
       try {
-        await db
-          .update(cards)
-          .set({ listId: newListId, position: newCardPosition })
-          .where(eq(cards.id, cardId))
-          .execute();
+        await db.update(cards).set({ position }).where(eq(cards.id, id)).execute();
       } catch (error) {
-        throw new TRPCClientError('Error updating card list');
+        throw new TRPCClientError('Error updating card position');
       }
     }),
 });

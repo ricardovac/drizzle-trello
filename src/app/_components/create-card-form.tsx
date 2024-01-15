@@ -41,18 +41,22 @@ export default function CreateCardForm({ initialLists, boardId }: ListCardProps)
   const [openedCardId, setOpenedCardId] = useState<string | null>(null);
   const [isInputFocused, setIsInputFocused] = useState<string | null>(null);
 
-  const editTitle = api.list.editTitle.useMutation();
-  const moveCard = api.list.moveCard.useMutation();
+  const { mutate: editTitle } = api.list.editTitle.useMutation();
 
   const { data: listData } = api.list.all.useQuery(
     { boardId },
     {
       initialData: initialLists,
-      // refetchInterval: 10_000,
+      // refetchInterval: 20_000,
+      refetchOnWindowFocus: false,
     },
   );
 
   const [columns, setColumns] = useState(listData);
+
+  useEffect(() => {
+    setColumns(listData);
+  }, [listData]);
 
   const form = useForm({
     initialValues: {
@@ -61,18 +65,45 @@ export default function CreateCardForm({ initialLists, boardId }: ListCardProps)
   });
 
   const onDragEnd = ({ result, columns, setColumns }: onDragEndProps) => {
-    if (!result.destination) return;
     const { source, destination } = result;
+    if (!destination) return;
+    if (destination.index === source.index && destination.droppableId === source.droppableId) {
+      return;
+    }
+
+    if (source.droppableId === destination.droppableId) {
+      const column = columns[Number(source.droppableId)];
+      if (!column) return;
+      const copiedItems = [...column?.cards];
+      const [removed] = copiedItems.splice(source.index, 1);
+      if (removed) {
+        copiedItems.splice(destination.index, 0, removed);
+      }
+
+      if (!removed?.id || !column?.id) return;
+
+      setColumns({
+        ...columns,
+        [source.droppableId]: {
+          ...column,
+          cards: copiedItems,
+        },
+      });
+    }
 
     if (source.droppableId !== destination.droppableId) {
-      const sourceColumn = columns[source.droppableId as unknown as number];
-      const destColumn = columns[destination.droppableId as unknown as number];
-      const sourceItems = [...(sourceColumn?.cards ?? [])];
-      const destItems = [...(destColumn?.cards ?? [])];
+      const sourceColumn = columns[Number(source.droppableId)];
+      const destColumn = columns[Number(destination.droppableId)];
+      if (!sourceColumn || !destColumn) return;
+
+      const sourceItems = [...sourceColumn?.cards];
+      const destItems = [...destColumn?.cards];
+
       const [removed] = sourceItems.splice(source.index, 1);
       if (removed?.id) {
         destItems.splice(destination.index, 0, removed);
       }
+
       setColumns({
         ...columns,
         [source.droppableId]: {
@@ -86,26 +117,6 @@ export default function CreateCardForm({ initialLists, boardId }: ListCardProps)
       });
 
       if (!removed?.id || !destColumn?.id) return;
-
-      moveCard.mutate({
-        cardId: removed.id,
-        newListId: destColumn.id,
-        newCardPosition: destination.index,
-      });
-    } else {
-      const column = columns[source.droppableId as unknown as number];
-      const copiedItems = [...(column?.cards ?? [])];
-      const [removed] = copiedItems.splice(source.index, 1);
-      if (removed) {
-        copiedItems.splice(destination.index, 0, removed);
-      }
-      setColumns({
-        ...columns,
-        [source.droppableId]: {
-          ...column,
-          cards: copiedItems,
-        },
-      });
     }
   };
 
@@ -128,7 +139,7 @@ export default function CreateCardForm({ initialLists, boardId }: ListCardProps)
                 onChange={(e) => form.setFieldValue('listTitle', e.currentTarget.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    editTitle.mutate({ id: column.id!, title: form.values.listTitle });
+                    editTitle({ id: column.id!, title: form.values.listTitle });
                     setIsInputFocused(null);
                   }
                 }}
@@ -195,9 +206,13 @@ interface CreateCardFormProps {
 }
 
 function CardForm({ list, setOpenedCardId, openedCardId = '' }: CreateCardFormProps) {
+  const utils = api.useUtils();
+
   const createCard = api.card.create.useMutation({
-    onSuccess: () => {
-      setOpenedCardId(null);
+    onSuccess: async () => {
+      const boardId = list.boardId;
+      form.reset();
+      await utils.list.all.invalidate({ boardId });
     },
   });
   const ref = useRef<HTMLTextAreaElement>(null);

@@ -38,7 +38,7 @@ export const cardRouter = createTRPCRouter({
           title: input.title,
           description: input.description,
           listId: input.listId,
-          position: lastPosition,
+          position: lastPosition + 1,
         })
         .execute();
     }),

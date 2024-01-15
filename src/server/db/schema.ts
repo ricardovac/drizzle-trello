@@ -3,6 +3,7 @@ import { relations, sql } from 'drizzle-orm';
 import {
   index,
   int,
+  mysqlEnum,
   mysqlTableCreator,
   primaryKey,
   text,
@@ -13,26 +14,48 @@ import { type AdapterAccount } from 'next-auth/adapters';
 
 export const mysqlTable = mysqlTableCreator((name) => `trello_clone_${name}`);
 
-export const boards = mysqlTable(
-  'boards',
+export const workspaces = mysqlTable(
+  'workspaces',
   {
     id: varchar('id', { length: 128 })
       .$defaultFn(() => createId())
       .primaryKey(),
-    title: varchar('title', { length: 256 }).notNull(),
-    createdById: varchar('createdById', { length: 255 }).notNull(),
-    createdAt: timestamp('created_at')
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: timestamp('updatedAt').onUpdateNow(),
-    background: varchar('color', { length: 128 }),
+    name: varchar('name', { length: 256 }).notNull(),
+    type: mysqlEnum('type', [
+      'small enterprise',
+      'education',
+      'other',
+      'marketing',
+      'RH',
+      'engineer/ti',
+    ]).notNull(),
+    description: text('description'),
   },
-  (boards) => ({
-    createdByIdIdx: index('createdById_idx').on(boards.createdById),
+  (workspaces) => ({
+    nameIdx: index('name_idx').on(workspaces.name),
   }),
 );
 
-export const boardsRelations = relations(boards, ({ many }) => ({
+export const workspaceRelations = relations(workspaces, ({ many }) => ({
+  boards: many(boards),
+}));
+
+export const boards = mysqlTable('boards', {
+  id: varchar('id', { length: 128 })
+    .$defaultFn(() => createId())
+    .primaryKey(),
+  title: varchar('title', { length: 256 }).notNull(),
+  createdById: varchar('createdById', { length: 128 }).notNull(),
+  createdAt: timestamp('created_at')
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp('updatedAt').onUpdateNow(),
+  background: varchar('color', { length: 128 }).notNull(),
+  workspaceId: varchar('workspace_id', { length: 128 }).references(() => workspaces.id),
+});
+
+export const boardsRelations = relations(boards, ({ one, many }) => ({
+  workspace: one(workspaces, { fields: [boards.workspaceId], references: [workspaces.id] }),
   lists: many(lists),
 }));
 
@@ -43,8 +66,10 @@ export const lists = mysqlTable(
       .$defaultFn(() => createId())
       .primaryKey(),
     title: varchar('title', { length: 256 }).notNull(),
-    boardId: varchar('boardId', { length: 256 }).notNull(),
-    createdById: varchar('createdById', { length: 255 }).notNull(),
+    boardId: varchar('boardId', { length: 128 })
+      .notNull()
+      .references(() => boards.id),
+    createdById: varchar('createdById', { length: 128 }).notNull(),
     createdAt: timestamp('created_at')
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -68,7 +93,9 @@ export const cards = mysqlTable(
       .primaryKey(),
     title: varchar('title', { length: 256 }).notNull(),
     description: text('description'),
-    listId: varchar('listId', { length: 256 }).notNull(),
+    listId: varchar('listId', { length: 256 })
+      .notNull()
+      .references(() => lists.id),
     position: int('position').notNull(),
   },
   (cards) => ({
