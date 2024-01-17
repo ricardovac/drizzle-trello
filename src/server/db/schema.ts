@@ -1,6 +1,7 @@
 import { createId } from '@paralleldrive/cuid2';
 import { relations, sql } from 'drizzle-orm';
 import {
+  boolean,
   index,
   int,
   mysqlEnum,
@@ -45,12 +46,13 @@ export const boards = mysqlTable('boards', {
     .$defaultFn(() => createId())
     .primaryKey(),
   title: varchar('title', { length: 256 }).notNull(),
-  createdById: varchar('createdById', { length: 128 }).notNull(),
+  background: varchar('color', { length: 128 }).notNull(),
+  public: boolean('public').default(false),
   createdAt: timestamp('created_at')
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
+  createdById: varchar('createdById', { length: 128 }).notNull(),
   updatedAt: timestamp('updatedAt').onUpdateNow(),
-  background: varchar('color', { length: 128 }).notNull(),
   workspaceId: varchar('workspace_id', { length: 128 }).references(() => workspaces.id),
 });
 
@@ -93,7 +95,7 @@ export const cards = mysqlTable(
       .primaryKey(),
     title: varchar('title', { length: 256 }).notNull(),
     description: text('description'),
-    listId: varchar('listId', { length: 256 })
+    listId: varchar('listId', { length: 128 })
       .notNull()
       .references(() => lists.id),
     position: int('position').notNull(),
@@ -116,6 +118,7 @@ export const users = mysqlTable('user', {
     fsp: 3,
   }).default(sql`CURRENT_TIMESTAMP(3)`),
   image: varchar('image', { length: 255 }),
+  slug: varchar('slug', { length: 255 }),
 });
 
 export const usersRelations = relations(users, ({ many }) => ({

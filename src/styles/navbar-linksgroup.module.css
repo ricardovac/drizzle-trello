@@ -13,7 +13,6 @@
 }
 
 .link {
-  font-weight: 500;
   display: block;
   text-decoration: none;
   padding: var(--mantine-spacing-xs) var(--mantine-spacing-md);

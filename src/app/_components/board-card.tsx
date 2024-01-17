@@ -17,7 +17,7 @@ export default function BoardCard({ board, loading = false }: BoardCardProps) {
       <Skeleton visible={loading}>
         <Paper
           ref={ref}
-          w={200}
+          w={190}
           h={100}
           p="sm"
           component={Link}

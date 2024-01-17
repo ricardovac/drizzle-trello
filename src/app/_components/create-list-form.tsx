@@ -74,6 +74,7 @@ function ListForm({ boardId, setIsListInputOpen, isListInputOpen = false }: Crea
     onSettled: () => {
       form.reset();
       setIsListInputOpen(false);
+      void utils.list.all.invalidate({ boardId });
     },
   });
 

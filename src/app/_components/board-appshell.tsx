@@ -24,6 +24,8 @@ export default function BoardAppShell({ children, board }: BoardAppShellProps) {
           backgroundImage: board?.background.startsWith('https://images.unsplash.com')
             ? `url(${board?.background})`
             : undefined,
+          backgroundRepeat: 'no-repeat',
+          backgroundSize: "cover",
         }}
       >
         <AppShellMain pt={20}>

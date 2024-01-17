@@ -3,11 +3,6 @@ import { createTheme, Input, type MantineTheme } from '@mantine/core';
 
 export const theme = createTheme({
   primaryColor: 'void',
-  fontFamily: 'Inter, sans-serif',
-  fontFamilyMonospace: 'Roboto, monospace',
-  headings: {
-    fontFamily: 'Inter, sans-serif',
-  },
   components: {
     InputWrapper: Input.Wrapper.extend({
       defaultProps: {

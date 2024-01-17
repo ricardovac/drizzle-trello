@@ -42,6 +42,7 @@ export default function CreateCardForm({ initialLists, boardId }: ListCardProps)
   const [isInputFocused, setIsInputFocused] = useState<string | null>(null);
 
   const { mutate: editTitle } = api.list.editTitle.useMutation();
+  const { mutate: move } = api.card.move.useMutation();
 
   const { data: listData } = api.list.all.useQuery(
     { boardId },
@@ -89,6 +90,12 @@ export default function CreateCardForm({ initialLists, boardId }: ListCardProps)
           cards: copiedItems,
         },
       });
+
+      move({
+        cardId: removed.id,
+        listId: column.id,
+        position: destination.index,
+      });
     }
 
     if (source.droppableId !== destination.droppableId) {
@@ -117,11 +124,25 @@ export default function CreateCardForm({ initialLists, boardId }: ListCardProps)
       });
 
       if (!removed?.id || !destColumn?.id) return;
+
+      move({
+        cardId: removed.id,
+        listId: destColumn.id,
+        position: destination.index,
+      });
     }
   };
 
   return (
-    <DragDropContext onDragEnd={(result) => onDragEnd({ result, columns, setColumns })}>
+    <DragDropContext
+      onDragEnd={(result) => onDragEnd({ result, columns, setColumns })}
+      autoScrollerOptions={{
+        startFromPercentage: 1,
+        disabled: false,
+        maxScrollAtPercentage: 0,
+        maxPixelScroll: 5,
+      }}
+    >
       {Object.entries(columns).map(([columnId, column], _) => (
         <Card key={columnId} radius="md" w={272} bg="dark" id="listCard">
           <CardSection px={12} pb={12}>
@@ -211,8 +232,9 @@ function CardForm({ list, setOpenedCardId, openedCardId = '' }: CreateCardFormPr
   const createCard = api.card.create.useMutation({
     onSuccess: async () => {
       const boardId = list.boardId;
-      form.reset();
       await utils.list.all.invalidate({ boardId });
+
+      form.reset();
     },
   });
   const ref = useRef<HTMLTextAreaElement>(null);

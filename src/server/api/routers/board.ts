@@ -33,10 +33,11 @@ export const boardRouter = createTRPCRouter({
       z.object({
         limit: z.number().min(1).max(100),
         cursor: z.string().nullish(),
+        userId: z.string(),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { db, session } = ctx;
+      const { db } = ctx;
 
       const limit = input.limit ?? 20;
       const countRows = await db
@@ -55,7 +56,7 @@ export const boardRouter = createTRPCRouter({
           createdAt: boards.createdAt,
         })
         .from(boards)
-        .where(eq(boards.createdById, session.user.id))
+        .where(eq(boards.createdById, input.userId))
         .orderBy(desc(boards.createdAt))
         .limit(input.limit);
 

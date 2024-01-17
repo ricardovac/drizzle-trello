@@ -1,4 +1,5 @@
 import { Flex } from '@mantine/core';
+import { Suspense } from 'react';
 import BoardAppShell from '~/app/_components/board-appshell';
 import CreateCardForm from '~/app/_components/create-card-form';
 import CreateListForm from '~/app/_components/create-list-form';
@@ -17,10 +18,12 @@ export default async function Page({ params }: BoardPageProps) {
 
   return (
     <BoardAppShell board={board}>
-      <Flex gap={8} align="flex-start">
-        <CreateCardForm initialLists={initialLists} boardId={id} />
-        <CreateListForm boardId={id} />
-      </Flex>
+      <Suspense fallback={<p>Loading...</p>}>
+        <Flex gap={8} align="flex-start">
+          <CreateCardForm initialLists={initialLists} boardId={id} />
+          <CreateListForm boardId={id} />
+        </Flex>
+      </Suspense>
     </BoardAppShell>
   );
 }

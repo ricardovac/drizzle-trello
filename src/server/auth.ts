@@ -1,15 +1,18 @@
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
 import { getServerSession, type DefaultSession, type NextAuthOptions } from 'next-auth';
-import GoogleProvider from 'next-auth/providers/google';
+import GoogleProvider, { type GoogleProfile } from 'next-auth/providers/google';
 
 import { env } from '~/env.mjs';
 import { db } from '~/server/db';
 import { mysqlTable } from './db/schema';
+import slugify from 'slugify';
+import { slugSetting } from '~/utils/constants';
 
 declare module 'next-auth' {
   interface Session extends DefaultSession {
     user: {
       id: string;
+      slug: string;
       // ...other properties
       // role: UserRole;
     } & DefaultSession['user'];
@@ -36,9 +39,26 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
+      profile(profile: GoogleProfile) {
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: profile.picture,
+          role: "user",
+          slug: slugify(profile.name, slugSetting),
+        };
+      },
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code",
+        },
+      },
     }),
   ],
-  debug: env.NODE_ENV === 'development' ? true : false,
+  debug: false,
 };
 
 /**

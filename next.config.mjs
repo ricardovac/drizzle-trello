@@ -9,7 +9,7 @@ const config = {
   reactStrictMode: true,
   swcMinify: true,
   experimental: {
-    optimizePackageImports: ['@mantine/core', '@mantine/forms', '@mantine/hooks'],
+    optimizePackageImports: ['@mantine/core', '@mantine/forms', '@mantine/hooks', "@mantine/nprogress"],
     scrollRestoration: true,
   },
   images: {
