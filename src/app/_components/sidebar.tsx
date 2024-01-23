@@ -12,26 +12,19 @@ import {
   rem,
 } from '@mantine/core';
 import { Calendar, ChevronRight, CircuitBoard, Home, type LucideIcon } from 'lucide-react';
-import { type Session } from 'next-auth';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import react from 'react';
+import { useAuthContext } from '../context/auth-context';
 
 interface LinksGroupProps {
   icon: LucideIcon;
   label: string;
   initiallyOpened?: boolean;
   links?: { label: string; link: string }[];
-  session: Session;
 }
 
-export function LinksGroup({
-  icon: Icon,
-  session,
-  label,
-  initiallyOpened,
-  links,
-}: LinksGroupProps) {
+export function LinksGroup({ icon: Icon, label, initiallyOpened, links }: LinksGroupProps) {
   const hasLinks = Array.isArray(links);
   const [opened, setOpened] = react.useState(initiallyOpened ?? false);
   const items = (hasLinks ? links : []).map((link) => (
@@ -42,7 +35,7 @@ export function LinksGroup({
 
   return (
     <Stack maw={260}>
-      <Links session={session} />
+      <Links />
       <Divider my={8} />
       <UnstyledButton onClick={() => setOpened((o) => !o)} className={classes.control}>
         <Group justify="space-between" gap={0}>
@@ -69,13 +62,15 @@ export function LinksGroup({
   );
 }
 
-export function WorkspaceLinksGroup({ session }: { session: Session }) {
+export function WorkspaceLinksGroup() {
+  const { user } = useAuthContext();
+
   const mockdata = {
-    session: session,
-    label: `Àrea de trabalho de ${session?.user.name}`,
+    session: user,
+    label: `Àrea de trabalho de ${user.name}`,
     icon: Calendar,
     links: [
-      { label: 'Quadros', link: `/u/${session?.user.id}/boards` },
+      { label: 'Quadros', link: `/u/${user.id}/boards` },
       { label: 'Destaques', link: '/w/areadetrabalho/highlights' },
       { label: 'Membros', link: '/w/areadetrabalho/views/table' },
     ],
@@ -84,8 +79,9 @@ export function WorkspaceLinksGroup({ session }: { session: Session }) {
   return <LinksGroup {...mockdata} initiallyOpened />;
 }
 
-export function Links({ session }: { session: Session }) {
-  const userId = session?.user.id;
+export function Links() {
+  const { user } = useAuthContext();
+  const userId = user.id;
   const pathname = usePathname();
 
   const topLinks = [

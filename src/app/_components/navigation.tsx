@@ -33,12 +33,12 @@ import {
   Plus,
   Search,
 } from 'lucide-react';
-import { type Session } from 'next-auth';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import CreateBoardPopover from '~/app/_components/create-board-popover';
 import classes from '~/styles/header-search.module.css';
+import { useAuthContext } from '../context/auth-context';
 import { UserMenu } from './user-menu';
 
 const mockdata = [
@@ -59,17 +59,14 @@ const mockdata = [
   },
 ];
 
-interface NavigationProps {
-  session: Session | null;
-}
-
-export function Navigation({ session }: NavigationProps) {
+export function Navigation() {
   const [opened, { toggle }] = useDisclosure(false);
   const [menuOpened, setMenuOpened] = useState(false);
   const theme = useMantineTheme();
   const router = useRouter();
+  const { user } = useAuthContext();
 
-  if (!session) void router.push('/api/auth/signin');
+  if (!user) void router.push('/api/auth/signin');
 
   const links = mockdata.map((item) => (
     <UnstyledButton className={classes.subLink} key={item.title}>
@@ -160,7 +157,7 @@ export function Navigation({ session }: NavigationProps) {
             data={[{ group: 'Quadros recentes', items: ['Meu quadro'] }]}
             maxDropdownHeight={200}
           />
-          <UserMenu session={session} />
+          <UserMenu />
         </Group>
       </Flex>
     </header>

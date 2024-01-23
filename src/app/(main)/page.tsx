@@ -1,6 +1,7 @@
 import {Card, CardSection, Container, Group, Image, Text} from '@mantine/core';
+import { type FC } from 'react';
 
-export default function Home() {
+const HomePage: FC = () => {
   return (
     <Container size="xs" mt={20}>
       <StayUpdated/>
@@ -33,3 +34,5 @@ function StayUpdated() {
     </Card>
   );
 }
+
+export default HomePage;

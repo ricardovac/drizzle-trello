@@ -22,11 +22,12 @@ import {
   Settings,
   Star,
 } from 'lucide-react';
-import { type Session } from 'next-auth';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useAuthContext } from '../context/auth-context';
 
-export function UserMenu({ session }: { session: Session | null }) {
+export function UserMenu() {
+  const { user } = useAuthContext();
   const theme = useMantineTheme();
   const { setColorScheme, colorScheme } = useMantineColorScheme();
   return (
@@ -41,7 +42,7 @@ export function UserMenu({ session }: { session: Session | null }) {
         <Menu.Target>
           <ActionIcon variant="transparent">
             <Image
-              src={session?.user.image ?? '/static/default-profile.jpg'}
+              src={user.image ?? '/static/default-profile.jpg'}
               width={30}
               height={30}
               style={{ borderRadius: '100%' }}
@@ -51,18 +52,18 @@ export function UserMenu({ session }: { session: Session | null }) {
           </ActionIcon>
         </Menu.Target>
         <Menu.Dropdown>
-          {session && (
+          {user && (
             <>
               <Menu.Item
                 rightSection={<ChevronRight style={{ width: rem(16), height: rem(16) }} />}
               >
                 <Group>
-                  <Avatar radius="xl" src={session?.user.image ?? '/static/default-profile.jpg'} />
+                  <Avatar radius="xl" src={user.image ?? '/static/default-profile.jpg'} />
 
                   <div>
-                    <Text fw={500}>{session?.user.name}</Text>
+                    <Text fw={500}>{user.name}</Text>
                     <Text size="xs" c="dimmed">
-                      {session?.user.email}
+                      {user.email}
                     </Text>
                   </div>
                 </Group>
@@ -149,18 +150,18 @@ export function UserMenu({ session }: { session: Session | null }) {
           <Menu.Divider />
 
           <Menu.Label>Danger zone</Menu.Label>
-          <Link href={session ? '/api/auth/signout' : '/api/auth/signin'}>
+          <Link href={user ? '/api/auth/signout' : '/api/auth/signin'}>
             <Menu.Item
-              color={session ? 'red' : 'blue'}
+              color={user ? 'red' : 'blue'}
               leftSection={
-                session ? (
+                user ? (
                   <LogOut style={{ width: rem(16), height: rem(16) }} />
                 ) : (
                   <LogIn style={{ width: rem(16), height: rem(16) }} />
                 )
               }
             >
-              {session ? 'Sair' : 'Entrar'}
+              {user ? 'Sair' : 'Entrar'}
             </Menu.Item>
           </Link>
         </Menu.Dropdown>

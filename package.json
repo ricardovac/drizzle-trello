@@ -6,7 +6,7 @@
     "build": "next build",
     "db:push": "dotenv drizzle-kit push:mysql",
     "db:studio": "dotenv drizzle-kit studio",
-    "db:purge": "bun run ./src/server/db/reset.ts && dotenv drizzle-kit push:mysql",
+    "db:purge": "bun run ./src/server/db/reset.ts",
     "dev": "next dev",
     "lint": "next lint",
     "start": "next start"

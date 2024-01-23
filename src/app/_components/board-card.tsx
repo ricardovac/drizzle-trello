@@ -1,8 +1,8 @@
 import { Box, Overlay, Paper, Skeleton, Text } from '@mantine/core';
 import { useHover } from '@mantine/hooks';
 import Link from 'next/link';
+import { type InfiniteBoard } from '~/trpc/shared';
 import { isHexColor } from '~/utils/isHexColor';
-import { type InfiniteBoard } from '~/utils/types';
 
 interface BoardCardProps {
   board?: InfiniteBoard;
