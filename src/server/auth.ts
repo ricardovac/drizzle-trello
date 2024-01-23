@@ -5,14 +5,11 @@ import GoogleProvider, { type GoogleProfile } from 'next-auth/providers/google';
 import { env } from '~/env.mjs';
 import { db } from '~/server/db';
 import { mysqlTable } from './db/schema';
-import slugify from 'slugify';
-import { slugSetting } from '~/utils/constants';
 
 declare module 'next-auth' {
   interface Session extends DefaultSession {
     user: {
       id: string;
-      slug: string;
       // ...other properties
       // role: UserRole;
     } & DefaultSession['user'];
@@ -45,15 +42,13 @@ export const authOptions: NextAuthOptions = {
           name: profile.name,
           email: profile.email,
           image: profile.picture,
-          role: "user",
-          slug: slugify(profile.name, slugSetting),
         };
       },
       authorization: {
         params: {
-          prompt: "consent",
-          access_type: "offline",
-          response_type: "code",
+          prompt: 'consent',
+          access_type: 'offline',
+          response_type: 'code',
         },
       },
     }),
