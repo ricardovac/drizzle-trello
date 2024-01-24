@@ -1,17 +1,16 @@
-import {api} from "~/trpc/react";
-import {type FC, useEffect, useRef} from "react";
-import {Button, Flex, Textarea} from "@mantine/core";
-import {X} from "lucide-react";
-import {type SingleList} from "~/trpc/shared";
-import {useForm} from "@mantine/form";
+import { Button, Flex, Textarea } from '@mantine/core';
+import { useForm } from '@mantine/form';
+import { Plus, X } from 'lucide-react';
+import { useEffect, useRef, useState, type FC } from 'react';
+import { api } from '~/trpc/react';
+import { type SingleList } from '~/trpc/shared';
 
 interface CardFormProps {
   list: SingleList;
-  mode: "button" | "form";
-  setMode: (value: "button" | "form") => void;
 }
 
-const CardForm: FC<CardFormProps> = ({list, mode, setMode}) => {
+const CardForm: FC<CardFormProps> = ({ list }) => {
+  const [mode, setMode] = useState<'button' | 'form'>('button');
   const utils = api.useUtils();
   const form = useForm({
     initialValues: {
@@ -25,9 +24,10 @@ const CardForm: FC<CardFormProps> = ({list, mode, setMode}) => {
   const createCard = api.card.create.useMutation({
     onSuccess: async () => {
       const boardId = list.boardId;
-      await utils.list.all.invalidate({boardId});
+      await utils.list.all.invalidate({ boardId });
 
       form.reset();
+      setMode('button');
     },
   });
   const ref = useRef<HTMLTextAreaElement>(null);
@@ -39,10 +39,18 @@ const CardForm: FC<CardFormProps> = ({list, mode, setMode}) => {
     }
   }, [ref, mode]);
 
+  if (mode === 'button') {
+    return (
+      <Button leftSection={<Plus />} onClick={() => setMode('form')} variant="subtle">
+        Adicionar um cartäo
+      </Button>
+    );
+  }
+
   return (
     <form
       onSubmit={form.onSubmit((values) => {
-        createCard.mutate({listId: list.id!, title: values.cardTitle});
+        createCard.mutate({ listId: list.id!, title: values.cardTitle });
       })}
     >
       <Textarea
@@ -55,12 +63,12 @@ const CardForm: FC<CardFormProps> = ({list, mode, setMode}) => {
         <Button type="submit" loading={createCard.isLoading}>
           Adicionar um cartã́o
         </Button>
-        <Button variant="subtle" onClick={() => setMode("button")}>
-          <X/>
+        <Button variant="subtle" onClick={() => setMode('button')}>
+          <X />
         </Button>
       </Flex>
     </form>
   );
-}
+};
 
 export default CardForm;

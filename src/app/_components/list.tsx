@@ -5,7 +5,7 @@ import ListItem from "@/components/list-item";
 export default function List() {
   const {lists} = useBoardContext();
 
-  return lists.map((list) => <ListItem list={list} key={list.id}/>);
+  return Object.entries(lists).map(([columnId, list]) => <ListItem list={list} columnId={columnId} key={list.id}/>);
 }
 
 

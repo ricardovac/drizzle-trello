@@ -1,48 +1,35 @@
 'use client';
-import {type FC, useState} from 'react';
-import {ActionIcon, Button, Card, CardSection, Flex} from "@mantine/core";
-import ListHeader from "@/components/list-header";
-import {MoreHorizontal, Plus} from "lucide-react";
-import {type SingleList} from "~/trpc/shared";
-import ListArea from "@/components/list-area";
-import CardForm from "@/components/card-form";
+import CardForm from '@/components/card-form';
+import ListArea from '@/components/list-area';
+import ListHeader from '@/components/list-header';
+import { ActionIcon, Card, CardSection, Flex } from '@mantine/core';
+import { MoreHorizontal } from 'lucide-react';
+import { type FC } from 'react';
+import { type SingleList } from '~/trpc/shared';
 
 interface ListItemProps {
   list: SingleList;
+  columnId: string;
 }
 
-const ListItem: FC<ListItemProps> = ({list}) => {
-  const [mode, setMode] = useState<"button" | "form">('button')
-
+const ListItem: FC<ListItemProps> = ({ list, columnId }) => {
   return (
     <Card radius="md" w={272} bg="dark" id="listCard">
+      <Flex justify="space-between" align="center" my={8} gap={8}>
+        <ListHeader initialTitle={list.title} listId={list.id} />
+
+        <ActionIcon variant="subtle" aria-label="HorizontalCardIcon">
+          <MoreHorizontal />
+        </ActionIcon>
+      </Flex>
+
       <CardSection px={12} pb={12}>
-        <Flex justify="space-between" align="center" my={8} gap={8}>
-          <ListHeader initialTitle={list.title} listId={list.id}/>
-
-          <ActionIcon variant="subtle" aria-label="HorizontalCardIcon">
-            <MoreHorizontal/>
-          </ActionIcon>
-        </Flex>
-
-        <ListArea listId={list.id} cards={list.cards}/>
-
-        {mode === "button" && (
-          <Button
-            leftSection={<Plus/>}
-            onClick={() => setMode("form")}
-            variant="subtle"
-          >
-            Adicionar um cartäo
-          </Button>
-        )}
+        <ListArea cards={list.cards} columnId={columnId} />
       </CardSection>
 
-      {mode === "form" && (
-        <CardForm list={list} mode={mode} setMode={setMode}/>
-      )}
+      <CardForm list={list} />
     </Card>
-  )
+  );
 };
 
 export default ListItem;

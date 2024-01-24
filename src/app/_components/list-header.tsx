@@ -3,8 +3,7 @@
 import { Input } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useClickOutside } from '@mantine/hooks';
-import { type FC } from 'react';
-import { useState } from 'react';
+import { useState, type FC } from 'react';
 import { api } from '~/trpc/react';
 
 interface ListHeaderProps {
@@ -22,6 +21,8 @@ const ListHeader: FC<ListHeaderProps> = ({ initialTitle, listId }) => {
     if (!title) return;
 
     edit({ listId, title: title });
+
+    clickOutsideRef.current?.blur();
   });
 
   const form = useForm({
@@ -35,14 +36,12 @@ const ListHeader: FC<ListHeaderProps> = ({ initialTitle, listId }) => {
   if (mode === 'view') {
     return (
       <Input
+        tabIndex={-1}
         size="md"
         variant="unstyled"
         defaultValue={title}
-        onFocus={(e) => {
-          setMode('edit');
-          e.currentTarget.select();
-        }}
-        onBlur={() => setMode('view')}
+        onClick={() => setMode('edit')}
+        ml={14}
       />
     );
   }

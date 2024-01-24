@@ -4,13 +4,13 @@ import Card from './card';
 import {type Cards} from "~/trpc/shared";
 
 interface ListAreaProps {
-  listId: string;
   cards: Cards;
+  columnId: string;
 }
 
-const ListArea: FC<ListAreaProps> = ({listId, cards}) => {
+const ListArea: FC<ListAreaProps> = ({cards, columnId}) => {
   return (
-    <Droppable droppableId={listId}>
+    <Droppable droppableId={columnId}>
       {(provided, _) => (
         <div {...provided.droppableProps} ref={provided.innerRef} style={{minHeight: '10px'}}>
           {cards.map((card, i) => (

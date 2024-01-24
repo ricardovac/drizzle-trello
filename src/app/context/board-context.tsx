@@ -43,6 +43,8 @@ const BoardContextProvider: FC<BoardContextProviderProps> = ({
     { boardId: board.id },
     {
       initialData: initialLists,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
       refetchOnWindowFocus: false,
     },
   );
@@ -61,6 +63,7 @@ const BoardContextProvider: FC<BoardContextProviderProps> = ({
     }
 
     if (source.droppableId === destination.droppableId) {
+      console.log(source.droppableId);
       const column = lists[Number(source.droppableId)];
       if (!column) return;
       const copiedItems = [...column?.cards];

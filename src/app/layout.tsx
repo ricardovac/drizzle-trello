@@ -36,16 +36,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <ColorSchemeScript defaultColorScheme="auto" />
       </head>
       <body suppressHydrationWarning>
-        <AuthContextProvider user={session?.user}>
-          <TRPCReactProvider headers={headers()}>
+        <TRPCReactProvider headers={headers()}>
+          <AuthContextProvider user={session?.user}>
             <MantineProvider theme={theme}>
               <NavigationProgress />
               <Navigation />
               <div style={{ paddingTop: '3rem' }}>{children}</div>
               <ReactQueryDevtools initialIsOpen={false} />
             </MantineProvider>
-          </TRPCReactProvider>
-        </AuthContextProvider>
+          </AuthContextProvider>
+        </TRPCReactProvider>
       </body>
     </html>
   );

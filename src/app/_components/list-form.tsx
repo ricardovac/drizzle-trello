@@ -1,51 +1,49 @@
 /* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
 'use client';
-import {Button, Card, Flex, Input} from '@mantine/core';
-import {useForm} from '@mantine/form';
-import {useClickOutside} from '@mantine/hooks';
-import {Plus, X} from 'lucide-react';
-import {useEffect, useRef, useState} from 'react';
-import {api} from '~/trpc/react';
-import {useAuthContext} from '../context/auth-context';
-import {useBoardContext} from '../context/board-context';
+import { Button, Card, Flex, Input } from '@mantine/core';
+import { useForm } from '@mantine/form';
+import { useClickOutside } from '@mantine/hooks';
+import { Plus, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { api } from '~/trpc/react';
+import { useAuthContext } from '../context/auth-context';
+import { useBoardContext } from '../context/board-context';
 
 export default function ListForm() {
-  const [mode, setMode] = useState<"button" | "form">("button")
-  const cardRef = useClickOutside(() => setMode("button"));
-  const {board} = useBoardContext();
+  const [mode, setMode] = useState<'button' | 'form'>('button');
+  const cardRef = useClickOutside(() => setMode('button'));
+  const { board } = useBoardContext();
 
-  if (mode === "button") {
+  if (mode === 'button') {
     return (
       <Button
-        leftSection={<Plus/>}
+        leftSection={<Plus />}
         ref={cardRef}
         variant="white"
-        onClick={() => setMode("form")}
+        onClick={() => setMode('form')}
         opacity={0.6}
       >
         Adicionar uma lista
       </Button>
-    )
+    );
   }
 
-  return (
-    <ListTextArea boardId={board.id} setMode={setMode} mode={mode}/>
-  );
+  return <ListFormField boardId={board.id} setMode={setMode} mode={mode} />;
 }
 
 interface CreateListFormProps {
   boardId: string;
-  setMode: (value: "button" | "form") => void;
-  mode: "button" | "form";
+  setMode: (value: 'button' | 'form') => void;
+  mode: 'button' | 'form';
 }
 
-function ListTextArea({boardId, setMode, mode}: CreateListFormProps) {
-  const {lists} = useBoardContext();
-  const {user} = useAuthContext();
+function ListFormField({ boardId, setMode, mode }: CreateListFormProps) {
+  const { lists } = useBoardContext();
+  const { user } = useAuthContext();
   const ref = useRef<HTMLInputElement>(null);
   const utils = api.useUtils();
   const userId = user.id ?? '';
-  const cardRef = useClickOutside(() => setMode("button"));
+  const cardRef = useClickOutside(() => setMode('button'));
 
   const form = useForm({
     initialValues: {
@@ -56,11 +54,11 @@ function ListTextArea({boardId, setMode, mode}: CreateListFormProps) {
     },
   });
 
-  const {mutate} = api.list.create.useMutation({
+  const { mutate } = api.list.create.useMutation({
     onMutate: async (newData) => {
-      await utils.list.all.cancel({boardId});
+      await utils.list.all.cancel();
 
-      const previousList = utils.list.all.getData({boardId});
+      const previousList = utils.list.all.getData({ boardId });
 
       const newList = {
         ...newData,
@@ -71,17 +69,17 @@ function ListTextArea({boardId, setMode, mode}: CreateListFormProps) {
         cards: [],
       };
 
-      utils.list.all.setData({boardId}, previousList ? [...previousList, newList] : [newList]);
+      utils.list.all.setData({ boardId }, previousList ? [...previousList, newList] : [newList]);
 
-      return {previousList};
+      return { previousList };
     },
     onError: (_, __, context) => {
-      utils.list.all.setData({boardId}, context?.previousList);
+      utils.list.all.setData({ boardId }, context?.previousList);
     },
     onSettled: () => {
       form.reset();
-      setMode("button");
-      void utils.list.all.invalidate({boardId});
+      setMode('button');
+      void utils.list.all.invalidate({ boardId });
     },
   });
 
@@ -90,7 +88,7 @@ function ListTextArea({boardId, setMode, mode}: CreateListFormProps) {
   }, [ref, mode]);
 
   const onSubmit = form.onSubmit((values) => {
-    mutate({title: values.title, boardId, position: (lists.at(-1)?.position ?? 0) + 1});
+    mutate({ title: values.title, boardId, position: (lists.at(-1)?.position ?? 0) + 1 });
     form.reset();
   });
 
@@ -106,8 +104,8 @@ function ListTextArea({boardId, setMode, mode}: CreateListFormProps) {
           />
           <Flex align="center" justify="space-between">
             <Button type="submit">Adicionar lista</Button>
-            <Button variant="subtle" onClick={() => setMode("button")}>
-              <X/>
+            <Button variant="subtle" onClick={() => setMode('button')}>
+              <X />
             </Button>
           </Flex>
         </Flex>
