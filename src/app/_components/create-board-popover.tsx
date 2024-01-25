@@ -1,10 +1,20 @@
 'use client';
-import {Button, Center, ColorPicker, Flex, Paper, Popover, Stack, Text, TextInput,} from '@mantine/core';
-import {useForm} from '@mantine/form';
+import {
+  Button,
+  Center,
+  ColorPicker,
+  Flex,
+  Paper,
+  Popover,
+  Stack,
+  Text,
+  TextInput,
+} from '@mantine/core';
+import { useForm } from '@mantine/form';
 import Image from 'next/image';
 import React from 'react';
-import {api} from '~/trpc/react';
-import {useAuthContext} from '../context/auth-context';
+import { api } from '~/trpc/react';
+import { useAuthContext } from '../context/auth-context';
 
 interface CreateBoardPopoverProps {
   children: React.ReactNode;
@@ -33,8 +43,8 @@ const defaultColors = [
   '#fd7e14',
 ];
 
-export default function CreateBoardPopover({children}: CreateBoardPopoverProps) {
-  const {user} = useAuthContext();
+export default function CreateBoardPopover({ children }: CreateBoardPopoverProps) {
+  const { user } = useAuthContext();
 
   const form = useForm({
     initialValues: {
@@ -48,10 +58,10 @@ export default function CreateBoardPopover({children}: CreateBoardPopoverProps) 
     },
   });
   const utils = api.useUtils();
-  const {mutate, isLoading} = api.board.create.useMutation({
+  const { mutate, isLoading } = api.board.create.useMutation({
     onSuccess: async () => {
       form.reset();
-      await utils.board.all.invalidate({limit: 10});
+      await utils.board.all.invalidate({ limit: 10 });
     },
   });
 
@@ -63,7 +73,7 @@ export default function CreateBoardPopover({children}: CreateBoardPopoverProps) 
       <Popover.Dropdown>
         <Flex justify="center" direction="column" gap={5}>
           <Center>Criar quadro</Center>
-          <BoardPreview background={form.values.background}/>
+          <BoardPreview background={form.values.background} />
 
           <Text fw={500} size="sm">
             Tela de fundo
@@ -89,7 +99,7 @@ export default function CreateBoardPopover({children}: CreateBoardPopoverProps) 
                     alt="Board Image"
                     quality={10}
                     priority
-                    style={{cursor: 'pointer'}}
+                    style={{ cursor: 'pointer' }}
                   />
                 ))}
               </Flex>
@@ -117,7 +127,7 @@ export default function CreateBoardPopover({children}: CreateBoardPopoverProps) 
               mt={8}
               loading={isLoading}
               disabled={isSubmitButtonDisabled}
-              loaderProps={{type: 'bars'}}
+              loaderProps={{ type: 'bars' }}
               type="submit"
             >
               Criar
@@ -133,26 +143,26 @@ interface BoardPreviewProps {
   background: string;
 }
 
-function BoardPreview({background}: BoardPreviewProps) {
+function BoardPreview({ background }: BoardPreviewProps) {
   if (background.match(/^#([0-9a-f]{3}){1,2}$/)) {
     return (
-      <Paper p="md" style={{backgroundColor: background}}>
-        <Image src="/assets/board.svg" alt="Board SVG" width={160} height={90}/>
+      <Paper p="md" style={{ backgroundColor: background }}>
+        <Image src="/assets/board.svg" alt="Board SVG" width={160} height={90} />
       </Paper>
     );
   }
 
   if (background.startsWith('https://images.unsplash.com')) {
     return (
-      <Paper p="md" style={{backgroundImage: `url(${background})`}}>
-        <Image src="/assets/board.svg" alt="Board SVG" width={160} height={90}/>
+      <Paper p="md" style={{ backgroundImage: `url(${background})` }}>
+        <Image src="/assets/board.svg" alt="Board SVG" width={160} height={90} />
       </Paper>
     );
   }
 
   return (
-    <Paper p="md" style={{backgroundColor: '--mantine-color-gray-0'}}>
-      <Image src="/assets/board.svg" alt="Board SVG" width={160} height={90}/>
+    <Paper p="md" style={{ backgroundColor: '--mantine-color-gray-0' }}>
+      <Image src="/assets/board.svg" alt="Board SVG" width={160} height={90} />
     </Paper>
   );
 }

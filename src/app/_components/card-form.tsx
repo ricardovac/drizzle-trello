@@ -41,7 +41,12 @@ const CardForm: FC<CardFormProps> = ({ list }) => {
 
   if (mode === 'button') {
     return (
-      <Button leftSection={<Plus />} onClick={() => setMode('form')} variant="subtle">
+      <Button
+        leftSection={<Plus />}
+        justify="start"
+        onClick={() => setMode('form')}
+        variant="subtle"
+      >
         Adicionar um cartäo
       </Button>
     );

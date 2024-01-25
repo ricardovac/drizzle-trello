@@ -3,7 +3,7 @@
 import { Input } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useClickOutside } from '@mantine/hooks';
-import { useState, type FC } from 'react';
+import { useState, type FC, type MutableRefObject } from 'react';
 import { api } from '~/trpc/react';
 
 interface ListHeaderProps {
@@ -23,7 +23,7 @@ const ListHeader: FC<ListHeaderProps> = ({ initialTitle, listId }) => {
     edit({ listId, title: title });
 
     clickOutsideRef.current?.blur();
-  });
+  }) as MutableRefObject<HTMLInputElement>;
 
   const form = useForm({
     initialValues: {

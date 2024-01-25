@@ -21,7 +21,7 @@ export default function BoardCard({ board, loading = false }: BoardCardProps) {
           h={100}
           p="sm"
           component={Link}
-          href={`/b/${board?.id}`}
+          href={`/b/${board?.id}/${board?.title}`}
           style={{
             backgroundColor: board?.background,
             backgroundImage: isHexColor(board?.background)

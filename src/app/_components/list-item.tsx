@@ -15,7 +15,7 @@ interface ListItemProps {
 const ListItem: FC<ListItemProps> = ({ list, columnId }) => {
   return (
     <Card radius="md" w={272} bg="dark" id="listCard">
-      <Flex justify="space-between" align="center" my={8} gap={8}>
+      <Flex justify="space-between" align="center" gap={8}>
         <ListHeader initialTitle={list.title} listId={list.id} />
 
         <ActionIcon variant="subtle" aria-label="HorizontalCardIcon">
@@ -23,7 +23,7 @@ const ListItem: FC<ListItemProps> = ({ list, columnId }) => {
         </ActionIcon>
       </Flex>
 
-      <CardSection px={12} pb={12}>
+      <CardSection px={12} py={12}>
         <ListArea cards={list.cards} columnId={columnId} />
       </CardSection>
 
