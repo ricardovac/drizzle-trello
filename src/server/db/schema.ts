@@ -4,7 +4,6 @@ import {
   boolean,
   index,
   int,
-  mysqlEnum,
   mysqlTableCreator,
   primaryKey,
   text,
@@ -15,95 +14,88 @@ import { type AdapterAccount } from 'next-auth/adapters';
 
 export const mysqlTable = mysqlTableCreator((name) => `trello_clone_${name}`);
 
-export const workspaces = mysqlTable(
-  'workspaces',
-  {
-    id: varchar('id', { length: 128 })
-      .$defaultFn(() => createId())
-      .primaryKey(),
-    name: varchar('name', { length: 256 }).notNull(),
-    type: mysqlEnum('type', [
-      'small enterprise',
-      'education',
-      'other',
-      'marketing',
-      'RH',
-      'engineer/ti',
-    ]).notNull(),
-    description: text('description'),
-  },
-  (workspaces) => ({
-    nameIdx: index('name_idx').on(workspaces.name),
-  }),
-);
+// export const workspaces = mysqlTable(
+//   'workspaces',
+//   {
+//     id: varchar('id', { length: 128 })
+//       .$defaultFn(() => createId())
+//       .primaryKey(),
+//     name: varchar('name', { length: 256 }).notNull(),
+//     type: mysqlEnum('type', [
+//       'small enterprise',
+//       'education',
+//       'other',
+//       'marketing',
+//       'RH',
+//       'engineer/ti',
+//     ]).notNull(),
+//     description: text('description'),
+//   },
+//   (workspaces) => ({
+//     nameIdx: index('name_idx').on(workspaces.name),
+//   }),
+// );
 
-export const workspaceRelations = relations(workspaces, ({ many }) => ({
-  boards: many(boards),
-}));
+// export const workspaceRelations = relations(workspaces, ({ many }) => ({
+//   boards: many(boards),
+// }));
 
-export const boards = mysqlTable('boards', {
-  id: varchar('id', { length: 128 })
-    .$defaultFn(() => createId())
-    .primaryKey(),
-  title: varchar('title', { length: 256 }).notNull(),
-  background: varchar('color', { length: 128 }).notNull(),
-  public: boolean('public').default(false),
-  createdAt: timestamp('created_at')
-    .default(sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-  createdById: varchar('createdById', { length: 128 }).notNull(),
-  updatedAt: timestamp('updatedAt').onUpdateNow(),
-  workspaceId: varchar('workspace_id', { length: 128 }).references(() => workspaces.id),
-});
-
-export const boardsRelations = relations(boards, ({ one, many }) => ({
-  workspace: one(workspaces, { fields: [boards.workspaceId], references: [workspaces.id] }),
-  lists: many(lists),
-}));
-
-export const lists = mysqlTable(
-  'lists',
+export const boards = mysqlTable(
+  'boards',
   {
     id: varchar('id', { length: 128 })
       .$defaultFn(() => createId())
       .primaryKey(),
     title: varchar('title', { length: 256 }).notNull(),
-    boardId: varchar('boardId', { length: 128 })
-      .notNull()
-      .references(() => boards.id),
-    createdById: varchar('createdById', { length: 128 }).notNull(),
+    background: varchar('color', { length: 128 }).notNull(),
+    public: boolean('public').default(false),
     createdAt: timestamp('created_at')
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
     updatedAt: timestamp('updatedAt').onUpdateNow(),
+    ownerId: varchar('ownerId', { length: 128 }).notNull(),
+    // workspaceId: varchar('workspaceId', { length: 128 }).references(() => workspaces.id),
   },
-  (lists) => ({
-    boardIdIdx: index('boardId_idx').on(lists.boardId),
+  (boards) => ({
+    ownerIdIdx: index('ownerId_idx').on(boards.ownerId),
   }),
 );
+
+export const boardsRelations = relations(boards, ({ one, many }) => ({
+  // workspace: one(workspaces, { fields: [boards.workspaceId], references: [workspaces.id] }),
+  owner: one(users, { fields: [boards.ownerId], references: [users.id] }),
+  lists: many(lists),
+}));
+
+export const lists = mysqlTable('lists', {
+  id: varchar('id', { length: 128 })
+    .$defaultFn(() => createId())
+    .primaryKey(),
+  title: varchar('title', { length: 256 }).notNull(),
+  position: int('position').notNull(),
+  boardId: varchar('boardId', { length: 128 })
+    .notNull()
+    .references(() => boards.id),
+  createdAt: timestamp('created_at')
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp('updatedAt').onUpdateNow(),
+});
 
 export const listsRelations = relations(lists, ({ one, many }) => ({
   board: one(boards, { fields: [lists.boardId], references: [boards.id] }),
   cards: many(cards),
 }));
 
-export const cards = mysqlTable(
-  'cards',
-  {
-    id: varchar('id', { length: 128 })
-      .$defaultFn(() => createId())
-      .primaryKey(),
-    title: varchar('title', { length: 256 }).notNull(),
-    description: text('description'),
-    listId: varchar('listId', { length: 128 })
-      .notNull()
-      .references(() => lists.id),
-    position: int('position').notNull(),
-  },
-  (cards) => ({
-    listIdIdx: index('listId_idx').on(cards.listId),
-  }),
-);
+export const cards = mysqlTable('cards', {
+  id: varchar('id', { length: 128 })
+    .$defaultFn(() => createId())
+    .primaryKey(),
+  title: varchar('title', { length: 256 }).notNull(),
+  description: text('description'),
+  listId: varchar('listId', { length: 128 }).notNull(),
+  position: int('position').notNull(),
+});
 
 export const cardsRelations = relations(cards, ({ one }) => ({
   list: one(lists, { fields: [cards.listId], references: [lists.id] }),
@@ -118,10 +110,10 @@ export const users = mysqlTable('user', {
     fsp: 3,
   }).default(sql`CURRENT_TIMESTAMP(3)`),
   image: varchar('image', { length: 255 }),
-  slug: varchar('slug', { length: 255 }),
 });
 
 export const usersRelations = relations(users, ({ many }) => ({
+  board: many(boards),
   accounts: many(accounts),
 }));
 

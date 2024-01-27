@@ -4,54 +4,59 @@ import { Button, Card, Flex, Input } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useClickOutside } from '@mantine/hooks';
 import { Plus, X } from 'lucide-react';
-import { useSession } from 'next-auth/react';
 import { useEffect, useRef, useState } from 'react';
 import { api } from '~/trpc/react';
+import { useAuthContext } from '../context/auth-context';
+import { useBoardContext } from '../context/board-context';
 
-interface CreateListPopoverProps {
-  boardId: string;
-}
+export default function ListForm() {
+  const [mode, setMode] = useState<'button' | 'form'>('button');
+  const cardRef = useClickOutside(() => setMode('button'));
+  const { board } = useBoardContext();
 
-export default function CreateListForm({ boardId }: CreateListPopoverProps) {
-  const [isListInputOpen, setIsListInputOpen] = useState<boolean>(false);
-  const cardRef = useClickOutside(() => setIsListInputOpen(false));
+  if (mode === 'button') {
+    return (
+      <Button
+        leftSection={<Plus />}
+        ref={cardRef}
+        variant="white"
+        onClick={() => setMode('form')}
+        opacity={0.6}
+      >
+        Adicionar uma lista
+      </Button>
+    );
+  }
 
-  return (
-    <>
-      {!isListInputOpen && (
-        <Button
-          leftSection={<Plus />}
-          ref={cardRef}
-          variant="white"
-          onClick={() => setIsListInputOpen((o) => !o)}
-          opacity={0.6}
-        >
-          Adicionar uma lista
-        </Button>
-      )}
-      {isListInputOpen && (
-        <ListForm boardId={boardId} setIsListInputOpen={setIsListInputOpen} isListInputOpen />
-      )}
-    </>
-  );
+  return <ListFormField boardId={board.id} setMode={setMode} mode={mode} />;
 }
 
 interface CreateListFormProps {
   boardId: string;
-  setIsListInputOpen: (value: boolean) => void;
-  isListInputOpen: boolean;
+  setMode: (value: 'button' | 'form') => void;
+  mode: 'button' | 'form';
 }
 
-function ListForm({ boardId, setIsListInputOpen, isListInputOpen = false }: CreateListFormProps) {
+function ListFormField({ boardId, setMode, mode }: CreateListFormProps) {
+  const { lists } = useBoardContext();
+  const { user } = useAuthContext();
   const ref = useRef<HTMLInputElement>(null);
   const utils = api.useUtils();
-  const { data: session } = useSession();
-  const userId = session?.user.id ?? '';
-  const cardRef = useClickOutside(() => setIsListInputOpen(false));
+  const userId = user.id ?? '';
+  const cardRef = useClickOutside(() => setMode('button'));
+
+  const form = useForm({
+    initialValues: {
+      title: '',
+    },
+    validate: {
+      title: (value) => (value ? undefined : 'Insira um título para a lista'),
+    },
+  });
 
   const { mutate } = api.list.create.useMutation({
     onMutate: async (newData) => {
-      await utils.list.all.cancel({ boardId });
+      await utils.list.all.cancel();
 
       const previousList = utils.list.all.getData({ boardId });
 
@@ -73,27 +78,23 @@ function ListForm({ boardId, setIsListInputOpen, isListInputOpen = false }: Crea
     },
     onSettled: () => {
       form.reset();
-      setIsListInputOpen(false);
+      setMode('button');
       void utils.list.all.invalidate({ boardId });
     },
   });
 
-  const form = useForm({
-    initialValues: {
-      title: '',
-    },
-    validate: {
-      title: (value) => (value ? undefined : 'Insira um título para a lista'),
-    },
-  });
-
   useEffect(() => {
-    if (isListInputOpen && ref.current) ref.current.focus();
-  }, [ref, isListInputOpen]);
+    if (mode && ref.current) ref.current.focus();
+  }, [ref, mode]);
+
+  const onSubmit = form.onSubmit((values) => {
+    mutate({ title: values.title, boardId, position: (lists.at(-1)?.position ?? 0) + 1 });
+    form.reset();
+  });
 
   return (
     <Card bg="dark" ref={cardRef}>
-      <form onSubmit={form.onSubmit((values) => mutate({ title: values.title, boardId }))}>
+      <form onSubmit={onSubmit}>
         <Flex gap={8} direction="column">
           <Input
             placeholder="Insira o título da lista..."
@@ -103,7 +104,7 @@ function ListForm({ boardId, setIsListInputOpen, isListInputOpen = false }: Crea
           />
           <Flex align="center" justify="space-between">
             <Button type="submit">Adicionar lista</Button>
-            <Button variant="subtle" onClick={() => setIsListInputOpen(false)}>
+            <Button variant="subtle" onClick={() => setMode('button')}>
               <X />
             </Button>
           </Flex>

@@ -2,18 +2,20 @@
 import BoardCard from '@/components/board-card';
 import CreateBoardPopover from '@/components/create-board-popover';
 import { Button, Flex, Text } from '@mantine/core';
-import { useMemo } from 'react';
+import { type FC, useMemo } from 'react';
 import { api } from '~/trpc/react';
 
 interface BoardsPageProps {
   params: { userId: string };
 }
 
-export default function Boards({ params }: BoardsPageProps) {
+const LIMIT = 10;
+
+const Boards: FC<BoardsPageProps> = ({ params }) => {
   const userId = params.userId;
 
   const { data, isLoading, isFetchingNextPage } = api.board.all.useInfiniteQuery(
-    { limit: 10, userId },
+    { limit: LIMIT, userId },
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
       refetchOnWindowFocus: false,
@@ -44,4 +46,6 @@ export default function Boards({ params }: BoardsPageProps) {
       </Flex>
     </Flex>
   );
-}
+};
+
+export default Boards;

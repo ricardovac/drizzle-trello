@@ -1,8 +1,8 @@
 import { Box, Overlay, Paper, Skeleton, Text } from '@mantine/core';
 import { useHover } from '@mantine/hooks';
 import Link from 'next/link';
+import { type InfiniteBoard } from '~/trpc/shared';
 import { isHexColor } from '~/utils/isHexColor';
-import { type InfiniteBoard } from '~/utils/types';
 
 interface BoardCardProps {
   board?: InfiniteBoard;
@@ -21,7 +21,7 @@ export default function BoardCard({ board, loading = false }: BoardCardProps) {
           h={100}
           p="sm"
           component={Link}
-          href={`/b/${board?.id}`}
+          href={`/b/${board?.id}/${board?.title}`}
           style={{
             backgroundColor: board?.background,
             backgroundImage: isHexColor(board?.background)

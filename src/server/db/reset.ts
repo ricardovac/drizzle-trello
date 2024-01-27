@@ -1,3 +1,5 @@
+'use server';
+
 import { sql } from 'drizzle-orm';
 import { db } from '.';
 
@@ -10,7 +12,7 @@ async function reset() {
   console.log('Dropping tables');
   const queries = Object.values(tableSchem).map((table) => {
     console.log(`Preparing delete query for table: ${table.dbName}`);
-    return sql.raw(`DROP TABLE IF EXISTS ${table.dbName}`);
+    return sql.raw(`TRUNCATE TABLE ${table.dbName}`);
   });
 
   console.log('Sending delete queries');

@@ -14,6 +14,7 @@ import { useForm } from '@mantine/form';
 import Image from 'next/image';
 import React from 'react';
 import { api } from '~/trpc/react';
+import { useAuthContext } from '../context/auth-context';
 
 interface CreateBoardPopoverProps {
   children: React.ReactNode;
@@ -43,10 +44,13 @@ const defaultColors = [
 ];
 
 export default function CreateBoardPopover({ children }: CreateBoardPopoverProps) {
+  const { user } = useAuthContext();
+
   const form = useForm({
     initialValues: {
       title: '',
       background: '',
+      public: true,
     },
     validate: {
       title: (value) => value.length < 2 && 'O titulo deve ter pelo menos 2 caracteres',
@@ -76,7 +80,11 @@ export default function CreateBoardPopover({ children }: CreateBoardPopoverProps
           </Text>
           <form
             onSubmit={form.onSubmit((values) =>
-              mutate({ title: values.title, background: values.background }),
+              mutate({
+                ...values,
+                ownerId: user.id,
+                public: true,
+              }),
             )}
           >
             <Stack>

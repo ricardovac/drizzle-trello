@@ -9,10 +9,11 @@ import { ColorSchemeScript, MantineProvider } from '@mantine/core';
 import { NavigationProgress } from '@mantine/nprogress';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Inter } from 'next/font/google';
-import { ClientSessionProvider } from '~/lib/client-session-provider';
 import { theme } from '~/lib/theme';
 import { getServerAuthSession } from '~/server/auth';
 import { TRPCReactProvider } from '~/trpc/react';
+import { AuthContextProvider } from './context/auth-context';
+import { redirect } from 'next/navigation';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -27,22 +28,24 @@ export const metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerAuthSession();
+  if (!session?.user) redirect('/api/auth/signin');
+
   return (
     <html lang="en" className={inter.className}>
       <head>
         <ColorSchemeScript defaultColorScheme="auto" />
       </head>
-      <body>
-        <ClientSessionProvider>
-          <TRPCReactProvider headers={headers()}>
+      <body suppressHydrationWarning>
+        <TRPCReactProvider headers={headers()}>
+          <AuthContextProvider user={session?.user}>
             <MantineProvider theme={theme}>
               <NavigationProgress />
-              <Navigation session={session} />
+              <Navigation />
               <div style={{ paddingTop: '3rem' }}>{children}</div>
               <ReactQueryDevtools initialIsOpen={false} />
             </MantineProvider>
-          </TRPCReactProvider>
-        </ClientSessionProvider>
+          </AuthContextProvider>
+        </TRPCReactProvider>
       </body>
     </html>
   );
