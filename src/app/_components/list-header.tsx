@@ -1,65 +1,65 @@
-'use client';
+"use client"
 
-import { Input } from '@mantine/core';
-import { useForm } from '@mantine/form';
-import { useClickOutside } from '@mantine/hooks';
-import { useState, type FC, type MutableRefObject } from 'react';
-import { api } from '~/trpc/react';
+import { useState, type FC, type MutableRefObject } from "react"
+import { api } from "@/trpc/react"
+import { Button } from "components/ui/button"
+import { Input } from "components/ui/input"
+import { useForm } from "react-hook-form"
+
+import { useClickOutside } from "@/hooks/useClickOutside"
 
 interface ListHeaderProps {
-  initialTitle: string;
-  listId: string;
+  initialTitle: string
+  listId: string
 }
 
 const ListHeader: FC<ListHeaderProps> = ({ initialTitle, listId }) => {
-  const [mode, setMode] = useState<'view' | 'edit'>('view');
-  const { mutate: edit } = api.list.edit.useMutation();
+  const [mode, setMode] = useState<"view" | "edit">("view")
+  const { mutate: edit } = api.list.edit.useMutation()
 
   const clickOutsideRef = useClickOutside(() => {
-    setMode('view');
+    setMode("view")
 
-    if (!title) return;
+    if (!title) return
 
-    edit({ listId, title: title });
+    edit({ listId, title: title })
 
-    clickOutsideRef.current?.blur();
-  }) as MutableRefObject<HTMLInputElement>;
+    clickOutsideRef.current?.blur()
+  }) as MutableRefObject<HTMLInputElement>
 
   const form = useForm({
-    initialValues: {
+    defaultValues: {
       title: initialTitle,
     },
-  });
+  })
 
-  const title = form.values.title;
+  const title = form.getValues("title")
 
-  if (mode === 'view') {
+  if (mode === "view") {
     return (
-      <Input
+      <Button
+        variant="link"
         tabIndex={-1}
-        size="md"
-        variant="unstyled"
+        className="ml-14"
         defaultValue={title}
-        onClick={() => setMode('edit')}
-        ml={14}
+        onClick={() => setMode("edit")}
       />
-    );
+    )
   }
 
   return (
     <Input
-      size="md"
+      {...form.register("title")}
       ref={clickOutsideRef}
       defaultValue={title}
-      onChange={(e) => form.setFieldValue('title', e.currentTarget.value)}
       onKeyDown={(e) => {
-        if (e.key === 'Enter') {
-          edit({ listId, title: title });
-          setMode('view');
+        if (e.key === "Enter") {
+          edit({ listId, title: title })
+          setMode("view")
         }
       }}
     />
-  );
-};
+  )
+}
 
-export default ListHeader;
+export default ListHeader

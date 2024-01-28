@@ -1,37 +1,35 @@
-'use client';
-import { AppShell, AppShellMain, AppShellNavbar, Flex } from '@mantine/core';
-import ScrollContainer from 'react-indiana-drag-scroll';
-import { useBoardContext } from '../context/board-context';
+"use client"
+
+import { BackgroundTypeSchema } from "@/server/schema/board.shema"
+import ScrollContainer from "react-indiana-drag-scroll"
+
+import { useBoardContext } from "../context/board-context"
 
 interface BoardAppShellProps {
-  children: React.ReactNode;
+  children: React.ReactNode
 }
 
 export default function BoardAppShell({ children }: BoardAppShellProps) {
-  const { board } = useBoardContext();
+  const { board } = useBoardContext()
+  console.log(board)
+
+  const background = board.background as unknown as BackgroundTypeSchema
   return (
-    <AppShell header={{ height: 50 }} navbar={{ width: 300, breakpoint: 'sm' }} padding="md">
-      <AppShellNavbar opacity={0.9} p="md">
-        Área de trabalho de {board?.user?.name}
-      </AppShellNavbar>
+    <>
       <ScrollContainer
         className="scroll-container"
         hideScrollbars={false}
         horizontal
         ignoreElements="#listCard"
         style={{
-          backgroundColor: board?.background,
-          backgroundImage: board?.background.startsWith('https://images.unsplash.com')
-            ? `url(${board?.background})`
-            : undefined,
-          backgroundRepeat: 'no-repeat',
-          backgroundSize: 'cover',
+          backgroundColor: background.type === "color" ? background.value : undefined,
+          backgroundImage: background.type === "image" ? `url(${background.value})` : undefined,
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "cover",
         }}
       >
-        <AppShellMain pt={20}>
-          <Flex gap={8}>{children}</Flex>
-        </AppShellMain>
+        <div className="flex gap-10">{children}</div>
       </ScrollContainer>
-    </AppShell>
-  );
+    </>
+  )
 }

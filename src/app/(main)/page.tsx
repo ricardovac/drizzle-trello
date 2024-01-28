@@ -1,38 +1,45 @@
-import {Card, CardSection, Container, Group, Image, Text} from '@mantine/core';
-import { type FC } from 'react';
+import { type FC } from "react"
+import Image from "next/image"
+import { Card, CardContent, CardFooter, CardHeader } from "components/ui/card"
+import { cn } from "lib/utils"
 
 const HomePage: FC = () => {
   return (
-    <Container size="xs" mt={20}>
-      <StayUpdated/>
-    </Container>
-  );
+    <div className="mt-20 max-w-[600px]">
+      <StayUpdated />
+    </div>
+  )
 }
 
-function StayUpdated() {
+type CardProps = React.ComponentProps<typeof Card>
+
+function StayUpdated({ className, ...props }: CardProps) {
   return (
-    <Card>
-      <CardSection>
+    <Card className={cn("w-[500px]", className)} {...props}>
+      <CardHeader>
         <Image
-          src="https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/images/bg-8.png"
-          height={160}
+          src="https://images.unsplash.com/photo-1584009577996-0227b2358356"
+          height={200}
+          width={200}
           alt="Norway"
         />
-      </CardSection>
+      </CardHeader>
 
-      <Group mt="md" justify="center" mb="xs">
-        <Text size="xl" fw={500}>
-          Fique por dentro e atualizado
-        </Text>
-      </Group>
+      <CardContent>
+        <div className="mb-2 mt-12 flex flex-col justify-center">
+          <strong>Fique por dentro e atualizado</strong>
+        </div>
+      </CardContent>
 
-      <Text size="sm" c="dimmed" ta="center">
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Quibusdam consectetur perferendis
-        totam nobis blanditiis ipsam id odit reprehenderit eius nostrum, exercitationem rerum
-        perspiciatis nemo voluptas sequi officia sit iusto.
-      </Text>
+      <CardFooter>
+        <p>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Quibusdam consectetur perferendis
+          totam nobis blanditiis ipsam id odit reprehenderit eius nostrum, exercitationem rerum
+          perspiciatis nemo voluptas sequi officia sit iusto.
+        </p>
+      </CardFooter>
     </Card>
-  );
+  )
 }
 
-export default HomePage;
+export default HomePage

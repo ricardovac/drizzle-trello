@@ -1,113 +1,109 @@
-'use client';
-import classes from '@/styles/navbar-linksgroup.module.css';
-import {
-  Box,
-  Collapse,
-  Divider,
-  Group,
-  NavLink,
-  Stack,
-  ThemeIcon,
-  UnstyledButton,
-  rem,
-} from '@mantine/core';
-import { Calendar, ChevronRight, CircuitBoard, Home, type LucideIcon } from 'lucide-react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import react from 'react';
-import { useAuthContext } from '../context/auth-context';
+"use client"
+
+import { useState } from "react"
+import Image from "next/image"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@radix-ui/react-collapsible"
+import { Separator } from "components/ui/separator"
+import { cn } from "lib/utils"
+import { Calendar, ChevronRight, CircuitBoard, Home } from "lucide-react"
+import { Session } from "next-auth"
+
+import { useAuthContext } from "../context/auth-context"
 
 interface LinksGroupProps {
-  icon: LucideIcon;
-  label: string;
-  initiallyOpened?: boolean;
-  links?: { label: string; link: string }[];
+  label: string
+  initiallyOpened?: boolean
+  links?: { label: string; link: string }[]
 }
 
-export function LinksGroup({ icon: Icon, label, initiallyOpened, links }: LinksGroupProps) {
-  const hasLinks = Array.isArray(links);
-  const [opened, setOpened] = react.useState(initiallyOpened ?? false);
+export function LinksGroup({ label, initiallyOpened, links }: LinksGroupProps) {
+  const { user } = useAuthContext()
+  const [opened, setOpened] = useState(initiallyOpened ?? false)
+  const hasLinks = Array.isArray(links)
   const items = (hasLinks ? links : []).map((link) => (
-    <Link className={classes.link} href={link.link} key={link.label} scroll={false}>
+    <Link href={link.link} key={link.label} scroll={false}>
       {link.label}
     </Link>
-  ));
+  ))
 
   return (
-    <Stack maw={260}>
+    <div>
       <Links />
-      <Divider my={8} />
-      <UnstyledButton onClick={() => setOpened((o) => !o)} className={classes.control}>
-        <Group justify="space-between" gap={0}>
-          <Box style={{ display: 'flex', alignItems: 'center' }} mr={6}>
-            <ThemeIcon variant="light" size={30}>
-              <Icon style={{ width: rem(18), height: rem(18) }} />
-            </ThemeIcon>
-            <Box ml="md">{label}</Box>
-          </Box>
-          {hasLinks && (
-            <ChevronRight
-              className={classes.chevron}
-              style={{
-                width: rem(16),
-                height: rem(16),
-                transform: opened ? 'rotate(-90deg)' : 'none',
-              }}
-            />
-          )}
-        </Group>
-      </UnstyledButton>
-      {hasLinks ? <Collapse in={opened}>{items}</Collapse> : null}
-    </Stack>
-  );
+      <Separator className="my-4" />
+      <h1>Áreas de trabalho</h1>
+      <Collapsible onOpenChange={() => setOpened((o) => !o)} open={opened}>
+        <CollapsibleTrigger className="text-start">
+          <div className="flex justify-between">
+            <div className="mr-6 flex items-center">
+              <Image
+                src={user.image!}
+                width={38}
+                height={38}
+                className="rounded-full"
+                alt="Sidebar User Image"
+              />
+              <div className="ml-4">{label}</div>
+            </div>
+            {hasLinks && <ChevronRight className={cn("size-8", opened && "rotate-90")} />}
+          </div>
+        </CollapsibleTrigger>
+        {hasLinks ? <CollapsibleContent>{items}</CollapsibleContent> : null}
+      </Collapsible>
+    </div>
+  )
 }
 
-export function WorkspaceLinksGroup() {
-  const { user } = useAuthContext();
-
+export function WorkspaceLinksGroup({ session }: { session: Session }) {
   const mockdata = {
-    session: user,
-    label: `Àrea de trabalho de ${user.name}`,
+    session: session,
+    label: `Área de trabalho de ${session?.user.name}`,
     icon: Calendar,
     links: [
-      { label: 'Quadros', link: `/u/${user.id}/boards` },
-      { label: 'Destaques', link: '/w/areadetrabalho/highlights' },
-      { label: 'Membros', link: '/w/areadetrabalho/views/table' },
+      { label: "Quadros", link: `/u/${session?.user.id}/boards` },
+      { label: "Destaques", link: "/w/areadetrabalho/highlights" },
+      { label: "Membros", link: "/w/areadetrabalho/views/table" },
     ],
-  };
+  }
 
-  return <LinksGroup {...mockdata} initiallyOpened />;
+  return <LinksGroup {...mockdata} initiallyOpened />
 }
 
 export function Links() {
-  const { user } = useAuthContext();
-  const userId = user.id;
-  const pathname = usePathname();
+  const { user } = useAuthContext()
+  const userId = user.id
+  const pathname = usePathname()
 
   const topLinks = [
     {
       icon: <CircuitBoard />,
-      label: 'Quadros',
+      label: "Quadros",
       href: `/u/${userId}/boards`,
     },
     {
       icon: <Home />,
-      label: 'Início',
-      href: '/',
+      label: "Início",
+      href: "/",
     },
-  ];
+  ]
 
   const items = topLinks.map((item, idx) => (
-    <NavLink
+    <Link
       key={idx}
-      component={Link}
       href={{ pathname: item.href }}
-      className={classes.navLink}
-      active={pathname.trim() === item.href.trim()}
-      leftSection={item.icon}
-      label={item.label}
-    />
-  ));
+      className={cn(
+        "rounded-md",
+        pathname.trim() !== item.href.trim() && "hover:bg-muted",
+        pathname.trim() === item.href.trim() && "bg-muted-foreground"
+      )}
+    >
+      <div className="flex items-center gap-4 p-2">
+        {item.icon}
+        <span className="text-lg">{item.label}</span>
+      </div>
+    </Link>
+  ))
 
-  return <Group gap={4}>{items}</Group>;
+  return <div className="flex flex-col gap-4">{items}</div>
 }

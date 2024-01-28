@@ -1,11 +1,12 @@
-import { asc, eq } from 'drizzle-orm';
-import { cards } from '~/server/db/schema';
-import { createCard, updateCard, updateCardPosition } from '~/server/schema/card.schema';
-import { createTRPCRouter, protectedProcedure } from '../trpc';
+import { cards } from "@/server/db/schema"
+import { createCard, updateCard, updateCardPosition } from "@/server/schema/card.schema"
+import { asc, eq } from "drizzle-orm"
+
+import { createTRPCRouter, protectedProcedure } from "../trpc"
 
 export const cardRouter = createTRPCRouter({
   create: protectedProcedure.input(createCard).mutation(async ({ ctx, input }) => {
-    const { db } = ctx;
+    const { db } = ctx
 
     const cardsQuery = await db.query.cards.findMany({
       where: (cards, { eq }) => eq(cards.listId, input.listId),
@@ -13,7 +14,7 @@ export const cardRouter = createTRPCRouter({
       columns: {
         position: true,
       },
-    });
+    })
 
     return await db
       .insert(cards)
@@ -23,7 +24,7 @@ export const cardRouter = createTRPCRouter({
         listId: input.listId,
         position: (cardsQuery.at(-1)?.position ?? 0) + 1,
       })
-      .execute();
+      .execute()
   }),
   updateCardPositions: protectedProcedure
     .input(updateCardPosition)
@@ -32,16 +33,16 @@ export const cardRouter = createTRPCRouter({
         .update(cards)
         .set({ position: input.position })
         .where(eq(cards.id, input.cardId))
-        .execute();
+        .execute()
     }),
   updateCard: protectedProcedure.input(updateCard).mutation(async ({ ctx, input }) => {
-    const { db } = ctx;
-    const { cardId, card } = input;
+    const { db } = ctx
+    const { cardId, card } = input
 
     return await db
       .update(cards)
       .set({ id: cardId, listId: card.listId })
       .where(eq(cards.id, cardId))
-      .execute();
+      .execute()
   }),
-});
+})

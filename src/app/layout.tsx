@@ -1,52 +1,62 @@
-import '@mantine/core/styles.css';
-import '@mantine/nprogress/styles.css';
-import '~/styles/globals.css';
+import { getServerAuthSession } from "@/server/auth"
 
-import { headers } from 'next/headers';
+import "@/styles/globals.css"
+import { type Metadata } from "next"
+import { Inter as FontSans } from "next/font/google"
+import { headers } from "next/headers"
+import { redirect } from "next/navigation"
+import { TRPCReactProvider } from "@/trpc/react"
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
+import { siteConfig } from "config/site"
 
-import { Navigation } from '@/components/navigation';
-import { ColorSchemeScript, MantineProvider } from '@mantine/core';
-import { NavigationProgress } from '@mantine/nprogress';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { Inter } from 'next/font/google';
-import { theme } from '~/lib/theme';
-import { getServerAuthSession } from '~/server/auth';
-import { TRPCReactProvider } from '~/trpc/react';
-import { AuthContextProvider } from './context/auth-context';
-import { redirect } from 'next/navigation';
+import { ThemeProvider } from "../../components/ui/theme-provider"
+import { cn } from "../../lib/utils"
+import { AuthContextProvider } from "./context/auth-context"
 
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-sans',
-});
+const fontSans = FontSans({
+  subsets: ["latin"],
+  variable: "--font-sans",
+})
 
-export const metadata = {
-  title: 'drizzle-trello',
-  description: 'A task management app built with tRPC / Next.js / Mantine and DrizzleORM',
-  icons: [{ rel: 'icon', url: '/favicon.ico' }],
-};
+export const metadata: Metadata = {
+  title: {
+    default: siteConfig.name,
+    template: `%s - ${siteConfig.name}`,
+  },
+  description: siteConfig.description,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "white" },
+    { media: "(prefers-color-scheme: dark)", color: "black" },
+  ],
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon-16x16.png",
+    apple: "/apple-touch-icon.png",
+  },
+}
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const session = await getServerAuthSession();
-  if (!session?.user) redirect('/api/auth/signin');
+  const session = await getServerAuthSession()
+  if (!session?.user) redirect("/api/auth/signin")
 
   return (
-    <html lang="en" className={inter.className}>
-      <head>
-        <ColorSchemeScript defaultColorScheme="auto" />
-      </head>
-      <body suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
+      <head />
+      <body className={cn("min-h-screen bg-background font-sans antialiased", fontSans.variable)}>
         <TRPCReactProvider headers={headers()}>
           <AuthContextProvider user={session?.user}>
-            <MantineProvider theme={theme}>
-              <NavigationProgress />
-              <Navigation />
-              <div style={{ paddingTop: '3rem' }}>{children}</div>
-              <ReactQueryDevtools initialIsOpen={false} />
-            </MantineProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="dark"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <div style={{ paddingTop: "3rem" }}>{children}</div>
+            </ThemeProvider>
+            <ReactQueryDevtools initialIsOpen={false} />
           </AuthContextProvider>
         </TRPCReactProvider>
       </body>
     </html>
-  );
+  )
 }

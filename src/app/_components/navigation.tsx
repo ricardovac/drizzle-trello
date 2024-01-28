@@ -1,212 +1,55 @@
-'use client';
-import {
-  Anchor,
-  Autocomplete,
-  Box,
-  Burger,
-  Button,
-  Center,
-  Divider,
-  em,
-  Flex,
-  Group,
-  Menu,
-  Popover,
-  PopoverDropdown,
-  PopoverTarget,
-  rem,
-  SimpleGrid,
-  Text,
-  ThemeIcon,
-  UnstyledButton,
-  useMantineTheme,
-} from '@mantine/core';
-import { useDisclosure, useMediaQuery } from '@mantine/hooks';
-import {
-  Book,
-  BookTemplate,
-  ChevronDown,
-  Code,
-  Coins,
-  Frame,
-  PersonStanding,
-  Plus,
-  Search,
-} from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import CreateBoardPopover from '~/app/_components/create-board-popover';
-import classes from '~/styles/header-search.module.css';
-import { useAuthContext } from '../context/auth-context';
-import { UserMenu } from './user-menu';
+"use client"
 
-const mockdata = [
-  {
-    icon: Code,
-    title: 'Meu quadro 1',
-    description: 'Tarefas para o teste automatizados',
-  },
-  {
-    icon: Coins,
-    title: 'Quadro teste',
-    description: 'Lorem ipsum dolor sit amet, qu.',
-  },
-  {
-    icon: Book,
-    title: 'Meu quadro 2',
-    description: 'Tarefas para o backend',
-  },
-];
+import * as React from "react"
+import Link from "next/link"
+import { useSelectedLayoutSegment } from "next/navigation"
+import { MainNavItem } from "@/utils/types"
+import { Icons } from "components/ui/icons"
+import { siteConfig } from "config/site"
+import { cn } from "lib/utils"
 
-export function Navigation() {
-  const [opened, { toggle }] = useDisclosure(false);
-  const [menuOpened, setMenuOpened] = useState(false);
-  const theme = useMantineTheme();
-  const router = useRouter();
-  const { user } = useAuthContext();
+import { MobileNav } from "./main-nav"
 
-  if (!user) void router.push('/api/auth/signin');
-
-  const links = mockdata.map((item) => (
-    <UnstyledButton className={classes.subLink} key={item.title}>
-      <Group wrap="nowrap" align="flex-start">
-        <ThemeIcon size={34} variant="default" radius="md">
-          <item.icon style={{ width: rem(22), height: rem(22) }} color={theme.colors.blue[6]} />
-        </ThemeIcon>
-        <div>
-          <Text size="sm" fw={500}>
-            {item.title}
-          </Text>
-          <Text size="xs" c="dimmed">
-            {item.description}
-          </Text>
-        </div>
-      </Group>
-    </UnstyledButton>
-  ));
-
-  return (
-    <header className={classes.header}>
-      <Flex h={'50px'} justify={'space-between'} align={'center'}>
-        <Flex align="center">
-          <Group>
-            <Burger opened={opened} onClick={toggle} size="sm" hiddenFrom="sm" />
-            <Link href="/">Trello Clone</Link>
-          </Group>
-
-          <Group h="100%" gap={10} visibleFrom="sm" ml={20}>
-            <Popover width={600} position="bottom-start" radius="md" shadow="md" withinPortal>
-              <PopoverTarget>
-                <a href="#" className={classes.link}>
-                  <Center inline>
-                    <Box component="span" mr={5}>
-                      Áreas de trabalho
-                    </Box>
-                    <ChevronDown
-                      style={{ width: rem(16), height: rem(16) }}
-                      color={theme.colors.blue[6]}
-                    />
-                  </Center>
-                </a>
-              </PopoverTarget>
-
-              <PopoverDropdown style={{ overflow: 'hidden' }}>
-                <Group justify="space-between" px="md">
-                  <Text fw={500}>Quadros recentes</Text>
-                  <Anchor href="#" fz="xs">
-                    Ver todos
-                  </Anchor>
-                </Group>
-
-                <Divider my="sm" />
-
-                <SimpleGrid cols={2} spacing={20}>
-                  {links}
-                </SimpleGrid>
-
-                <div className={classes.dropdownFooter}>
-                  <Group justify="space-between" mt={20}>
-                    <div>
-                      <Text fw={500} fz="sm">
-                        Ver quadros importantes
-                      </Text>
-                      <Text size="xs" c="dimmed">
-                        Quadros importantes são marcados com estrela
-                      </Text>
-                    </div>
-                    <Button variant="default">Importantes</Button>
-                  </Group>
-                </div>
-              </PopoverDropdown>
-            </Popover>
-            <Link href="#" className={classes.link}>
-              Templates
-            </Link>
-            <CreateMenuPopover menuOpened={menuOpened} setMenuOpened={setMenuOpened} />
-          </Group>
-        </Flex>
-
-        <Group>
-          <Autocomplete
-            visibleFrom="sm"
-            className={classes.search}
-            placeholder="Pesquisar"
-            rightSectionPointerEvents="all"
-            leftSection={<Search style={{ width: rem(16), height: rem(16) }} />}
-            data={[{ group: 'Quadros recentes', items: ['Meu quadro'] }]}
-            maxDropdownHeight={200}
-          />
-          <UserMenu />
-        </Group>
-      </Flex>
-    </header>
-  );
+interface MainNavProps {
+  items?: MainNavItem[]
+  children?: React.ReactNode
 }
 
-function CreateMenuPopover({
-  menuOpened,
-  setMenuOpened,
-}: {
-  menuOpened: boolean;
-  setMenuOpened: (opened: boolean) => void;
-}) {
-  const isMobile = useMediaQuery(`(max-width: ${em(1200)})`);
+export function MainNav({ items, children }: MainNavProps) {
+  const segment = useSelectedLayoutSegment()
+  const [showMobileMenu, setShowMobileMenu] = React.useState<boolean>(false)
 
   return (
-    <Menu shadow="md" width={400} opened={menuOpened} onChange={setMenuOpened}>
-      <Menu.Target>
-        {isMobile ? (
-          <Button>
-            <Plus />
-          </Button>
-        ) : (
-          <Button>Criar</Button>
-        )}
-      </Menu.Target>
-
-      <Menu.Dropdown>
-        <CreateBoardPopover>
-          <Menu.Item leftSection={<Frame style={{ width: rem(24), height: rem(24) }} />}>
-            Criar Quadro
-            <Text size="sm">
-              Um quadro é feito de cartões ordenados em listas. Use-o para gerenciar projetos,
-              controlar informações e organizar qualquer coisa.
-            </Text>
-          </Menu.Item>
-        </CreateBoardPopover>
-        <Menu.Item leftSection={<BookTemplate style={{ width: rem(24), height: rem(24) }} />}>
-          Começar com um template
-          <Text size="sm">Comece mais rápido com um template de quadro.</Text>
-        </Menu.Item>
-        <Menu.Item leftSection={<PersonStanding style={{ width: rem(24), height: rem(24) }} />}>
-          Criar Área de trabalho
-          <Text size="sm">
-            Uma Área de trabalho é um grupo de quadros e pessoas. Use-a para organizar sua empresa,
-            atividades paralelas, família ou amigos.
-          </Text>
-        </Menu.Item>
-      </Menu.Dropdown>
-    </Menu>
-  );
+    <div className="flex gap-6 md:gap-10">
+      <Link href="/" className="hidden items-center space-x-2 md:flex">
+        <Icons.logo />
+        <span className="hidden font-bold sm:inline-block">{siteConfig.name}</span>
+      </Link>
+      {items?.length ? (
+        <nav className="hidden gap-6 md:flex">
+          {items?.map((item, index) => (
+            <Link
+              key={index}
+              href={item.disabled ? "#" : item.href}
+              className={cn(
+                "flex items-center text-lg font-medium transition-colors hover:text-foreground/80 sm:text-sm",
+                item.href.startsWith(`/${segment}`) ? "text-foreground" : "text-foreground/60",
+                item.disabled && "cursor-not-allowed opacity-80"
+              )}
+            >
+              {item.title}
+            </Link>
+          ))}
+        </nav>
+      ) : null}
+      <button
+        className="flex items-center space-x-2 md:hidden"
+        onClick={() => setShowMobileMenu(!showMobileMenu)}
+      >
+        {showMobileMenu ? <Icons.close /> : <Icons.logo />}
+        <span className="font-bold">Menu</span>
+      </button>
+      {showMobileMenu && items && <MobileNav items={items}>{children}</MobileNav>}
+    </div>
+  )
 }

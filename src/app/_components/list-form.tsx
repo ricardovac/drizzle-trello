@@ -1,115 +1,110 @@
-/* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
-'use client';
-import { Button, Card, Flex, Input } from '@mantine/core';
-import { useForm } from '@mantine/form';
-import { useClickOutside } from '@mantine/hooks';
-import { Plus, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import { api } from '~/trpc/react';
-import { useAuthContext } from '../context/auth-context';
-import { useBoardContext } from '../context/board-context';
+"use client"
+
+import { useEffect, useRef, useState } from "react"
+import { api } from "@/trpc/react"
+import { Button } from "components/ui/button"
+import { Card } from "components/ui/card"
+import { Input } from "components/ui/input"
+import { X } from "lucide-react"
+import { useForm } from "react-hook-form"
+
+import { useClickOutside } from "@/hooks/useClickOutside"
+
+import { useAuthContext } from "../context/auth-context"
+import { useBoardContext } from "../context/board-context"
 
 export default function ListForm() {
-  const [mode, setMode] = useState<'button' | 'form'>('button');
-  const cardRef = useClickOutside(() => setMode('button'));
-  const { board } = useBoardContext();
+  const [mode, setMode] = useState<"button" | "form">("button")
+  const cardRef = useClickOutside(() => setMode("button"))
+  const { board } = useBoardContext()
 
-  if (mode === 'button') {
+  if (mode === "button") {
     return (
-      <Button
-        leftSection={<Plus />}
-        ref={cardRef}
-        variant="white"
-        onClick={() => setMode('form')}
-        opacity={0.6}
-      >
+      <Button ref={cardRef} onClick={() => setMode("form")} className="opacity-45">
         Adicionar uma lista
       </Button>
-    );
+    )
   }
 
-  return <ListFormField boardId={board.id} setMode={setMode} mode={mode} />;
+  return <ListFormField boardId={board.id} setMode={setMode} mode={mode} />
 }
 
 interface CreateListFormProps {
-  boardId: string;
-  setMode: (value: 'button' | 'form') => void;
-  mode: 'button' | 'form';
+  boardId: string
+  setMode: (value: "button" | "form") => void
+  mode: "button" | "form"
 }
 
 function ListFormField({ boardId, setMode, mode }: CreateListFormProps) {
-  const { lists } = useBoardContext();
-  const { user } = useAuthContext();
-  const ref = useRef<HTMLInputElement>(null);
-  const utils = api.useUtils();
-  const userId = user.id ?? '';
-  const cardRef = useClickOutside(() => setMode('button'));
+  const { lists } = useBoardContext()
+  const { user } = useAuthContext()
+  const ref = useRef<HTMLInputElement>(null)
+  const utils = api.useUtils()
+  const userId = user.id ?? ""
+  const cardRef = useClickOutside(() => setMode("button"))
 
   const form = useForm({
-    initialValues: {
-      title: '',
+    defaultValues: {
+      title: "",
     },
-    validate: {
-      title: (value) => (value ? undefined : 'Insira um título para a lista'),
-    },
-  });
+  })
 
   const { mutate } = api.list.create.useMutation({
     onMutate: async (newData) => {
-      await utils.list.all.cancel();
+      await utils.list.all.cancel()
 
-      const previousList = utils.list.all.getData({ boardId });
+      const previousList = utils.list.all.getData({ boardId })
 
       const newList = {
         ...newData,
-        id: '',
+        id: "",
         createdById: userId,
         createdAt: new Date(),
         updatedAt: new Date(),
         cards: [],
-      };
+      }
 
-      utils.list.all.setData({ boardId }, previousList ? [...previousList, newList] : [newList]);
+      utils.list.all.setData({ boardId }, previousList ? [...previousList, newList] : [newList])
 
-      return { previousList };
+      return { previousList }
     },
     onError: (_, __, context) => {
-      utils.list.all.setData({ boardId }, context?.previousList);
+      utils.list.all.setData({ boardId }, context?.previousList)
     },
     onSettled: () => {
-      form.reset();
-      setMode('button');
-      void utils.list.all.invalidate({ boardId });
+      form.reset()
+      setMode("button")
+      void utils.list.all.invalidate({ boardId })
     },
-  });
+  })
 
   useEffect(() => {
-    if (mode && ref.current) ref.current.focus();
-  }, [ref, mode]);
+    if (mode && ref.current) ref.current.focus()
+  }, [ref, mode])
 
-  const onSubmit = form.onSubmit((values) => {
-    mutate({ title: values.title, boardId, position: (lists.at(-1)?.position ?? 0) + 1 });
-    form.reset();
-  });
+  const onSubmit = form.handleSubmit((values) => {
+    mutate({ title: values.title, boardId, position: (lists.at(-1)?.position ?? 0) + 1 })
+    form.reset()
+  })
 
   return (
-    <Card bg="dark" ref={cardRef}>
+    <Card ref={cardRef}>
       <form onSubmit={onSubmit}>
-        <Flex gap={8} direction="column">
+        <div className="flex flex-col gap-10">
           <Input
             placeholder="Insira o título da lista..."
-            {...form.getInputProps('title')}
+            {...form.register("title", { required: "Digite um titulo para a lista" })}
             name="title"
             ref={ref}
           />
-          <Flex align="center" justify="space-between">
+          <div className="flex items-center justify-between">
             <Button type="submit">Adicionar lista</Button>
-            <Button variant="subtle" onClick={() => setMode('button')}>
+            <Button variant="destructive" onClick={() => setMode("button")}>
               <X />
             </Button>
-          </Flex>
-        </Flex>
+          </div>
+        </div>
       </form>
     </Card>
-  );
+  )
 }

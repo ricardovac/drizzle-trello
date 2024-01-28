@@ -4,6 +4,7 @@ import {
   boolean,
   index,
   int,
+  json,
   mysqlTableCreator,
   primaryKey,
   text,
@@ -47,7 +48,7 @@ export const boards = mysqlTable(
       .$defaultFn(() => createId())
       .primaryKey(),
     title: varchar('title', { length: 256 }).notNull(),
-    background: varchar('color', { length: 128 }).notNull(),
+    background: json('background'),
     public: boolean('public').default(false),
     createdAt: timestamp('created_at')
       .default(sql`CURRENT_TIMESTAMP`)
