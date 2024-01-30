@@ -1,5 +1,3 @@
-"use client"
-
 import { useMemo } from "react"
 import Image from "next/image"
 import { Paintbrush } from "lucide-react"
@@ -85,7 +83,7 @@ export function ColorPicker({
             variant={"outline"}
             type="button"
             className={cn(
-              "w-[220px] justify-start text-left font-normal",
+              "w-full justify-start text-left font-normal",
               !background && "text-muted-foreground",
               className
             )}
@@ -99,7 +97,7 @@ export function ColorPicker({
               ) : (
                 <Paintbrush className="size-4" />
               )}
-              <div className="flex-1 truncate">{background ? background : "Pick a color"}</div>
+              <div className="flex-1 truncate">{background ? background : "Selecione uma cor"}</div>
             </div>
           </Button>
         </div>

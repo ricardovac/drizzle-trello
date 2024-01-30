@@ -11,25 +11,21 @@ interface BoardAppShellProps {
 
 export default function BoardAppShell({ children }: BoardAppShellProps) {
   const { board } = useBoardContext()
-  console.log(board)
 
   const background = board.background as unknown as BackgroundTypeSchema
   return (
-    <>
-      <ScrollContainer
-        className="scroll-container"
-        hideScrollbars={false}
-        horizontal
-        ignoreElements="#listCard"
-        style={{
-          backgroundColor: background.type === "color" ? background.value : undefined,
-          backgroundImage: background.type === "image" ? `url(${background.value})` : undefined,
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "cover",
-        }}
-      >
-        <div className="flex gap-10">{children}</div>
-      </ScrollContainer>
-    </>
+    <ScrollContainer
+      className="relative h-[calc(100vh_-_2.00rem)] w-full overflow-x-auto overflow-y-hidden"
+      horizontal
+      ignoreElements="#list-card, #editable-title"
+      style={{
+        backgroundColor: background.type === "color" ? background.value : undefined,
+        backgroundImage: background.type === "image" ? `url(${background.value})` : undefined,
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "cover",
+      }}
+    >
+      {children}
+    </ScrollContainer>
   )
 }

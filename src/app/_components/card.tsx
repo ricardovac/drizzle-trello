@@ -1,7 +1,7 @@
 import { type FC } from "react"
 import Link from "next/link"
 import { type SingleCard } from "@/trpc/shared"
-import { Draggable, type DraggableStateSnapshot, type DraggableStyle } from "@hello-pangea/dnd"
+import { Draggable } from "@hello-pangea/dnd"
 import { Button } from "components/ui/button"
 import { cn } from "lib/utils"
 import { AlignLeft } from "lucide-react"
@@ -14,7 +14,7 @@ interface CardProps {
 const Card: FC<CardProps> = ({ card, index }) => {
   return (
     <Draggable draggableId={card.id ?? ""} index={index}>
-      {(provided, snapshot) => (
+      {(provided) => (
         <Button
           {...provided.draggableProps}
           {...provided.dragHandleProps}
@@ -38,16 +38,6 @@ const Card: FC<CardProps> = ({ card, index }) => {
       )}
     </Draggable>
   )
-}
-
-function getStyle(style: DraggableStyle, snapshot: DraggableStateSnapshot) {
-  if (!snapshot.isDropAnimating) {
-    return style
-  }
-  return {
-    ...style,
-    transitionDuration: `0.001s`,
-  }
 }
 
 export default Card

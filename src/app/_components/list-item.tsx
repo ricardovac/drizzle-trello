@@ -1,13 +1,14 @@
 "use client"
 
 import { type FC } from "react"
+import { api } from "@/trpc/react"
 import { type SingleList } from "@/trpc/shared"
-import { Card, CardContent } from "components/ui/card"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "components/ui/card"
 import { MoreHorizontal } from "lucide-react"
 
 import CardForm from "./card-form"
+import EditableTitle from "./editable-title"
 import ListArea from "./list-area"
-import ListHeader from "./list-header"
 
 interface ListItemProps {
   list: SingleList
@@ -15,19 +16,28 @@ interface ListItemProps {
 }
 
 const ListItem: FC<ListItemProps> = ({ list, columnId }) => {
+  const { mutate } = api.list.edit.useMutation()
   return (
-    <Card id="listCard" className="w-[272px] rounded-md bg-slate-900">
-      <div className="flex items-center justify-between gap-10">
-        <ListHeader initialTitle={list.title} listId={list.id} />
+    <Card id="list-card" className="flex h-fit min-w-[300px] max-w-[300px] flex-col">
+      <CardHeader>
+        <CardTitle>
+          <div className="flex items-center justify-between gap-10">
+            <EditableTitle
+              title={list.title}
+              onSave={(title) => mutate({ title, listId: list.id })}
+            />
 
-        <MoreHorizontal />
-      </div>
-
-      <CardContent className="p-12">
+            <MoreHorizontal />
+          </div>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
         <ListArea cards={list.cards} columnId={columnId} />
       </CardContent>
 
-      <CardForm list={list} />
+      <CardFooter>
+        <CardForm list={list} />
+      </CardFooter>
     </Card>
   )
 }

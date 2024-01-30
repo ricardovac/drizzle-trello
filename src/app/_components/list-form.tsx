@@ -1,12 +1,16 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { createList } from "@/server/schema/list.schema"
 import { api } from "@/trpc/react"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "components/ui/button"
-import { Card } from "components/ui/card"
+import { Card, CardFooter, CardHeader } from "components/ui/card"
+import { Form, FormControl, FormField, FormItem, FormMessage } from "components/ui/form"
 import { Input } from "components/ui/input"
 import { X } from "lucide-react"
 import { useForm } from "react-hook-form"
+import { z } from "zod"
 
 import { useClickOutside } from "@/hooks/useClickOutside"
 
@@ -43,9 +47,12 @@ function ListFormField({ boardId, setMode, mode }: CreateListFormProps) {
   const userId = user.id ?? ""
   const cardRef = useClickOutside(() => setMode("button"))
 
-  const form = useForm({
+  const form = useForm<z.infer<typeof createList>>({
+    resolver: zodResolver(createList),
     defaultValues: {
       title: "",
+      boardId: "",
+      position: 0,
     },
   })
 
@@ -82,29 +89,39 @@ function ListFormField({ boardId, setMode, mode }: CreateListFormProps) {
     if (mode && ref.current) ref.current.focus()
   }, [ref, mode])
 
-  const onSubmit = form.handleSubmit((values) => {
+  const onSubmit = (values: z.infer<typeof createList>) => {
     mutate({ title: values.title, boardId, position: (lists.at(-1)?.position ?? 0) + 1 })
     form.reset()
-  })
+  }
 
   return (
     <Card ref={cardRef}>
-      <form onSubmit={onSubmit}>
-        <div className="flex flex-col gap-10">
-          <Input
-            placeholder="Insira o título da lista..."
-            {...form.register("title", { required: "Digite um titulo para a lista" })}
-            name="title"
-            ref={ref}
-          />
-          <div className="flex items-center justify-between">
-            <Button type="submit">Adicionar lista</Button>
-            <Button variant="destructive" onClick={() => setMode("button")}>
-              <X />
-            </Button>
-          </div>
-        </div>
-      </form>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <CardHeader>
+            <FormField
+              name="title"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input placeholder="Insira o título da lista..." {...field} ref={ref} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </CardHeader>
+          <CardFooter>
+            <div className="flex w-full items-center justify-between">
+              <Button type="submit">Adicionar lista</Button>
+              <Button variant="destructive" onClick={() => setMode("button")}>
+                <X />
+              </Button>
+            </div>
+          </CardFooter>
+        </form>
+      </Form>
     </Card>
   )
 }

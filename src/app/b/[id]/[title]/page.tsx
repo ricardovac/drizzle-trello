@@ -3,6 +3,7 @@ import { type SingleBoard } from "@/trpc/shared"
 import { getServerSession } from "next-auth"
 
 import BoardAppShell from "@/app/_components/board-appshell"
+import BoardHeader from "@/app/_components/board-header"
 import List from "@/app/_components/list"
 import ListForm from "@/app/_components/list-form"
 import BoardContext from "@/app/context/board-context"
@@ -13,7 +14,7 @@ interface BoardPageProps {
 
 export function generateMetadata({ params }: BoardPageProps) {
   return {
-    title: `${params.title} | drizzle-trello`,
+    title: decodeURIComponent(`${params.title} | drizzle-trello`),
   }
 }
 
@@ -29,9 +30,12 @@ export default async function Page({ params }: BoardPageProps) {
   return (
     <BoardContext lists={initialLists} board={board} permission={permission}>
       <BoardAppShell>
-        <div className="flex-start flex gap-10">
-          <List />
-          <ListForm />
+        <div className="absolute inset-x-0 top-0 flex size-full flex-col text-white">
+          <BoardHeader />
+          <div className="flex h-full flex-1 items-start gap-6 p-6">
+            <List />
+            <ListForm />
+          </div>
         </div>
       </BoardAppShell>
     </BoardContext>

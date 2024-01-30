@@ -1,6 +1,7 @@
 import { type FC } from "react"
 import { type Cards } from "@/trpc/shared"
 import { Droppable } from "@hello-pangea/dnd"
+import { cn } from "lib/utils"
 
 import Card from "./card"
 
@@ -12,8 +13,12 @@ interface ListAreaProps {
 const ListArea: FC<ListAreaProps> = ({ cards, columnId }) => {
   return (
     <Droppable droppableId={columnId}>
-      {(provided, _) => (
-        <div {...provided.droppableProps} ref={provided.innerRef} style={{ minHeight: "10px" }}>
+      {(provided, snapshot) => (
+        <div
+          {...provided.droppableProps}
+          ref={provided.innerRef}
+          className={cn("min-h-4 rounded-md", snapshot.isDraggingOver && "bg-primary/[.045]")}
+        >
           {cards.map((card, i) => (
             <Card card={card} key={card.id} index={i} />
           ))}
@@ -23,5 +28,4 @@ const ListArea: FC<ListAreaProps> = ({ cards, columnId }) => {
     </Droppable>
   )
 }
-
 export default ListArea

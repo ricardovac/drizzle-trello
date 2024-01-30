@@ -27,3 +27,8 @@ export const createBoard = z.object({
 export type createBoardSchema = z.TypeOf<typeof createBoard>
 
 export type BackgroundTypeSchema = z.infer<typeof createBoard.shape.background>
+
+export const updateBoard = z.object({
+  title: z.string().min(2, "O título deve conter pelo menos 2 caracteres").max(54),
+  boardId: z.string(),
+})

@@ -5,10 +5,9 @@ import { type InfiniteBoard } from "@/trpc/shared"
 
 interface BoardCardProps {
   board?: InfiniteBoard
-  loading?: boolean
 }
 
-export default function BoardCard({ board, loading = false }: BoardCardProps) {
+export default function BoardCard({ board }: BoardCardProps) {
   const image = board?.background as unknown as BackgroundTypeSchema
 
   return (

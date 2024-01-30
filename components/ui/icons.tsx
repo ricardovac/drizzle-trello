@@ -6,7 +6,6 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
-  Command,
   CreditCard,
   File,
   FileText,
@@ -21,6 +20,7 @@ import {
   Pizza,
   Plus,
   Settings,
+  Square,
   SunMedium,
   Trash,
   User,
@@ -30,7 +30,7 @@ import {
 export type Icon = LucideIcon
 
 export const Icons = {
-  logo: Command,
+  logo: Square,
   close: X,
   spinner: Loader2,
   chevronLeft: ChevronLeft,

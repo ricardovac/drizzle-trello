@@ -1,109 +1,91 @@
 "use client"
 
-import { useState } from "react"
-import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@radix-ui/react-collapsible"
-import { Separator } from "components/ui/separator"
+import { SidebarNavItem } from "@/utils/types"
 import { cn } from "lib/utils"
-import { Calendar, ChevronRight, CircuitBoard, Home } from "lucide-react"
-import { Session } from "next-auth"
 
 import { useAuthContext } from "../context/auth-context"
 
-interface LinksGroupProps {
-  label: string
-  initiallyOpened?: boolean
-  links?: { label: string; link: string }[]
-}
-
-export function LinksGroup({ label, initiallyOpened, links }: LinksGroupProps) {
-  const { user } = useAuthContext()
-  const [opened, setOpened] = useState(initiallyOpened ?? false)
-  const hasLinks = Array.isArray(links)
-  const items = (hasLinks ? links : []).map((link) => (
-    <Link href={link.link} key={link.label} scroll={false}>
-      {link.label}
-    </Link>
-  ))
-
-  return (
-    <div>
-      <Links />
-      <Separator className="my-4" />
-      <h1>Áreas de trabalho</h1>
-      <Collapsible onOpenChange={() => setOpened((o) => !o)} open={opened}>
-        <CollapsibleTrigger className="text-start">
-          <div className="flex justify-between">
-            <div className="mr-6 flex items-center">
-              <Image
-                src={user.image!}
-                width={38}
-                height={38}
-                className="rounded-full"
-                alt="Sidebar User Image"
-              />
-              <div className="ml-4">{label}</div>
-            </div>
-            {hasLinks && <ChevronRight className={cn("size-8", opened && "rotate-90")} />}
-          </div>
-        </CollapsibleTrigger>
-        {hasLinks ? <CollapsibleContent>{items}</CollapsibleContent> : null}
-      </Collapsible>
-    </div>
-  )
-}
-
-export function WorkspaceLinksGroup({ session }: { session: Session }) {
-  const mockdata = {
-    session: session,
-    label: `Área de trabalho de ${session?.user.name}`,
-    icon: Calendar,
-    links: [
-      { label: "Quadros", link: `/u/${session?.user.id}/boards` },
-      { label: "Destaques", link: "/w/areadetrabalho/highlights" },
-      { label: "Membros", link: "/w/areadetrabalho/views/table" },
-    ],
-  }
-
-  return <LinksGroup {...mockdata} initiallyOpened />
-}
-
-export function Links() {
-  const { user } = useAuthContext()
-  const userId = user.id
+export function SidebarNav() {
   const pathname = usePathname()
+  const { user } = useAuthContext()
 
-  const topLinks = [
+  const items = [
     {
-      icon: <CircuitBoard />,
-      label: "Quadros",
-      href: `/u/${userId}/boards`,
+      items: [
+        {
+          title: "Quadros",
+          href: `/u/${user.id}/boards`,
+        },
+        {
+          title: "Templates",
+          href: "/templates",
+        },
+        {
+          title: "Início",
+          href: "/",
+        },
+      ],
     },
     {
-      icon: <Home />,
-      label: "Início",
-      href: "/",
+      title: `Área de trabalho de ${user.name}`,
+      items: [
+        {
+          title: "Quadros",
+          href: `/u/${user.id}/boards`,
+        },
+        {
+          title: "Destaques",
+          href: "#",
+        },
+        {
+          title: "Membros",
+          href: "#",
+        },
+      ],
     },
   ]
 
-  const items = topLinks.map((item, idx) => (
-    <Link
-      key={idx}
-      href={{ pathname: item.href }}
-      className={cn(
-        "rounded-md",
-        pathname.trim() !== item.href.trim() && "hover:bg-muted",
-        pathname.trim() === item.href.trim() && "bg-muted-foreground"
-      )}
-    >
-      <div className="flex items-center gap-4 p-2">
-        {item.icon}
-        <span className="text-lg">{item.label}</span>
-      </div>
-    </Link>
-  ))
+  return items.length ? (
+    <div className="w-full">
+      {items.map((item, index) => (
+        <div key={index} className={cn("pb-8")}>
+          <h4 className="mb-1 rounded-md px-2 py-1 text-sm font-medium">{item.title}</h4>
+          {item.items ? <SidebarNavItems items={item.items} pathname={pathname} /> : null}
+        </div>
+      ))}
+    </div>
+  ) : null
+}
 
-  return <div className="flex flex-col gap-4">{items}</div>
+interface DocsSidebarNavItemsProps {
+  items: SidebarNavItem[]
+  pathname: string | null
+}
+
+export function SidebarNavItems({ items, pathname }: DocsSidebarNavItemsProps) {
+  return items?.length ? (
+    <div className="grid grid-flow-row auto-rows-max text-sm">
+      {items.map((item, index) =>
+        !item.disabled && item.href ? (
+          <Link
+            key={index}
+            href={item.href}
+            className={cn("flex w-full items-center rounded-md p-2 hover:underline", {
+              "bg-muted": pathname === item.href,
+            })}
+            target={item.external ? "_blank" : ""}
+            rel={item.external ? "noreferrer" : ""}
+          >
+            {item.title}
+          </Link>
+        ) : (
+          <span className="flex w-full cursor-not-allowed items-center rounded-md p-2 opacity-60">
+            {item.title}
+          </span>
+        )
+      )}
+    </div>
+  ) : null
 }

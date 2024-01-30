@@ -11,6 +11,7 @@ import { siteConfig } from "config/site"
 
 import { ThemeProvider } from "../../components/ui/theme-provider"
 import { cn } from "../../lib/utils"
+import { MainNav } from "./_components/main-nav"
 import { AuthContextProvider } from "./context/auth-context"
 
 const fontSans = FontSans({
@@ -51,7 +52,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               enableSystem
               disableTransitionOnChange
             >
-              <div style={{ paddingTop: "3rem" }}>{children}</div>
+              <MainNav />
+              {children}
             </ThemeProvider>
             <ReactQueryDevtools initialIsOpen={false} />
           </AuthContextProvider>

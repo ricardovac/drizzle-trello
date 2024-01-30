@@ -1,6 +1,6 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc"
 import { boards, users } from "@/server/db/schema"
-import { createBoard, getAllBoards, getBoardById } from "@/server/schema/board.shema"
+import { createBoard, getAllBoards, getBoardById, updateBoard } from "@/server/schema/board.shema"
 import { TRPCError } from "@trpc/server"
 import { desc, eq, gte, sql } from "drizzle-orm"
 
@@ -84,7 +84,7 @@ export const boardRouter = createTRPCRouter({
   }),
   create: protectedProcedure.input(createBoard).mutation(async ({ ctx, input }) => {
     const foundBoard = await ctx.db.query.boards.findFirst({
-      where: (fields) => eq(fields.title, input.title),
+      where: eq(boards.title, input.title),
     })
 
     if (!!foundBoard) {
@@ -97,5 +97,24 @@ export const boardRouter = createTRPCRouter({
     return await ctx.db.insert(boards).values({
       ...input,
     })
+  }),
+  edit: protectedProcedure.input(updateBoard).mutation(async ({ ctx, input }) => {
+    const foundBoard = await ctx.db.query.boards.findFirst({
+      where: eq(boards.id, input.boardId),
+    })
+
+    if (!foundBoard) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Board not found",
+      })
+    }
+
+    return await ctx.db
+      .update(boards)
+      .set({
+        title: input.title,
+      })
+      .where(eq(boards.id, input.boardId))
   }),
 })

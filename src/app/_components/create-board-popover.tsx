@@ -5,13 +5,12 @@ import Image from "next/image"
 import { BackgroundTypeSchema, createBoard } from "@/server/schema/board.shema"
 import { api } from "@/trpc/react"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { PopoverContent, PopoverTrigger } from "@radix-ui/react-popover"
 import { Button } from "components/ui/button"
 import { ColorPicker } from "components/ui/color-picker"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "components/ui/form"
 import { Input } from "components/ui/input"
-import { Popover } from "components/ui/popover"
-import { generateRandomHex } from "lib/utils"
+import { Popover, PopoverContent, PopoverTrigger } from "components/ui/popover"
+import { cn, generateRandomHex } from "lib/utils"
 import { LoaderIcon } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -20,9 +19,23 @@ import { useAuthContext } from "../context/auth-context"
 
 interface CreateBoardPopoverProps {
   children: React.ReactNode
+  className?: string
+  variant?:
+    | "default"
+    | "secondary"
+    | "link"
+    | "destructive"
+    | "outline"
+    | "ghost"
+    | null
+    | undefined
 }
 
-export default function CreateBoardPopover({ children }: CreateBoardPopoverProps) {
+export default function CreateBoardPopover({
+  children,
+  variant,
+  className,
+}: CreateBoardPopoverProps) {
   const { user } = useAuthContext()
   const [backgroundColor, setBackgroundColor] = useState("")
 
@@ -57,13 +70,16 @@ export default function CreateBoardPopover({ children }: CreateBoardPopoverProps
 
   return (
     <Popover>
-      <PopoverTrigger>{children}</PopoverTrigger>
+      <PopoverTrigger asChild>
+        <Button className={cn(className)} variant={variant}>
+          {children}
+        </Button>
+      </PopoverTrigger>
       <PopoverContent>
         <div className="relative flex flex-col justify-center gap-6">
           <h1>Criar quadro</h1>
 
           <BoardPreview watchedBackground={watchedBackground} />
-          <strong>Tela de fundo</strong>
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -72,7 +88,7 @@ export default function CreateBoardPopover({ children }: CreateBoardPopoverProps
                 name="background"
                 render={({ field }) => (
                   <FormItem className="w-full">
-                    <FormLabel>Background</FormLabel>
+                    <FormLabel>Tela de fundo</FormLabel>
                     <FormControl>
                       <ColorPicker
                         {...field}
@@ -97,7 +113,7 @@ export default function CreateBoardPopover({ children }: CreateBoardPopoverProps
                   </FormItem>
                 )}
               />
-              <Button className="mt-10" disabled={isSubmitButtonDisabled} type="submit">
+              <Button className="mt-10 w-full" disabled={isSubmitButtonDisabled} type="submit">
                 {isLoading && <LoaderIcon className="mr-2 size-4 animate-spin" />}
                 Criar
               </Button>
@@ -115,7 +131,7 @@ interface BoardPreviewProps {
 
 function BoardPreview({ watchedBackground }: BoardPreviewProps) {
   return (
-    <div className="p-12" style={{ backgroundColor: watchedBackground.value }}>
+    <div className="flex justify-center p-6" style={{ backgroundColor: watchedBackground.value }}>
       <Image src="/assets/board.svg" alt="Board SVG" width={160} height={90} />
     </div>
   )
