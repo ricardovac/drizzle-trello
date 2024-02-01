@@ -22,7 +22,7 @@ export default function BoardAppShell({ children }: BoardAppShellProps) {
         backgroundColor: background.type === "color" ? background.value : undefined,
         backgroundImage: background.type === "image" ? `url(${background.value})` : undefined,
         backgroundRepeat: "no-repeat",
-        backgroundSize: "cover",
+        backgroundSize: "cover"
       }}
     >
       {children}

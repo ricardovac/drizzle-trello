@@ -7,7 +7,7 @@ export default {
   driver: "mysql2",
   breakpoints: true,
   dbCredentials: {
-    connectionString: env.DATABASE_URL,
+    connectionString: env.DATABASE_URL
   },
-  tablesFilter: ["trello-clone_*"],
+  tablesFilter: ["trello-clone_*"]
 } satisfies Config

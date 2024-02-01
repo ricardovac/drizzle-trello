@@ -1,27 +1,24 @@
-"use client";
+"use client"
 
-import { FC, MutableRefObject, useEffect, useState } from "react";
-import { cn } from "lib/utils";
-import { Button } from "components/ui/button";
-import { Input } from "components/ui/input";
-import { useClickOutside } from "@/hooks/useClickOutside";
-import { useRouter } from "next/navigation";
+import { FC, MutableRefObject, useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import { Button } from "components/ui/button"
+import { Input } from "components/ui/input"
+import { cn } from "lib/utils"
+
+import { useClickOutside } from "@/hooks/useClickOutside"
 
 interface EditableTitleProps {
-  title: string;
-  onSave: (title: string) => void;
-  className?: string;
+  title: string
+  onSave: (title: string) => void
+  className?: string
 }
 
-const EditableTitle: FC<EditableTitleProps> = ({
-  title: initialTitle,
-  onSave,
-  className,
-}) => {
-  const [mode, setMode] = useState<"edit" | "view">("view");
-  const [title, setTitle] = useState(initialTitle);
+const EditableTitle: FC<EditableTitleProps> = ({ title: initialTitle, onSave, className }) => {
+  const [mode, setMode] = useState<"edit" | "view">("view")
+  const [title, setTitle] = useState(initialTitle)
 
-  const router = useRouter();
+  const router = useRouter()
 
   const clickOutsideRef = useClickOutside(() => {
     setMode("view")
@@ -29,7 +26,7 @@ const EditableTitle: FC<EditableTitleProps> = ({
     if (!title.trim()) return
 
     onSave(title)
-    router.refresh();
+    router.refresh()
 
     clickOutsideRef.current?.blur()
   }) as MutableRefObject<HTMLInputElement>
@@ -51,7 +48,7 @@ const EditableTitle: FC<EditableTitleProps> = ({
       >
         {title}
       </Button>
-    );
+    )
   }
 
   return (
@@ -62,7 +59,7 @@ const EditableTitle: FC<EditableTitleProps> = ({
       value={title}
       onChange={(e) => setTitle(e.target.value)}
     />
-  );
-};
+  )
+}
 
-export default EditableTitle;
+export default EditableTitle

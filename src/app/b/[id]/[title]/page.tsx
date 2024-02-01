@@ -14,7 +14,7 @@ interface BoardPageProps {
 
 export function generateMetadata({ params }: BoardPageProps) {
   return {
-    title: decodeURIComponent(`${params.title} | drizzle-trello`),
+    title: decodeURIComponent(`${params.title} | drizzle-trello`)
   }
 }
 
@@ -23,9 +23,11 @@ export default async function Page({ params }: BoardPageProps) {
 
   const board = await api.board.get.query({ id })
   const initialLists = await api.list.all.query({
-    boardId: id,
+    boardId: id
   })
   const permission = await getBoardUserPermission(board)
+
+  await api.board.createRecent.mutate({ boardId: board.id, userId: board.ownerId })
 
   return (
     <BoardContext lists={initialLists} board={board} permission={permission}>

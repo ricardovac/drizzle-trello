@@ -6,7 +6,7 @@ import {
   useEffect,
   useState,
   type FC,
-  type PropsWithChildren,
+  type PropsWithChildren
 } from "react"
 import { api } from "@/trpc/react"
 import { type BoardMemberType, type List, type SingleBoard } from "@/trpc/shared"
@@ -34,7 +34,7 @@ const BoardContextProvider: FC<BoardContextProviderProps> = ({
   children,
   board,
   lists: initialLists,
-  permission,
+  permission
 }) => {
   const { mutate: updateCardPositions } = api.card.updateCardPositions.useMutation()
   const { mutate: updateCard } = api.card.updateCard.useMutation()
@@ -45,7 +45,7 @@ const BoardContextProvider: FC<BoardContextProviderProps> = ({
       initialData: initialLists,
       refetchOnMount: false,
       refetchOnReconnect: false,
-      refetchOnWindowFocus: false,
+      refetchOnWindowFocus: false
     }
   )
 
@@ -78,14 +78,14 @@ const BoardContextProvider: FC<BoardContextProviderProps> = ({
         ...lists,
         [source.droppableId]: {
           ...column,
-          cards: copiedItems,
-        },
+          cards: copiedItems
+        }
       })
 
       copiedItems.forEach((card, idx) => {
         updateCardPositions({
           cardId: card.id,
-          position: idx + 1,
+          position: idx + 1
         })
       })
     }
@@ -107,12 +107,12 @@ const BoardContextProvider: FC<BoardContextProviderProps> = ({
         ...lists,
         [source.droppableId]: {
           ...sourceColumn,
-          cards: sourceItems,
+          cards: sourceItems
         },
         [destination.droppableId]: {
           ...destColumn,
-          cards: destItems,
-        },
+          cards: destItems
+        }
       })
 
       if (!removed?.id || !destColumn?.id) return
@@ -121,15 +121,15 @@ const BoardContextProvider: FC<BoardContextProviderProps> = ({
         updateCard({
           cardId: card.id,
           card: {
-            listId: destColumn.id,
-          },
+            listId: destColumn.id
+          }
         })
       })
 
       destItems.forEach((card, idx) => {
         updateCardPositions({
           cardId: card.id,
-          position: idx + 1,
+          position: idx + 1
         })
       })
     }

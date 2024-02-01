@@ -52,8 +52,8 @@ function ListFormField({ boardId, setMode, mode }: CreateListFormProps) {
     defaultValues: {
       title: "",
       boardId: "",
-      position: 0,
-    },
+      position: 0
+    }
   })
 
   const { mutate } = api.list.create.useMutation({
@@ -68,7 +68,7 @@ function ListFormField({ boardId, setMode, mode }: CreateListFormProps) {
         createdById: userId,
         createdAt: new Date(),
         updatedAt: new Date(),
-        cards: [],
+        cards: []
       }
 
       utils.list.all.setData({ boardId }, previousList ? [...previousList, newList] : [newList])
@@ -82,7 +82,7 @@ function ListFormField({ boardId, setMode, mode }: CreateListFormProps) {
       form.reset()
       setMode("button")
       void utils.list.all.invalidate({ boardId })
-    },
+    }
   })
 
   useEffect(() => {

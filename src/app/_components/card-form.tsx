@@ -9,6 +9,7 @@ import { Textarea } from "components/ui/textarea"
 import { Plus, X } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
+
 import { useClickOutside } from "@/hooks/useClickOutside"
 
 interface CardFormProps {
@@ -24,8 +25,8 @@ const CardForm: FC<CardFormProps> = ({ list }) => {
     resolver: zodResolver(createCard),
     defaultValues: {
       title: "",
-      listId: "",
-    },
+      listId: ""
+    }
   })
 
   const { mutate } = api.card.create.useMutation({
@@ -35,7 +36,7 @@ const CardForm: FC<CardFormProps> = ({ list }) => {
 
       form.reset()
       setMode("button")
-    },
+    }
   })
   const ref = useRef<HTMLTextAreaElement>(null)
 

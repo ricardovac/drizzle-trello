@@ -34,7 +34,7 @@ interface CreateBoardPopoverProps {
 export default function CreateBoardPopover({
   children,
   variant,
-  className,
+  className
 }: CreateBoardPopoverProps) {
   const { user } = useAuthContext()
   const [backgroundColor, setBackgroundColor] = useState("")
@@ -46,15 +46,15 @@ export default function CreateBoardPopover({
       title: "",
       ownerId: "",
       background: { type: "color", value: generateRandomHex() },
-      public: true,
-    },
+      public: true
+    }
   })
   const utils = api.useUtils()
   const { mutate, isLoading } = api.board.create.useMutation({
     onSuccess: async () => {
       form.reset()
       await utils.board.all.invalidate({ limit: 10 })
-    },
+    }
   })
 
   const watchedBackground = form.watch("background")
@@ -64,7 +64,7 @@ export default function CreateBoardPopover({
   const onSubmit = (values: z.infer<typeof createBoard>) => {
     mutate({
       ...values,
-      ownerId: user.id,
+      ownerId: user.id
     })
   }
 

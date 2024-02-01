@@ -1,10 +1,9 @@
-import { getServerAuthSession } from "@/server/auth"
-
 import "@/styles/globals.css"
-import { type Metadata } from "next"
+import { Viewport, type Metadata } from "next"
 import { Inter as FontSans } from "next/font/google"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
+import { getServerAuthSession } from "@/server/auth"
 import { TRPCReactProvider } from "@/trpc/react"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { siteConfig } from "config/site"
@@ -16,24 +15,27 @@ import { AuthContextProvider } from "./context/auth-context"
 
 const fontSans = FontSans({
   subsets: ["latin"],
-  variable: "--font-sans",
+  variable: "--font-sans"
 })
 
 export const metadata: Metadata = {
   title: {
     default: siteConfig.name,
-    template: `%s - ${siteConfig.name}`,
+    template: `%s - ${siteConfig.name}`
   },
   description: siteConfig.description,
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "white" },
-    { media: "(prefers-color-scheme: dark)", color: "black" },
-  ],
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon-16x16.png",
-    apple: "/apple-touch-icon.png",
-  },
+    apple: "/apple-touch-icon.png"
+  }
+}
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "white" },
+    { media: "(prefers-color-scheme: dark)", color: "black" }
+  ]
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

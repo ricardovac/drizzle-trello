@@ -5,7 +5,7 @@ module.exports = {
   singleQuote: false,
   tabWidth: 2,
   printWidth: 100,
-  trailingComma: "es5",
+  trailingComma: "none",
   importOrder: [
     "^(react/(.*)$)|^(react$)",
     "^(next/(.*)$)|^(next$)",
@@ -21,7 +21,7 @@ module.exports = {
     "^@/styles/(.*)$",
     "^@/app/(.*)$",
     "",
-    "^[./]",
+    "^[./]"
   ],
   importOrderSeparation: false,
   importOrderSortSpecifiers: true,
@@ -29,5 +29,5 @@ module.exports = {
   importOrderParserPlugins: ["typescript", "jsx", "decorators-legacy"],
   importOrderMergeDuplicateImports: true,
   importOrderCombineTypeAndValueImports: true,
-  plugins: ["@ianvs/prettier-plugin-sort-imports"],
+  plugins: ["@ianvs/prettier-plugin-sort-imports"]
 }

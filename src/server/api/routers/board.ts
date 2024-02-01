@@ -1,15 +1,22 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc"
-import { boards, users } from "@/server/db/schema"
-import { createBoard, getAllBoards, getBoardById, updateBoard } from "@/server/schema/board.shema"
+import { boards, recentlyViewed, users } from "@/server/db/schema"
+import {
+  createBoard,
+  createRecent,
+  getAllBoards,
+  getBoardById,
+  getRecent,
+  updateBoard
+} from "@/server/schema/board.shema"
 import { TRPCError } from "@trpc/server"
-import { desc, eq, gte, sql } from "drizzle-orm"
+import { and, desc, eq, gte, sql } from "drizzle-orm"
 
 export const boardRouter = createTRPCRouter({
   get: protectedProcedure.input(getBoardById).query(async ({ ctx, input }) => {
     const board = await ctx.db.query.boards.findFirst({
       where: eq(boards.id, input.id),
       with: {
-        owner: true,
+        owner: true
       },
       columns: {
         title: true,
@@ -17,13 +24,13 @@ export const boardRouter = createTRPCRouter({
         createdAt: true,
         updatedAt: true,
         ownerId: true,
-        public: true,
-      },
+        public: true
+      }
     })
 
     if (!board) {
       throw new TRPCError({
-        code: "NOT_FOUND",
+        code: "NOT_FOUND"
       })
     }
 
@@ -33,7 +40,7 @@ export const boardRouter = createTRPCRouter({
       background: board.background,
       user: board.owner,
       ownerId: board.ownerId,
-      public: board.public,
+      public: board.public
     }
   }),
   all: protectedProcedure.input(getAllBoards).query(async ({ ctx, input }) => {
@@ -42,7 +49,7 @@ export const boardRouter = createTRPCRouter({
     const limit = input.limit ?? 20
     const countRows = await db
       .select({
-        board_count: sql<number>`count(${boards.id})`.as("board_count"),
+        board_count: sql<number>`count(${boards.id})`.as("board_count")
       })
       .from(boards)
     const totalCount = countRows[0]?.board_count
@@ -73,48 +80,79 @@ export const boardRouter = createTRPCRouter({
       title: item.boards.title,
       background: item.boards.background,
       createdAt: item.boards.createdAt,
-      owner: item.user,
+      owner: item.user
     }))
 
     return {
       items: returnableItems,
       nextCursor,
-      totalCount,
+      totalCount
     }
   }),
   create: protectedProcedure.input(createBoard).mutation(async ({ ctx, input }) => {
     const foundBoard = await ctx.db.query.boards.findFirst({
-      where: eq(boards.title, input.title),
+      where: eq(boards.title, input.title)
     })
 
     if (!!foundBoard) {
       throw new TRPCError({
         code: "BAD_REQUEST",
-        message: "Board already exists",
+        message: "Board already exists"
       })
     }
 
     return await ctx.db.insert(boards).values({
-      ...input,
+      ...input
     })
   }),
   edit: protectedProcedure.input(updateBoard).mutation(async ({ ctx, input }) => {
     const foundBoard = await ctx.db.query.boards.findFirst({
-      where: eq(boards.id, input.boardId),
+      where: eq(boards.id, input.boardId)
     })
 
     if (!foundBoard) {
       throw new TRPCError({
         code: "BAD_REQUEST",
-        message: "Board not found",
+        message: "Board not found"
       })
     }
 
     return await ctx.db
       .update(boards)
       .set({
-        title: input.title,
+        title: input.title
       })
       .where(eq(boards.id, input.boardId))
   }),
+  createRecent: protectedProcedure.input(createRecent).mutation(async ({ ctx, input }) => {
+    const foundRecent = await ctx.db.query.recentlyViewed.findFirst({
+      where: and(eq(recentlyViewed.userId, input.userId), eq(recentlyViewed.boardId, input.boardId))
+    })
+
+    if (!!foundRecent) {
+      return await ctx.db
+        .update(recentlyViewed)
+        .set({
+          updatedAt: new Date()
+        })
+        .where(
+          and(eq(recentlyViewed.userId, input.userId), eq(recentlyViewed.boardId, input.boardId))
+        )
+    }
+
+    return await ctx.db.insert(recentlyViewed).values({
+      userId: input.userId,
+      boardId: input.boardId
+    })
+  }),
+  getRecent: protectedProcedure.input(getRecent).query(async ({ ctx, input }) => {
+    return await ctx.db.query.recentlyViewed.findMany({
+      where: eq(recentlyViewed.userId, input.userId),
+      orderBy: desc(recentlyViewed.createdAt),
+      limit: 5,
+      with: {
+        board: true,
+      }
+    })
+  })
 })

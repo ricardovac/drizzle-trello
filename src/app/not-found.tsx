@@ -2,10 +2,10 @@
 //
 export default function NotFoundPage() {
   return (
-    <div className='container'>
+    <div className="container">
       <p>not found</p>
     </div>
-  );
+  )
 }
 
 // export function Illustration(props: React.ComponentPropsWithoutRef<'svg'>) {

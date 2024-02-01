@@ -42,7 +42,7 @@ export const createInnerTRPCContext = async (opts: CreateContextOptions) => {
   return {
     session,
     headers: opts.headers,
-    db,
+    db
   }
 }
 
@@ -56,7 +56,7 @@ export const createTRPCContext = async (opts: { req: NextRequest }) => {
   // Fetch stuff that depends on the request
 
   return await createInnerTRPCContext({
-    headers: opts.req.headers,
+    headers: opts.req.headers
   })
 }
 
@@ -75,10 +75,10 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
       ...shape,
       data: {
         ...shape.data,
-        zodError: error.cause instanceof ZodError ? error.cause.flatten() : null,
-      },
+        zodError: error.cause instanceof ZodError ? error.cause.flatten() : null
+      }
     }
-  },
+  }
 })
 
 /**
@@ -112,8 +112,8 @@ const enforceUserIsAuthed = t.middleware(({ ctx, next }) => {
   return next({
     ctx: {
       // infers the `session` as non-nullable
-      session: { ...ctx.session, user: ctx.session.user },
-    },
+      session: { ...ctx.session, user: ctx.session.user }
+    }
   })
 })
 

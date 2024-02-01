@@ -2,73 +2,76 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { Icons } from "components/ui/icons"
+import { BackgroundTypeSchema } from "@/server/schema/board.shema"
+import { api } from "@/trpc/react"
 import {
   NavigationMenu,
   NavigationMenuContent,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
+  NavigationMenuTrigger
 } from "components/ui/navigation-menu"
 import { cn } from "lib/utils"
 
-const components: { title: string; href: string; description: string }[] = [
-  {
-    title: "Alert Dialog",
-    href: "/docs/primitives/alert-dialog",
-    description:
-      "A modal dialog that interrupts the user with important content and expects a response.",
-  },
-  {
-    title: "Hover Card",
-    href: "/docs/primitives/hover-card",
-    description: "For sighted users to preview content available behind a link.",
-  },
-  {
-    title: "Progress",
-    href: "/docs/primitives/progress",
-    description:
-      "Displays an indicator showing the completion progress of a task, typically displayed as a progress bar.",
-  },
-  {
-    title: "Scroll-area",
-    href: "/docs/primitives/scroll-area",
-    description: "Visually or semantically separates content.",
-  },
-  {
-    title: "Tabs",
-    href: "/docs/primitives/tabs",
-    description:
-      "A set of layered sections of content—known as tab panels—that are displayed one at a time.",
-  },
-  {
-    title: "Tooltip",
-    href: "/docs/primitives/tooltip",
-    description:
-      "A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.",
-  },
-]
+import { useAuthContext } from "../context/auth-context"
+import { BoardImage } from "./board-background"
 
 export function MainNavigationMenu() {
+  const [isMenuOpen, setIsMenuOpen] = React.useState<boolean>(false)
+  const { user } = useAuthContext()
+
+  const { data: recentBoards } = api.board.getRecent.useQuery(
+    {
+      userId: user.id
+    },
+    {
+      enabled: !!user && isMenuOpen,
+      refetchOnReconnect: false,
+      staleTime: 1000 * 60 * 10
+    }
+  )
+
   return (
     <NavigationMenu>
       <NavigationMenuList>
         <NavigationMenuItem>
-          <NavigationMenuTrigger>Recentes</NavigationMenuTrigger>
+          <NavigationMenuTrigger onMouseEnter={() => setIsMenuOpen((o) => !o)}>
+            Recentes
+          </NavigationMenuTrigger>
           <NavigationMenuContent>
-            <ul className="grid gap-3 p-4 md:w-[300px] lg:w-[400px] lg:grid-rows-[.75fr_1fr]">
-              <ListItem href="/docs" title="Introduction">
-                Re-usable components built using Radix UI and Tailwind CSS.
-              </ListItem>
-              <ListItem href="/docs/installation" title="Installation">
-                How to install dependencies and structure your app.
-              </ListItem>
-              <ListItem href="/docs/primitives/typography" title="Typography">
-                Styles for headings, paragraphs, lists...etc
-              </ListItem>
-            </ul>
+            {!recentBoards?.length && (
+              <div className="p-4 text-center text-muted-foreground md:w-[300px] lg:w-[400px]">
+                Você não tem nenhum quadro recente.
+              </div>
+            )}
+
+            {!!recentBoards?.length && (
+              <ul className="grid gap-3 p-4 md:w-[300px] lg:w-[400px] lg:grid-rows-[.75fr_1fr]">
+                {recentBoards?.map((board) => (
+                  <li className="row-span-5" key={board.id}>
+                    <NavigationMenuLink asChild>
+                      <Link
+                        className="flex size-full select-none items-center gap-4 rounded-md px-4 no-underline outline-none hover:bg-muted focus:shadow-md"
+                        href={`/b/${board.board.id}/${encodeURIComponent(board.board.title)}`}
+                      >
+                        <BoardImage
+                          image={board.board.background as BackgroundTypeSchema}
+                          width={55}
+                          height={44}
+                        />
+                        <div className="mb-2 mt-4 flex w-full flex-col text-lg font-medium">
+                          {board.board.title}
+                          <p className="text-sm leading-tight text-muted-foreground">
+                            Área de trabalho de
+                          </p>
+                        </div>
+                      </Link>
+                    </NavigationMenuLink>
+                  </li>
+                ))}
+              </ul>
+            )}
           </NavigationMenuContent>
         </NavigationMenuItem>
       </NavigationMenuList>

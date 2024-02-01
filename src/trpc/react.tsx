@@ -20,7 +20,7 @@ export function TRPCReactProvider(props: { children: React.ReactNode; headers: H
         loggerLink({
           enabled: (op) =>
             process.env.NODE_ENV === "development" ||
-            (op.direction === "down" && op.result instanceof Error),
+            (op.direction === "down" && op.result instanceof Error)
         }),
         unstable_httpBatchStreamLink({
           url: getUrl(),
@@ -28,9 +28,9 @@ export function TRPCReactProvider(props: { children: React.ReactNode; headers: H
             const heads = new Map(props.headers)
             heads.set("x-trpc-source", "react")
             return Object.fromEntries(heads)
-          },
-        }),
-      ],
+          }
+        })
+      ]
     })
   )
 

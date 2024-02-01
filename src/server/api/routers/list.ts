@@ -17,9 +17,9 @@ export const listRouter = createTRPCRouter({
       },
       with: {
         cards: {
-          orderBy: (cards, { asc }) => [asc(cards.position)],
-        },
-      },
+          orderBy: (cards, { asc }) => [asc(cards.position)]
+        }
+      }
     })
   }),
   create: protectedProcedure.input(createList).mutation(async ({ ctx, input }) => {
@@ -35,7 +35,7 @@ export const listRouter = createTRPCRouter({
     if (board[0]?.ownerId !== session.user.id) {
       throw new TRPCError({
         code: "UNAUTHORIZED",
-        message: "You are not the ownerId of this board",
+        message: "You are not the ownerId of this board"
       })
     }
 
@@ -56,5 +56,5 @@ export const listRouter = createTRPCRouter({
     } catch (error) {
       throw new TRPCClientError("Error updating list")
     }
-  }),
+  })
 })

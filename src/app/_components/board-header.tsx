@@ -11,7 +11,10 @@ const BoardHeader: FC = () => {
   const { mutate } = api.board.edit.useMutation()
 
   return (
-    <header className="flex w-screen items-center gap-2 bg-background/10 px-8 py-4 backdrop-blur-sm dark:bg-background/50" id="editable-title">
+    <header
+      className="flex w-screen items-center gap-2 bg-background/10 px-8 py-4 backdrop-blur-sm dark:bg-background/50"
+      id="editable-title"
+    >
       <h1 className="mr-auto text-xl font-semibold">
         <EditableTitle
           title={board.title}

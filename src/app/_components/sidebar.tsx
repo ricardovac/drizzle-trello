@@ -16,35 +16,35 @@ export function SidebarNav() {
       items: [
         {
           title: "Quadros",
-          href: `/u/${user.id}/boards`,
+          href: `/u/${user.id}/boards`
         },
         {
           title: "Templates",
-          href: "/templates",
+          href: "/templates"
         },
         {
           title: "Início",
-          href: "/",
-        },
-      ],
+          href: "/"
+        }
+      ]
     },
     {
       title: `Área de trabalho de ${user.name}`,
       items: [
         {
           title: "Quadros",
-          href: `/u/${user.id}/boards`,
+          href: `/u/${user.id}/boards`
         },
         {
           title: "Destaques",
-          href: "#",
+          href: "#"
         },
         {
           title: "Membros",
-          href: "#",
-        },
-      ],
-    },
+          href: "#"
+        }
+      ]
+    }
   ]
 
   return items.length ? (
@@ -73,7 +73,7 @@ export function SidebarNavItems({ items, pathname }: DocsSidebarNavItemsProps) {
             key={index}
             href={item.href}
             className={cn("flex w-full items-center rounded-md p-2 hover:underline", {
-              "bg-muted": pathname === item.href,
+              "bg-muted": pathname === item.href
             })}
             target={item.external ? "_blank" : ""}
             rel={item.external ? "noreferrer" : ""}

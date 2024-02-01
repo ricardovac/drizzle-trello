@@ -27,11 +27,13 @@ export const authOptions: NextAuthOptions = {
       ...session,
       user: {
         ...session.user,
-        id: user.id,
-      },
-    }),
+        id: user.id
+      }
+    })
   },
+  // @ts-expect-error
   adapter: DrizzleAdapter(db, mysqlTable),
+  secret: env.NEXTAUTH_SECRET,
   providers: [
     GoogleProvider({
       clientId: env.GOOGLE_CLIENT_ID,
@@ -41,19 +43,19 @@ export const authOptions: NextAuthOptions = {
           id: profile.sub,
           name: profile.name,
           email: profile.email,
-          image: profile.picture,
+          image: profile.picture
         }
       },
       authorization: {
         params: {
           prompt: "consent",
           access_type: "offline",
-          response_type: "code",
-        },
-      },
-    }),
+          response_type: "code"
+        }
+      }
+    })
   ],
-  debug: false,
+  debug: false
 }
 
 /**

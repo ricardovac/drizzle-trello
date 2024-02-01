@@ -6,12 +6,12 @@ export const siteConfig = {
   mainNav: [
     {
       title: "Home",
-      href: "/",
-    },
+      href: "/"
+    }
   ],
   links: {
     twitter: "#",
     github: "#",
-    docs: "#",
-  },
+    docs: "#"
+  }
 }

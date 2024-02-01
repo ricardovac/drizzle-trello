@@ -1,32 +1,33 @@
-'use server';
+"use server"
 
-import { sql } from 'drizzle-orm';
-import { db } from '.';
+import { sql } from "drizzle-orm"
+
+import { db } from "."
 
 async function reset() {
-  const tableSchem = db._.schema;
+  const tableSchem = db._.schema
   if (!tableSchem) {
-    throw new Error('No schema found');
+    throw new Error("No schema found")
   }
 
-  console.log('Dropping tables');
+  console.log("Dropping tables")
   const queries = Object.values(tableSchem).map((table) => {
-    console.log(`Preparing delete query for table: ${table.dbName}`);
-    return sql.raw(`TRUNCATE TABLE ${table.dbName}`);
-  });
+    console.log(`Preparing delete query for table: ${table.dbName}`)
+    return sql.raw(`TRUNCATE TABLE ${table.dbName}`)
+  })
 
-  console.log('Sending delete queries');
+  console.log("Sending delete queries")
 
   await db.transaction(async (tx) => {
     await Promise.all(
       queries.map(async (query) => {
-        if (query) await tx.execute(query);
-      }),
-    );
-  });
+        if (query) await tx.execute(query)
+      })
+    )
+  })
 
-  console.log('Database emptied');
-  return;
+  console.log("Database emptied")
+  return
 }
 
-reset().catch((e) => console.error(e));
+reset().catch((e) => console.error(e))

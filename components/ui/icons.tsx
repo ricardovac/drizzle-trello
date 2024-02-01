@@ -24,7 +24,7 @@ import {
   SunMedium,
   Trash,
   User,
-  X,
+  X
 } from "lucide-react"
 
 export type Icon = LucideIcon
@@ -68,5 +68,5 @@ export const Icons = {
       ></path>
     </svg>
   ),
-  check: Check,
+  check: Check
 }

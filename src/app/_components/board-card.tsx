@@ -19,7 +19,7 @@ export default function BoardCard({ board }: BoardCardProps) {
         <div
           className="aspect-[16/8] w-full"
           style={{
-            backgroundColor: image.value,
+            backgroundColor: image.value
           }}
         />
       ) : (

@@ -12,7 +12,7 @@ import { listRouter } from "./routers/list"
 export const appRouter = createTRPCRouter({
   board: boardRouter,
   list: listRouter,
-  card: cardRouter,
+  card: cardRouter
 })
 
 // export type definition of API

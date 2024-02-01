@@ -12,8 +12,8 @@ export const cardRouter = createTRPCRouter({
       where: (cards, { eq }) => eq(cards.listId, input.listId),
       orderBy: [asc(cards.position)],
       columns: {
-        position: true,
-      },
+        position: true
+      }
     })
 
     return await db
@@ -22,7 +22,7 @@ export const cardRouter = createTRPCRouter({
         title: input.title,
         description: input.description,
         listId: input.listId,
-        position: (cardsQuery.at(-1)?.position ?? 0) + 1,
+        position: (cardsQuery.at(-1)?.position ?? 0) + 1
       })
       .execute()
   }),
@@ -44,5 +44,5 @@ export const cardRouter = createTRPCRouter({
       .set({ id: cardId, listId: card.listId })
       .where(eq(cards.id, cardId))
       .execute()
-  }),
+  })
 })
