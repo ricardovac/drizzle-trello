@@ -13,6 +13,7 @@ import {
   NavigationMenuTrigger
 } from "components/ui/navigation-menu"
 import { cn } from "lib/utils"
+import { Loader2 } from "lucide-react"
 
 import { useAuthContext } from "../context/auth-context"
 import { BoardImage } from "./board-background"
@@ -21,7 +22,7 @@ export function MainNavigationMenu() {
   const [isMenuOpen, setIsMenuOpen] = React.useState<boolean>(false)
   const { user } = useAuthContext()
 
-  const { data: recentBoards } = api.board.getRecent.useQuery(
+  const { data: recent, isLoading, isFetching } = api.board.getRecent.useQuery(
     {
       userId: user.id
     },
@@ -32,6 +33,10 @@ export function MainNavigationMenu() {
     }
   )
 
+  const noRecentBoards = !recent?.length && !isLoading && !isFetching
+
+  const isLoadingOrFetching = isLoading || isFetching
+
   return (
     <NavigationMenu>
       <NavigationMenuList>
@@ -40,29 +45,35 @@ export function MainNavigationMenu() {
             Recentes
           </NavigationMenuTrigger>
           <NavigationMenuContent>
-            {!recentBoards?.length && (
+            {isLoadingOrFetching && (
+              <div className="flex items-center justify-center py-10 md:w-[300px] lg:w-[400px]">
+                <Loader2 className="size-5 animate-spin" />
+              </div>
+            )}
+
+            {noRecentBoards && (
               <div className="p-4 text-center text-muted-foreground md:w-[300px] lg:w-[400px]">
                 Você não tem nenhum quadro recente.
               </div>
             )}
 
-            {!!recentBoards?.length && (
-              <ul className="grid gap-3 p-4 md:w-[300px] lg:w-[400px] lg:grid-rows-[.75fr_1fr]">
-                {recentBoards?.map((board) => (
-                  <li className="row-span-5" key={board.id}>
+            {!!recent?.length && (
+              <ul className="grid gap-3 p-2 md:w-[300px] lg:w-[400px] lg:grid-rows-[.75fr_1fr]">
+                {recent?.map((item) => (
+                  <li className="row-span-5" key={item.id}>
                     <NavigationMenuLink asChild>
                       <Link
-                        className="flex size-full select-none items-center gap-4 rounded-md px-4 no-underline outline-none hover:bg-muted focus:shadow-md"
-                        href={`/b/${board.board.id}/${encodeURIComponent(board.board.title)}`}
+                        className="flex size-full select-none items-center gap-4 rounded-md p-2 no-underline outline-none hover:bg-muted focus:shadow-md"
+                        href={`/b/${item.board.id}/${encodeURIComponent(item.board.title)}`}
                       >
                         <BoardImage
-                          image={board.board.background as BackgroundTypeSchema}
-                          width={55}
-                          height={44}
+                          image={item.board.background as BackgroundTypeSchema}
+                          width={50}
+                          height={50}
                         />
-                        <div className="mb-2 mt-4 flex w-full flex-col text-lg font-medium">
-                          {board.board.title}
-                          <p className="text-sm leading-tight text-muted-foreground">
+                        <div className="text-md flex w-full flex-col font-medium">
+                          {item.board.title}
+                          <p className="text-xs leading-tight text-muted-foreground">
                             Área de trabalho de
                           </p>
                         </div>

@@ -20,7 +20,7 @@ const BoardList: FC<BoardListProps> = ({ boards = [], showCreateBoardButton = fa
       {loading && loadingArray(3).map((_, i) => <Skeleton className="h-24" key={i} />)}
 
       {showCreateBoardButton && (
-        <CreateBoardPopover className="min-h-[100px] min-w-[200px] text-white" variant="secondary">
+        <CreateBoardPopover className="h-[100px] w-[200px] text-white" variant="secondary">
           Criar novo quadro
         </CreateBoardPopover>
       )}

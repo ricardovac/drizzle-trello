@@ -1,7 +1,7 @@
 import { z } from "zod"
 
 export const createCard = z.object({
-  title: z.string(),
+  title: z.string().min(1, "O título deve ter pelo menos 1 caractere"),
   description: z.string().nullish(),
   listId: z.string()
 })

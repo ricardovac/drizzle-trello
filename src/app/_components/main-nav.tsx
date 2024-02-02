@@ -7,9 +7,11 @@ import { Button } from "components/ui/button"
 import { Icons } from "components/ui/icons"
 import { siteConfig } from "config/site"
 
+import AccountMenu from "./account-menu"
 import CreateBoardPopover from "./create-board-popover"
 import { MobileNav } from "./mobile-nav"
 import { MainNavigationMenu } from "./navigation-menu"
+import SearchNav from "./search-nav"
 
 interface MainNavProps {
   items?: MainNavItem[]
@@ -30,10 +32,16 @@ export function MainNav({ items, children }: MainNavProps) {
         <Icons.logo />
         <span className="hidden font-bold sm:inline-block">{siteConfig.name}</span>
       </Button>
-      <nav className="hidden gap-6 md:flex">
-        <MainNavigationMenu />
-        <CreateBoardPopover>Criar</CreateBoardPopover>
-      </nav>
+      <div className="flex w-full items-center justify-between">
+        <nav className="hidden gap-6 md:flex">
+          <MainNavigationMenu />
+          <CreateBoardPopover>Criar</CreateBoardPopover>
+        </nav>
+        <nav className="gap-6 md:flex">
+          <SearchNav />
+          <AccountMenu />
+        </nav>
+      </div>
       <button
         className="flex items-center space-x-2 md:hidden"
         onClick={() => setShowMobileMenu(!showMobileMenu)}

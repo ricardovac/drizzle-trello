@@ -1,9 +1,10 @@
+import { getServerAuthSession } from "@/server/auth"
+
 import "@/styles/globals.css"
 import { Viewport, type Metadata } from "next"
 import { Inter as FontSans } from "next/font/google"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
-import { getServerAuthSession } from "@/server/auth"
 import { TRPCReactProvider } from "@/trpc/react"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { siteConfig } from "config/site"
@@ -50,7 +51,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <AuthContextProvider user={session?.user}>
             <ThemeProvider
               attribute="class"
-              defaultTheme="dark"
+              defaultTheme="system"
               enableSystem
               disableTransitionOnChange
             >
