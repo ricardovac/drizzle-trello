@@ -7,7 +7,7 @@ import {
   getBoardById,
   getRecent,
   updateBoard
-} from "@/server/schema/board.shema"
+} from "@/server/schema/board.schema"
 import { TRPCError } from "@trpc/server"
 import { and, desc, eq, gte, sql } from "drizzle-orm"
 
@@ -61,7 +61,7 @@ export const boardRouter = createTRPCRouter({
       .leftJoin(users, eq(users.id, boards.ownerId))
       .where(eq(boards.ownerId, input.userId))
       .orderBy(desc(boards.createdAt))
-      .limit(input.limit)
+      .limit(limit)
 
     const cursor = input.cursor
     if (cursor) {
@@ -126,7 +126,10 @@ export const boardRouter = createTRPCRouter({
   }),
   createRecent: protectedProcedure.input(createRecent).mutation(async ({ ctx, input }) => {
     const foundRecent = await ctx.db.query.recentlyViewed.findFirst({
-      where: and(eq(recentlyViewed.userId, input.userId), eq(recentlyViewed.boardId, input.boardId))
+      where: and(
+        eq(recentlyViewed.userId, input.userId),
+        eq(recentlyViewed.boardId, input.boardId)
+      ),
     })
 
     if (!!foundRecent) {
@@ -146,12 +149,15 @@ export const boardRouter = createTRPCRouter({
     })
   }),
   getRecent: protectedProcedure.input(getRecent).query(async ({ ctx, input }) => {
+    const { userId } = input
+
     return await ctx.db.query.recentlyViewed.findMany({
-      where: eq(recentlyViewed.userId, input.userId),
-      orderBy: desc(recentlyViewed.createdAt),
+      where: eq(recentlyViewed.userId, userId),
+      orderBy: desc(recentlyViewed.updatedAt),
       limit: 5,
+      columns: {},
       with: {
-        board: true,
+        board: true
       }
     })
   })

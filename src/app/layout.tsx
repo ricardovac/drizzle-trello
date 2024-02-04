@@ -12,7 +12,7 @@ import { siteConfig } from "config/site"
 import { ThemeProvider } from "../../components/ui/theme-provider"
 import { cn } from "../../lib/utils"
 import { MainNav } from "./_components/main-nav"
-import { AuthContextProvider } from "./context/auth-context"
+import { AuthContextProvider } from "@/context/auth-context"
 
 const fontSans = FontSans({
   subsets: ["latin"],

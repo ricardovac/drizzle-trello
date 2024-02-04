@@ -41,7 +41,7 @@ export const createRecent = z.object({
 export type createRecentSchema = z.TypeOf<typeof createRecent>
 
 export const getRecent = z.object({
-  userId: z.string()
+  userId: z.string(),
 })
 
 export type getRecentSchema = z.TypeOf<typeof getRecent>

@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation"
 import { SidebarNavItem } from "@/utils/types"
 import { cn } from "lib/utils"
 
-import { useAuthContext } from "../context/auth-context"
+import { useAuthContext } from "@/context/auth-context"
 
 export function SidebarNav() {
   const pathname = usePathname()

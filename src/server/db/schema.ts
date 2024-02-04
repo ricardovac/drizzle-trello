@@ -105,12 +105,13 @@ export const cardsRelations = relations(cards, ({ one }) => ({
 export const recentlyViewed = mysqlTable(
   "recentlyViewed",
   {
-    id: varchar("id", { length: 255 })
+    id: varchar("id", { length: 128 })
       .$defaultFn(() => createId())
-      .notNull()
       .primaryKey(),
-    userId: varchar("userId", { length: 255 }),
-    boardId: varchar("boardId", { length: 255 }).notNull(),
+    userId: varchar("userId", { length: 255 }).references(() => users.id),
+    boardId: varchar("boardId", { length: 255 })
+      .notNull()
+      .references(() => boards.id),
     createdAt: timestamp("created_at")
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),

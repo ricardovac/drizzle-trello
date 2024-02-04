@@ -2,7 +2,7 @@ import { getServerAuthSession } from "@/server/auth"
 
 import "@/styles/globals.css"
 import { SidebarNav } from "../_components/sidebar"
-import { AuthContextProvider } from "../context/auth-context"
+import { AuthContextProvider } from "@/context/auth-context"
 
 export default async function MainLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerAuthSession()

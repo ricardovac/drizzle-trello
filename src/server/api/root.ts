@@ -3,6 +3,7 @@ import { createTRPCRouter } from "@/server/api/trpc"
 
 import { cardRouter } from "./routers/card"
 import { listRouter } from "./routers/list"
+import { searchRouter } from "./routers/search"
 
 /**
  * This is the primary router for your server.
@@ -12,7 +13,8 @@ import { listRouter } from "./routers/list"
 export const appRouter = createTRPCRouter({
   board: boardRouter,
   list: listRouter,
-  card: cardRouter
+  card: cardRouter,
+  search: searchRouter
 })
 
 // export type definition of API

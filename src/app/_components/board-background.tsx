@@ -1,6 +1,6 @@
 import { FC } from "react"
 import Image from "next/image"
-import { BackgroundTypeSchema } from "@/server/schema/board.shema"
+import { BackgroundTypeSchema } from "@/server/schema/board.schema"
 
 interface BoardImageProps {
   image: BackgroundTypeSchema
@@ -27,6 +27,7 @@ export const BoardImage: FC<BoardImageProps> = ({ image, width, height }) => {
           width={width ?? 500}
           height={height ?? 100}
           className="aspect-[16/8] object-cover transition-all hover:scale-105"
+          priority
         />
       )}
     </>

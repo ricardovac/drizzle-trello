@@ -6,7 +6,7 @@ import BoardAppShell from "@/app/_components/board-appshell"
 import BoardHeader from "@/app/_components/board-header"
 import List from "@/app/_components/list"
 import ListForm from "@/app/_components/list-form"
-import BoardContext from "@/app/context/board-context"
+import BoardContext from "@/context/board-context"
 
 interface BoardPageProps {
   params: { id: string; title: string }
@@ -26,6 +26,8 @@ export default async function Page({ params }: BoardPageProps) {
     boardId: id
   })
   const permission = await getBoardUserPermission(board)
+
+  console.log(board)
 
   await api.board.createRecent.mutate({ boardId: board.id, userId: board.ownerId })
 

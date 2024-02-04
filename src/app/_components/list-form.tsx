@@ -13,9 +13,9 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 
 import { useClickOutside } from "@/hooks/useClickOutside"
+import { useBoardContext } from "@/context/board-context"
+import { useAuthContext } from "@/context/auth-context"
 
-import { useAuthContext } from "../context/auth-context"
-import { useBoardContext } from "../context/board-context"
 
 export default function ListForm() {
   const [mode, setMode] = useState<"button" | "form">("button")
@@ -80,7 +80,6 @@ function ListFormField({ boardId, setMode, mode }: CreateListFormProps) {
     },
     onSettled: () => {
       form.reset()
-      setMode("button")
       void utils.list.all.invalidate({ boardId })
     }
   })

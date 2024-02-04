@@ -2,8 +2,8 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { BackgroundTypeSchema } from "@/server/schema/board.shema"
-import { api } from "@/trpc/react"
+import { useRecentContext } from "@/context/recent-boards-context"
+import { BackgroundTypeSchema } from "@/server/schema/board.schema"
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -15,37 +15,18 @@ import {
 import { cn } from "lib/utils"
 import { Loader2 } from "lucide-react"
 
-import { useAuthContext } from "../context/auth-context"
 import { BoardImage } from "./board-background"
 
 export function MainNavigationMenu() {
-  const [isMenuOpen, setIsMenuOpen] = React.useState<boolean>(false)
-  const { user } = useAuthContext()
-
-  const { data: recent, isLoading, isFetching } = api.board.getRecent.useQuery(
-    {
-      userId: user.id
-    },
-    {
-      enabled: !!user && isMenuOpen,
-      refetchOnReconnect: false,
-      staleTime: 1000 * 60 * 10
-    }
-  )
-
-  const noRecentBoards = !recent?.length && !isLoading && !isFetching
-
-  const isLoadingOrFetching = isLoading || isFetching
+  const { recentBoards, isLoading, noRecentBoards } = useRecentContext()
 
   return (
     <NavigationMenu>
       <NavigationMenuList>
         <NavigationMenuItem>
-          <NavigationMenuTrigger onMouseEnter={() => setIsMenuOpen((o) => !o)}>
-            Recentes
-          </NavigationMenuTrigger>
+          <NavigationMenuTrigger>Recentes</NavigationMenuTrigger>
           <NavigationMenuContent>
-            {isLoadingOrFetching && (
+            {isLoading && (
               <div className="flex items-center justify-center py-10 md:w-[300px] lg:w-[400px]">
                 <Loader2 className="size-5 animate-spin" />
               </div>
@@ -57,10 +38,10 @@ export function MainNavigationMenu() {
               </div>
             )}
 
-            {!!recent?.length && (
+            {!!recentBoards?.length && (
               <ul className="grid gap-3 p-2 md:w-[300px] lg:w-[400px] lg:grid-rows-[.75fr_1fr]">
-                {recent?.map((item) => (
-                  <li className="row-span-5" key={item.id}>
+                {recentBoards?.map((item) => (
+                  <li className="row-span-5" key={item.board.id}>
                     <NavigationMenuLink asChild>
                       <Link
                         className="flex size-full select-none items-center gap-4 rounded-md p-2 no-underline outline-none hover:bg-muted focus:shadow-md"

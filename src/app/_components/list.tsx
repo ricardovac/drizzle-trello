@@ -1,6 +1,6 @@
 "use client"
 
-import { useBoardContext } from "../context/board-context"
+import { useBoardContext } from "@/context/board-context"
 import ListItem from "./list-item"
 
 export default function List() {

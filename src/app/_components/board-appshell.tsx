@@ -1,9 +1,9 @@
 "use client"
 
-import { BackgroundTypeSchema } from "@/server/schema/board.shema"
+import { BackgroundTypeSchema } from "@/server/schema/board.schema"
 import ScrollContainer from "react-indiana-drag-scroll"
 
-import { useBoardContext } from "../context/board-context"
+import { useBoardContext } from "@/context/board-context"
 
 interface BoardAppShellProps {
   children: React.ReactNode

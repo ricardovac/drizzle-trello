@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import Image from "next/image"
-import { BackgroundTypeSchema, createBoard } from "@/server/schema/board.shema"
+import { BackgroundTypeSchema, createBoard } from "@/server/schema/board.schema"
 import { api } from "@/trpc/react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "components/ui/button"
@@ -15,7 +15,7 @@ import { LoaderIcon } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-import { useAuthContext } from "../context/auth-context"
+import { useAuthContext } from "@/context/auth-context"
 
 interface CreateBoardPopoverProps {
   children: React.ReactNode

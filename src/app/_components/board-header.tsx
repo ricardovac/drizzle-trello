@@ -3,7 +3,7 @@
 import { FC } from "react"
 import { api } from "@/trpc/react"
 
-import { useBoardContext } from "../context/board-context"
+import { useBoardContext } from "@/context/board-context"
 import EditableTitle from "./editable-title"
 
 const BoardHeader: FC = () => {

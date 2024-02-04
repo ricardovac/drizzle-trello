@@ -16,7 +16,7 @@ import { Icons } from "components/ui/icons"
 import { signOut } from "next-auth/react"
 import { useTheme } from "next-themes"
 
-import { useAuthContext } from "../context/auth-context"
+import { useAuthContext } from "@/context/auth-context"
 import { UserAvatar } from "./user-avatar"
 
 interface AccountMenuProps {}
