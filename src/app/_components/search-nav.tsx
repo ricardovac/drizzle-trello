@@ -1,7 +1,9 @@
 "use client"
 
 import * as React from "react"
+import { FC, useEffect, useMemo, useState } from "react"
 import { useRecentContext } from "@/context/recent-boards-context"
+import { BackgroundTypeSchema } from "@/server/schema/board.schema"
 import { api } from "@/trpc/react"
 import { Button } from "components/ui/button"
 import { SearchInput } from "components/ui/input"
@@ -10,31 +12,29 @@ import { cn } from "lib/utils"
 import { Search } from "lucide-react"
 
 import { useDebounce } from "@/hooks/useDebounce"
-import { BackgroundTypeSchema } from "@/server/schema/board.schema"
+
 import { BoardImage } from "./board-background"
 
 interface SearchNavProps extends React.HTMLAttributes<HTMLFormElement> {}
 
-const SearchNav: React.FC<SearchNavProps> = ({ className }) => {
-  const [open, setOpen] = React.useState(false)
-  const [search, setSearch] = React.useState("")
+const SearchNav: FC<SearchNavProps> = ({ className }) => {
+  const [open, setOpen] = useState(false)
+  const [search, setSearch] = useState("")
   const debouncedSearch = useDebounce(search, 300)
 
-  const { recentBoards } = useRecentContext()
+  const { recentBoards, noRecentBoards } = useRecentContext()
 
-  const { data: _searchResult } = api.search.searchBoard.useInfiniteQuery(
+  const { data: _searchResult } = api.search.searchBoard.useQuery(
     {
       query: debouncedSearch,
       limit: 5
     },
     {
-      enabled: !!debouncedSearch && open,
-      refetchOnWindowFocus: false,
-      initialData: undefined
+      enabled: !!debouncedSearch && open
     }
   )
 
-  React.useEffect(() => {
+  useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault()
@@ -45,6 +45,16 @@ const SearchNav: React.FC<SearchNavProps> = ({ className }) => {
     document.addEventListener("keydown", down)
     return () => document.removeEventListener("keydown", down)
   }, [])
+
+  const filteredBoards = useMemo(() => {
+    if (noRecentBoards) return []
+
+    if (search.trim() === "") return recentBoards
+
+    return recentBoards.filter((r) =>
+      r.board.title.toLowerCase().includes(search.toLowerCase().trim())
+    )
+  }, [noRecentBoards, search, recentBoards])
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -66,17 +76,19 @@ const SearchNav: React.FC<SearchNavProps> = ({ className }) => {
       <SheetContent
         side="top"
         animation={false}
-        className="grid w-[70vw] grid-rows-2 gap-0 rounded-lg"
+        className="flex w-[70vw] flex-col gap-6 rounded-lg"
       >
         <SheetHeader>
-          <SearchInput onChange={(e) => setSearch(e.target.value)} />
+          <SearchInput onChange={(e) => setSearch(e.target.value)} value={search} />
         </SheetHeader>
         <SheetFooter>
           <div className="grid w-full gap-2">
-            <span className="text-muted-foreground">Quadros Recentes</span>
+            {!noRecentBoards && (
+              <span className="text-muted-foreground">Quadros Recentes</span>
+            )}
             <ul className="w-full divide-muted">
-              {recentBoards.map((item) => (
-                <li className="p-2 hover:bg-muted rounded cursor-pointer" key={item.board.id}>
+              {filteredBoards.map((item) => (
+                <li className="cursor-pointer rounded p-2 hover:bg-muted" key={item.board.id}>
                   <div className="flex items-center space-x-4 rtl:space-x-reverse">
                     <div className="shrink-0">
                       <BoardImage

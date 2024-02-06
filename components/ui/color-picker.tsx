@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useMemo } from "react"
+import React, { useCallback, useMemo } from "react"
 import Image from "next/image"
 import { Paintbrush } from "lucide-react"
 import { useFormContext } from "react-hook-form"

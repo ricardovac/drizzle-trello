@@ -36,8 +36,6 @@ export function MainNav({ items, children }: MainNavProps) {
     },
     {
       enabled: !!user,
-      refetchOnReconnect: false,
-      staleTime: 1000 * 60 * 10
     }
   )
 

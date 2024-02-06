@@ -91,7 +91,7 @@ export const boardRouter = createTRPCRouter({
   }),
   create: protectedProcedure.input(createBoard).mutation(async ({ ctx, input }) => {
     const foundBoard = await ctx.db.query.boards.findFirst({
-      where: eq(boards.title, input.title)
+      where: and(eq(boards.title, input.title), eq(boards.ownerId, input.ownerId))
     })
 
     if (!!foundBoard) {
@@ -126,10 +126,7 @@ export const boardRouter = createTRPCRouter({
   }),
   createRecent: protectedProcedure.input(createRecent).mutation(async ({ ctx, input }) => {
     const foundRecent = await ctx.db.query.recentlyViewed.findFirst({
-      where: and(
-        eq(recentlyViewed.userId, input.userId),
-        eq(recentlyViewed.boardId, input.boardId)
-      ),
+      where: and(eq(recentlyViewed.userId, input.userId), eq(recentlyViewed.boardId, input.boardId))
     })
 
     if (!!foundRecent) {

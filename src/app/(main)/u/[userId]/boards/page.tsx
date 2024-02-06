@@ -18,7 +18,8 @@ const Boards: FC<BoardsPageProps> = ({ params }) => {
     { limit: LIMIT, userId },
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
-      refetchOnWindowFocus: false
+      staleTime: 1000 * 60 * 5,
+      cacheTime: 1000 * 60 * 10
     }
   )
   const dataToShow = useMemo(() => data?.pages.flatMap((page) => page.items), [data])

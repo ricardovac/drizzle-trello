@@ -45,7 +45,6 @@ const BoardContextProvider: FC<BoardContextProviderProps> = ({
       initialData: initialLists,
       refetchOnMount: false,
       refetchOnReconnect: false,
-      refetchOnWindowFocus: false
     }
   )
 

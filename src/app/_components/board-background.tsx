@@ -13,7 +13,7 @@ export const BoardImage: FC<BoardImageProps> = ({ image, width, height }) => {
     <>
       {image.type === "color" ? (
         <div
-          className="aspect-[16/8]"
+          className="aspect-[16/8] w-full"
           style={{
             width: width ?? 500,
             height: height ?? 100,

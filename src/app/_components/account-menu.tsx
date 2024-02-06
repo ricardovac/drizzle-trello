@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger
 } from "components/ui/dropdown-menu"
 import { Icons } from "components/ui/icons"
-import { signOut } from "next-auth/react"
+import { signIn, signOut } from "next-auth/react"
 import { useTheme } from "next-themes"
 
 import { useAuthContext } from "@/context/auth-context"
@@ -46,6 +46,7 @@ const AccountMenu: FC<AccountMenuProps> = ({}) => {
           className="cursor-pointer"
           onSelect={(e) => {
             e.preventDefault()
+            signIn("google")
           }}
         >
           Alternar contas

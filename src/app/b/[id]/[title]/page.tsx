@@ -27,8 +27,6 @@ export default async function Page({ params }: BoardPageProps) {
   })
   const permission = await getBoardUserPermission(board)
 
-  console.log(board)
-
   await api.board.createRecent.mutate({ boardId: board.id, userId: board.ownerId })
 
   return (
