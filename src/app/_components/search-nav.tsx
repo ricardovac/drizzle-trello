@@ -2,6 +2,8 @@
 
 import * as React from "react"
 import { FC, useEffect, useMemo, useState } from "react"
+import Link from "next/link"
+import { usePathname, useSearchParams } from "next/navigation"
 import { useRecentContext } from "@/context/recent-boards-context"
 import { BackgroundTypeSchema } from "@/server/schema/board.schema"
 import { api } from "@/trpc/react"
@@ -19,12 +21,12 @@ interface SearchNavProps extends React.HTMLAttributes<HTMLFormElement> {}
 
 const SearchNav: FC<SearchNavProps> = ({ className }) => {
   const [open, setOpen] = useState(false)
-  const [search, setSearch] = useState("")
-  const debouncedSearch = useDebounce(search, 300)
+  const [query, setQuery] = useState("")
+  const debouncedSearch = useDebounce(query, 300)
 
   const { recentBoards, noRecentBoards } = useRecentContext()
 
-  const { data: _searchResult } = api.search.searchBoard.useQuery(
+  const { data: _searchResult } = api.search.dropdown.useQuery(
     {
       query: debouncedSearch,
       limit: 5
@@ -46,15 +48,21 @@ const SearchNav: FC<SearchNavProps> = ({ className }) => {
     return () => document.removeEventListener("keydown", down)
   }, [])
 
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  useEffect(() => {
+    setOpen(false)
+  }, [pathname, searchParams])
+
   const filteredBoards = useMemo(() => {
     if (noRecentBoards) return []
 
-    if (search.trim() === "") return recentBoards
+    if (query.trim() === "") return recentBoards
 
     return recentBoards.filter((r) =>
-      r.board.title.toLowerCase().includes(search.toLowerCase().trim())
+      r.board.title.toLowerCase().includes(query.toLowerCase().trim())
     )
-  }, [noRecentBoards, search, recentBoards])
+  }, [noRecentBoards, query, recentBoards])
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -79,30 +87,32 @@ const SearchNav: FC<SearchNavProps> = ({ className }) => {
         className="flex w-[70vw] flex-col gap-6 rounded-lg"
       >
         <SheetHeader>
-          <SearchInput onChange={(e) => setSearch(e.target.value)} value={search} />
+          <SearchInput onChange={(e) => setQuery(e.target.value)} value={query} />
         </SheetHeader>
         <SheetFooter>
           <div className="grid w-full gap-2">
-            {!noRecentBoards && (
-              <span className="text-muted-foreground">Quadros Recentes</span>
-            )}
+            {!noRecentBoards && <span className="text-muted-foreground">Quadros Recentes</span>}
             <ul className="w-full divide-muted">
               {filteredBoards.map((item) => (
-                <li className="cursor-pointer rounded p-2 hover:bg-muted" key={item.board.id}>
-                  <div className="flex items-center space-x-4 rtl:space-x-reverse">
-                    <div className="shrink-0">
-                      <BoardImage
-                        image={item.board.background as BackgroundTypeSchema}
-                        width={32}
-                        height={32}
-                      />
+                <Link href={`/b/${item.board.id}/${item.board.title}`} key={item.board.id}>
+                  <li className="cursor-pointer rounded p-2 hover:bg-muted">
+                    <div className="flex items-center space-x-4 rtl:space-x-reverse">
+                      <div className="shrink-0">
+                        <BoardImage
+                          image={item.board.background as BackgroundTypeSchema}
+                          width={32}
+                          height={32}
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">
+                          {item.board.title}
+                        </p>
+                        <p className="truncate text-sm text-gray-400">Área de trabalho de</p>
+                      </div>
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-white">{item.board.title}</p>
-                      <p className="truncate text-sm text-gray-400">Área de trabalho de</p>
-                    </div>
-                  </div>
-                </li>
+                  </li>
+                </Link>
               ))}
             </ul>
           </div>

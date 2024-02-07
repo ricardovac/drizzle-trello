@@ -2,10 +2,9 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useAuthContext } from "@/context/auth-context"
 import { SidebarNavItem } from "@/utils/types"
 import { cn } from "lib/utils"
-
-import { useAuthContext } from "@/context/auth-context"
 
 export function SidebarNav() {
   const pathname = usePathname()
@@ -13,48 +12,24 @@ export function SidebarNav() {
 
   const items = [
     {
-      items: [
-        {
-          title: "Quadros",
-          href: `/u/${user.id}/boards`
-        },
-        {
-          title: "Templates",
-          href: "/templates"
-        },
-        {
-          title: "Início",
-          href: "/"
-        }
-      ]
+      title: "Quadros",
+      href: `/u/${user.id}/boards`
     },
     {
-      title: `Área de trabalho de ${user.name}`,
-      items: [
-        {
-          title: "Quadros",
-          href: `/u/${user.id}/boards`
-        },
-        {
-          title: "Destaques",
-          href: "#"
-        },
-        {
-          title: "Membros",
-          href: "#"
-        }
-      ]
+      title: "Templates",
+      href: "/templates"
+    },
+    {
+      title: "Início",
+      href: "/"
     }
   ]
 
   return items.length ? (
     <div className="w-full">
-      {items.map((item, index) => (
-        <div key={index} className={cn("pb-8")}>
-          <h4 className="mb-1 rounded-md px-2 py-1 text-sm font-medium">{item.title}</h4>
-          {item.items ? <SidebarNavItems items={item.items} pathname={pathname} /> : null}
-        </div>
-      ))}
+      <div className={cn("pb-8")}>
+        {items ? <SidebarNavItems items={items} pathname={pathname} /> : null}
+      </div>
     </div>
   ) : null
 }
@@ -65,7 +40,7 @@ interface DocsSidebarNavItemsProps {
 }
 
 export function SidebarNavItems({ items, pathname }: DocsSidebarNavItemsProps) {
-  return items?.length ? (
+  return (
     <div className="grid grid-flow-row auto-rows-max text-sm">
       {items.map((item, index) =>
         !item.disabled && item.href ? (
@@ -87,5 +62,5 @@ export function SidebarNavItems({ items, pathname }: DocsSidebarNavItemsProps) {
         )
       )}
     </div>
-  ) : null
+  )
 }

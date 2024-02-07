@@ -17,7 +17,7 @@ const ListArea: FC<ListAreaProps> = ({ cards, columnId }) => {
         <div
           {...provided.droppableProps}
           ref={provided.innerRef}
-          className={cn("min-h-4 rounded-md", snapshot.isDraggingOver && "bg-primary/[.045]")}
+          className={cn("min-h-4 rounded-md", snapshot.isDraggingOver && "bg-primary/[.055]")}
         >
           {cards.map((card, i) => (
             <Card card={card} key={card.id} index={i} />

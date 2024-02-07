@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import dynamic from "next/dynamic"
 import { useRouter } from "next/navigation"
 import { useAuthContext } from "@/context/auth-context"
 import { RecentContextProvider } from "@/context/recent-boards-context"
@@ -10,11 +11,17 @@ import { Button } from "components/ui/button"
 import { Icons } from "components/ui/icons"
 import { siteConfig } from "config/site"
 
-import AccountMenu from "./account-menu"
-import CreateBoardPopover from "./create-board-popover"
 import { MobileNav } from "./mobile-nav"
 import { MainNavigationMenu } from "./navigation-menu"
-import SearchNav from "./search-nav"
+import CreateBoardPopover from "./create-board-popover"
+
+const AccountMenu = dynamic(() => import("./account-menu"), {
+  ssr: false
+})
+
+const SearchNav = dynamic(() => import("./search-nav"), {
+  ssr: false
+})
 
 interface MainNavProps {
   items?: MainNavItem[]
@@ -35,7 +42,7 @@ export function MainNav({ items, children }: MainNavProps) {
       userId: user.id
     },
     {
-      enabled: !!user,
+      enabled: !!user
     }
   )
 
@@ -63,7 +70,7 @@ export function MainNav({ items, children }: MainNavProps) {
             <MainNavigationMenu />
             <CreateBoardPopover>Criar</CreateBoardPopover>
           </nav>
-          <nav className="gap-6 md:flex">
+          <nav className="relative gap-6 md:flex">
             <SearchNav />
             <AccountMenu />
           </nav>
