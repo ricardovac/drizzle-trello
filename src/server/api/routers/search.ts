@@ -1,37 +1,101 @@
 import { boards, users } from "@/server/db/schema"
 import { search } from "@/server/schema/search.schema"
-import { like, or } from "drizzle-orm"
+import { asc, desc, gte, like, sql } from "drizzle-orm"
 
 import { createTRPCRouter, protectedProcedure } from "../trpc"
 
 export const searchRouter = createTRPCRouter({
   dropdown: protectedProcedure.input(search).query(async ({ ctx, input }) => {
+    const { limit, query, sort, cursor, offset } = input
     const { db } = ctx
-    const { query, limit } = input
 
-    const searchUsers = []
-    const searchBoards = []
+    const countRows = await db
+      .select({
+        board_count: sql<number>`count(${boards.id})`.as("board_count")
+      })
+      .from(boards)
+    const totalCount = countRows[0]?.board_count
+    if (totalCount === undefined) throw new Error("totalCount is undefined")
 
-    if (query && query.length > 0) {
-      searchBoards.push(like(boards.title, `%${query}%`))
-      searchUsers.push(like(users.name, `%${query}%`))
+    const fetchBoards = async () => {
+      let boardsQuery = db
+        .select()
+        .from(boards)
+        .where(like(boards.title, `%${query}%`))
+        .orderBy(sort === "desc" ? desc(boards.createdAt) : asc(boards.createdAt))
+        .limit(limit)
+        .offset(offset)
+
+      if (cursor) {
+        boardsQuery = boardsQuery.where(gte(boards.id, cursor))
+      }
+      const items = await boardsQuery.execute()
+      let nextCursor: typeof input.cursor | undefined = undefined
+      if (items.length > limit) {
+        const nextItem = items.pop()!
+        nextCursor = nextItem.id
+      }
+
+      const returnableItems = items.map((item) => ({
+        id: item.id,
+        title: item.title,
+        background: item.background,
+      }))
+
+      return {
+        items: returnableItems,
+        nextCursor
+      }
     }
 
-    const resultsBoard = db.query.boards.findMany({
-      where: or(...searchBoards),
-      limit,
-    })
+    const fetchUsers = async () => {
+      let usersQuery = db
+        .select()
+        .from(users)
+        .where(like(users.name, `%${query}%`))
+        .orderBy(sort === "desc" ? desc(users.name) : asc(users.name))
+        .limit(limit)
+        .offset(offset)
 
-    const resultsUsers = db.query.users.findMany({
-      where: or(...searchUsers),
-      limit,
-    })
+      if (cursor) {
+        usersQuery = usersQuery.where(gte(boards.id, cursor))
+      }
 
-    const results = await Promise.all([resultsBoard, resultsUsers])
+      const items = await usersQuery.execute()
+      let nextCursor: typeof input.cursor | undefined = undefined
+      if (items.length > limit) {
+        const nextItem = items.pop()!
+        nextCursor = nextItem.id
+      }
 
-    return {
-      boards: results[0],
-      users: results[1],
-    };
+      const returnableItems = items.map((item) => ({
+        id: item.id,
+        name: item.name,
+        email: item.email,
+        image: item.image
+      }))
+
+      return {
+        items: returnableItems,
+        nextCursor
+      }
+    }
+
+    const fetchedBoards = await fetchBoards()
+    const fetchedUsers = await fetchUsers()
+
+    if (!!fetchedBoards.items.length) {
+      return {
+        boards: fetchedBoards.items || [],
+        type: "boards"
+      }
+    }
+
+    if (!!fetchedUsers.items.length) {
+      return {
+        users: fetchedUsers.items || [],
+        type: "users"
+      }
+    }
   })
 })

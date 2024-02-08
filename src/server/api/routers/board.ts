@@ -1,5 +1,5 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc"
-import { boards, recentlyViewed, users } from "@/server/db/schema"
+import { boards, users } from "@/server/db/schema"
 import {
   createBoard,
   createRecent,
@@ -9,7 +9,7 @@ import {
   updateBoard
 } from "@/server/schema/board.schema"
 import { TRPCError } from "@trpc/server"
-import { and, desc, eq, gte, sql } from "drizzle-orm"
+import { and, desc, eq, gt, gte, isNotNull, sql } from "drizzle-orm"
 
 export const boardRouter = createTRPCRouter({
   get: protectedProcedure.input(getBoardById).query(async ({ ctx, input }) => {
@@ -80,7 +80,8 @@ export const boardRouter = createTRPCRouter({
       title: item.boards.title,
       background: item.boards.background,
       createdAt: item.boards.createdAt,
-      owner: item.user
+      ownerId: item.boards.ownerId,
+      openedAt: item.boards.openedAt
     }))
 
     return {
@@ -125,37 +126,20 @@ export const boardRouter = createTRPCRouter({
       .where(eq(boards.id, input.boardId))
   }),
   createRecent: protectedProcedure.input(createRecent).mutation(async ({ ctx, input }) => {
-    const foundRecent = await ctx.db.query.recentlyViewed.findFirst({
-      where: and(eq(recentlyViewed.userId, input.userId), eq(recentlyViewed.boardId, input.boardId))
-    })
-
-    if (!!foundRecent) {
-      return await ctx.db
-        .update(recentlyViewed)
-        .set({
-          updatedAt: new Date()
-        })
-        .where(
-          and(eq(recentlyViewed.userId, input.userId), eq(recentlyViewed.boardId, input.boardId))
-        )
-    }
-
-    return await ctx.db.insert(recentlyViewed).values({
-      userId: input.userId,
-      boardId: input.boardId
-    })
+    return await ctx.db
+      .update(boards)
+      .set({
+        openedAt: new Date()
+      })
+      .where(and(eq(boards.id, input.boardId), eq(boards.ownerId, input.userId)))
   }),
   getRecent: protectedProcedure.input(getRecent).query(async ({ ctx, input }) => {
     const { userId } = input
 
-    return await ctx.db.query.recentlyViewed.findMany({
-      where: eq(recentlyViewed.userId, userId),
-      orderBy: desc(recentlyViewed.updatedAt),
-      limit: 5,
-      columns: {},
-      with: {
-        board: true
-      }
+    return await ctx.db.query.boards.findMany({
+      where: and(eq(boards.ownerId, userId), isNotNull(boards.openedAt)),
+      orderBy: desc(boards.openedAt),
+      limit: 5
     })
   })
 })

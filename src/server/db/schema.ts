@@ -54,6 +54,7 @@ export const boards = mysqlTable(
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
     updatedAt: timestamp("updated_at").onUpdateNow(),
+    openedAt: timestamp("opened_at").onUpdateNow(),
     ownerId: varchar("ownerId", { length: 128 }).notNull()
     // workspaceId: varchar('workspaceId', { length: 128 }).references(() => workspaces.id),
   },
@@ -100,31 +101,6 @@ export const cards = mysqlTable("cards", {
 
 export const cardsRelations = relations(cards, ({ one }) => ({
   list: one(lists, { fields: [cards.listId], references: [lists.id] })
-}))
-
-export const recentlyViewed = mysqlTable(
-  "recentlyViewed",
-  {
-    id: varchar("id", { length: 128 })
-      .$defaultFn(() => createId())
-      .primaryKey(),
-    userId: varchar("userId", { length: 255 }).references(() => users.id),
-    boardId: varchar("boardId", { length: 255 })
-      .notNull()
-      .references(() => boards.id),
-    createdAt: timestamp("created_at")
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: timestamp("updated_at").onUpdateNow()
-  },
-  (recentlyViewed) => ({
-    compoundKey: primaryKey(recentlyViewed.userId, recentlyViewed.boardId)
-  })
-)
-
-export const recentlyViewedRelations = relations(recentlyViewed, ({ one }) => ({
-  user: one(users, { fields: [recentlyViewed.userId], references: [users.id] }),
-  board: one(boards, { fields: [recentlyViewed.boardId], references: [boards.id] })
 }))
 
 export const users = mysqlTable("user", {

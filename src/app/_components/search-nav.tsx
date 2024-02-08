@@ -1,40 +1,49 @@
 "use client"
 
 import * as React from "react"
-import { FC, useEffect, useMemo, useState } from "react"
+import { FC, useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname, useSearchParams } from "next/navigation"
 import { useRecentContext } from "@/context/recent-boards-context"
 import { BackgroundTypeSchema } from "@/server/schema/board.schema"
+import { SearchFilterTypes } from "@/server/schema/search.schema"
 import { api } from "@/trpc/react"
+import { SingleBoard } from "@/trpc/shared"
 import { Button } from "components/ui/button"
 import { SearchInput } from "components/ui/input"
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTrigger } from "components/ui/sheet"
 import { cn } from "lib/utils"
 import { Search } from "lucide-react"
+import { Session } from "next-auth"
 
 import { useDebounce } from "@/hooks/useDebounce"
 
 import { BoardImage } from "./board-background"
+import Image from "next/image"
 
 interface SearchNavProps extends React.HTMLAttributes<HTMLFormElement> {}
 
 const SearchNav: FC<SearchNavProps> = ({ className }) => {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState("")
-  const debouncedSearch = useDebounce(query, 300)
+  const debouncedQuery = useDebounce(query, 300)
 
-  const { recentBoards, noRecentBoards } = useRecentContext()
+  const { recentBoards } = useRecentContext()
 
-  const { data: _searchResult } = api.search.dropdown.useQuery(
+  const { data, isLoading } = api.search.dropdown.useQuery(
     {
-      query: debouncedSearch,
-      limit: 5
+      query: debouncedQuery,
+      limit: 4
     },
     {
-      enabled: !!debouncedSearch && open
+      enabled: !!debouncedQuery && open
     }
   )
+
+  const boardType = data?.type as SearchFilterTypes
+
+  const noDataToShow = !isLoading && !data?.boards?.length && !data?.users?.length
+  const hasDataToShow = !isLoading && (data?.boards?.length || data?.users?.length)
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -50,19 +59,10 @@ const SearchNav: FC<SearchNavProps> = ({ className }) => {
 
   const pathname = usePathname()
   const searchParams = useSearchParams()
+
   useEffect(() => {
     setOpen(false)
   }, [pathname, searchParams])
-
-  const filteredBoards = useMemo(() => {
-    if (noRecentBoards) return []
-
-    if (query.trim() === "") return recentBoards
-
-    return recentBoards.filter((r) =>
-      r.board.title.toLowerCase().includes(query.toLowerCase().trim())
-    )
-  }, [noRecentBoards, query, recentBoards])
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -91,34 +91,76 @@ const SearchNav: FC<SearchNavProps> = ({ className }) => {
         </SheetHeader>
         <SheetFooter>
           <div className="grid w-full gap-2">
-            {!noRecentBoards && <span className="text-muted-foreground">Quadros Recentes</span>}
-            <ul className="w-full divide-muted">
-              {filteredBoards.map((item) => (
-                <Link href={`/b/${item.board.id}/${item.board.title}`} key={item.board.id}>
-                  <li className="cursor-pointer rounded p-2 hover:bg-muted">
-                    <div className="flex items-center space-x-4 rtl:space-x-reverse">
-                      <div className="shrink-0">
-                        <BoardImage
-                          image={item.board.background as BackgroundTypeSchema}
-                          width={32}
-                          height={32}
-                        />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium">
-                          {item.board.title}
-                        </p>
-                        <p className="truncate text-sm text-gray-400">Área de trabalho de</p>
-                      </div>
-                    </div>
-                  </li>
-                </Link>
-              ))}
-            </ul>
+            {noDataToShow && (
+              <div className="text-center text-muted-foreground">
+                <p>Nenhum resultado encontrado</p>
+              </div>
+            )}
+            {hasDataToShow && (
+              <div className="grid gap-4">
+                {boardType === "boards" && (
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground">Quadros</h3>
+                    <BoardItem board={data?.boards} type="boards" />
+                  </div>
+                )}
+                {boardType === "users" && (
+                  <div>
+                    <h3 className="text-sm font-medium text-muted-foreground">Pessoas</h3>
+                    <BoardItem users={data?.users} type="users" />
+                  </div>
+                )}
+              </div>
+            )}
+            {!debouncedQuery && (
+              <div>
+                <h3 className="text-sm font-medium text-muted-foreground">Quadros</h3>
+                <BoardItem board={recentBoards} type="boards" />
+              </div>
+            )}
           </div>
         </SheetFooter>
       </SheetContent>
     </Sheet>
+  )
+}
+
+interface SearchNavItemProps {
+  board?: Pick<SingleBoard, "title" | "background" | "id">[]
+  users?: Session["user"][]
+  type: SearchFilterTypes
+}
+
+const BoardItem: FC<SearchNavItemProps> = ({ board, users }) => {
+  return (
+    <ul className="w-full divide-muted">
+      {board?.map((item) => (
+        <Link href={`/b/${item.id}/${item.title}`} key={item.id}>
+          <li className="cursor-pointer rounded p-2 hover:bg-muted">
+            <div className="flex items-center space-x-4">
+              <BoardImage image={item.background as BackgroundTypeSchema} width={32} height={32} />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium">{item.title}</p>
+                <p className="text-sm text-gray-400">Área de trabalho de</p>
+              </div>
+            </div>
+          </li>
+        </Link>
+      ))}
+
+      {users?.map((user) => (
+        <Link href={`/u/${user.name}`} key={user.id}>
+          <li className="cursor-pointer rounded p-2 hover:bg-muted">
+            <div className="flex items-center space-x-4">
+              <Image src={user.image ?? ""} width={32} height={32} alt="User Dropdown Image" className="size-8 rounded-full" />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium">{user.name}</p>
+              </div>
+            </div>
+          </li>
+        </Link>
+      ))}
+    </ul>
   )
 }
 

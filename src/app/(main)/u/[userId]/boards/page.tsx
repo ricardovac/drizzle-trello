@@ -25,15 +25,15 @@ const Boards: FC<BoardsPageProps> = ({ params }) => {
   const dataToShow = useMemo(() => data?.pages.flatMap((page) => page.items), [data])
 
   return (
-    <main className="relative py-6 lg:gap-10 lg:py-10">
+    <div className="relative py-6 lg:gap-10 lg:py-10">
       <div className="flex flex-col gap-6">
-        <strong className="text-md uppercase">Suas áreas de trabalho</strong>
+        <h2 className="font-bold uppercase">Seus quadros</h2>
 
         {!!dataToShow && <BoardList boards={dataToShow} showCreateBoardButton />}
 
         {isLoading && <BoardList loading={isLoading} showCreateBoardButton />}
       </div>
-    </main>
+    </div>
   )
 }
 
