@@ -9,7 +9,7 @@ import {
   updateBoard
 } from "@/server/schema/board.schema"
 import { TRPCError } from "@trpc/server"
-import { and, desc, eq, gt, gte, isNotNull, sql } from "drizzle-orm"
+import { and, desc, eq, gte, isNotNull, sql } from "drizzle-orm"
 
 export const boardRouter = createTRPCRouter({
   get: protectedProcedure.input(getBoardById).query(async ({ ctx, input }) => {

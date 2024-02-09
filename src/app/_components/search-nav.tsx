@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { FC, useEffect, useState } from "react"
+import Image from "next/image"
 import Link from "next/link"
 import { usePathname, useSearchParams } from "next/navigation"
 import { useRecentContext } from "@/context/recent-boards-context"
@@ -13,30 +14,30 @@ import { Button } from "components/ui/button"
 import { SearchInput } from "components/ui/input"
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTrigger } from "components/ui/sheet"
 import { cn } from "lib/utils"
-import { Search } from "lucide-react"
+import { Loader2, Search } from "lucide-react"
 import { Session } from "next-auth"
 
 import { useDebounce } from "@/hooks/useDebounce"
 
 import { BoardImage } from "./board-background"
-import Image from "next/image"
 
 interface SearchNavProps extends React.HTMLAttributes<HTMLFormElement> {}
 
 const SearchNav: FC<SearchNavProps> = ({ className }) => {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState("")
-  const debouncedQuery = useDebounce(query, 300)
+  const debouncedQuery = useDebounce(query, 200)
 
   const { recentBoards } = useRecentContext()
 
-  const { data, isLoading } = api.search.dropdown.useQuery(
+  const { data, isLoading, isFetching } = api.search.dropdown.useQuery(
     {
       query: debouncedQuery,
       limit: 4
     },
     {
-      enabled: !!debouncedQuery && open
+      enabled: !!debouncedQuery && open,
+      placeholderData: { boards: recentBoards, type: "boards" }
     }
   )
 
@@ -96,6 +97,7 @@ const SearchNav: FC<SearchNavProps> = ({ className }) => {
                 <p>Nenhum resultado encontrado</p>
               </div>
             )}
+
             {hasDataToShow && (
               <div className="grid gap-4">
                 {boardType === "boards" && (
@@ -112,10 +114,10 @@ const SearchNav: FC<SearchNavProps> = ({ className }) => {
                 )}
               </div>
             )}
-            {!debouncedQuery && (
-              <div>
-                <h3 className="text-sm font-medium text-muted-foreground">Quadros</h3>
-                <BoardItem board={recentBoards} type="boards" />
+
+            {isFetching && (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="size-5 animate-spin" />
               </div>
             )}
           </div>
@@ -152,7 +154,13 @@ const BoardItem: FC<SearchNavItemProps> = ({ board, users }) => {
         <Link href={`/u/${user.name}`} key={user.id}>
           <li className="cursor-pointer rounded p-2 hover:bg-muted">
             <div className="flex items-center space-x-4">
-              <Image src={user.image ?? ""} width={32} height={32} alt="User Dropdown Image" className="size-8 rounded-full" />
+              <Image
+                src={user.image ?? ""}
+                width={32}
+                height={32}
+                alt="User Dropdown Image"
+                className="size-8 rounded-full"
+              />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium">{user.name}</p>
               </div>

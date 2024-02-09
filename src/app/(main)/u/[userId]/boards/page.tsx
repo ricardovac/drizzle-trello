@@ -1,7 +1,9 @@
 "use client"
 
 import { useMemo, type FC } from "react"
+import { useRecentContext } from "@/context/recent-boards-context"
 import { api } from "@/trpc/react"
+import { Clock } from "lucide-react"
 
 import BoardList from "@/app/_components/board-list"
 
@@ -9,13 +11,12 @@ interface BoardsPageProps {
   params: { userId: string }
 }
 
-const LIMIT = 10
-
 const Boards: FC<BoardsPageProps> = ({ params }) => {
   const userId = params.userId
+  const { recentBoards } = useRecentContext()
 
   const { data, isLoading } = api.board.all.useInfiniteQuery(
-    { limit: LIMIT, userId },
+    { limit: 10, userId },
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
       staleTime: 1000 * 60 * 5,
@@ -25,15 +26,22 @@ const Boards: FC<BoardsPageProps> = ({ params }) => {
   const dataToShow = useMemo(() => data?.pages.flatMap((page) => page.items), [data])
 
   return (
-    <div className="relative py-6 lg:gap-10 lg:py-10">
-      <div className="flex flex-col gap-6">
-        <h2 className="font-bold uppercase">Seus quadros</h2>
+    <>
+      <div className="w-full">
+        <div className="flex items-center space-x-2 p-2">
+          <Clock />
+          <h2 className="text-xl font-bold">Vizualizados recentemente</h2>
+        </div>
 
-        {!!dataToShow && <BoardList boards={dataToShow} showCreateBoardButton />}
-
-        {isLoading && <BoardList loading={isLoading} showCreateBoardButton />}
+        <BoardList boards={recentBoards} />
       </div>
-    </div>
+
+      <div className="w-full">
+        <h2 className="mb-6 text-xl font-bold">Seus quadros</h2>
+
+        <BoardList boards={dataToShow} showButton loading={isLoading} />
+      </div>
+    </>
   )
 }
 

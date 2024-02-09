@@ -5,14 +5,16 @@ import { Viewport, type Metadata } from "next"
 import { Inter as FontSans } from "next/font/google"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
+import { AuthContextProvider } from "@/context/auth-context"
+import { RecentContextProvider } from "@/context/recent-boards-context"
 import { TRPCReactProvider } from "@/trpc/react"
+import { api } from "@/trpc/server"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { siteConfig } from "config/site"
 
 import { ThemeProvider } from "../../components/ui/theme-provider"
 import { cn } from "../../lib/utils"
 import { MainNav } from "./_components/main-nav"
-import { AuthContextProvider } from "@/context/auth-context"
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -43,6 +45,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const session = await getServerAuthSession()
   if (!session?.user) redirect("/api/auth/signin")
 
+  const data = await api.board.getRecent.query({
+    userId: session.user.id
+  })
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
@@ -55,8 +61,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               enableSystem
               disableTransitionOnChange
             >
-              <MainNav />
-              {children}
+              <RecentContextProvider recentBoards={data}>
+                <MainNav />
+                {children}
+              </RecentContextProvider>
             </ThemeProvider>
             <ReactQueryDevtools initialIsOpen={false} />
           </AuthContextProvider>

@@ -15,6 +15,9 @@ export default function BoardCard({ board }: BoardCardProps) {
     <Link
       href={`/b/${board?.id}/${board?.title}`}
       className="relative cursor-pointer overflow-hidden rounded-md border"
+      shallow
+      scroll={false}
+      prefetch={false}
     >
       <BoardImage image={image}/>
 
