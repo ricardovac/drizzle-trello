@@ -27,12 +27,12 @@ interface MainNavProps {
 
 export function MainNav({ items, children }: MainNavProps) {
   const [showMobileMenu, setShowMobileMenu] = React.useState<boolean>(false)
-  const router = useRouter()
+  const { back } = useRouter()
 
   return (
     <div className="flex gap-6 border-b p-2 md:gap-10">
       <Button
-        onClick={() => router.back()}
+        onClick={() => back()}
         className="hidden items-center space-x-2 px-2 md:flex"
         variant="ghost"
       >

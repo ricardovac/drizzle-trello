@@ -47,8 +47,8 @@ export function SidebarNavItems({ items, pathname }: DocsSidebarNavItemsProps) {
           <Link
             key={index}
             href={item.href}
-            className={cn("flex w-full items-center rounded-md p-2 hover:underline", {
-              "bg-muted": pathname === item.href
+            className={cn("flex w-full items-center rounded-md p-2 hover:bg-muted", {
+              "bg-muted/80": pathname === item.href
             })}
             target={item.external ? "_blank" : ""}
             rel={item.external ? "noreferrer" : ""}

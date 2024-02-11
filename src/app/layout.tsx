@@ -14,7 +14,6 @@ import { siteConfig } from "config/site"
 
 import { ThemeProvider } from "../../components/ui/theme-provider"
 import { cn } from "../../lib/utils"
-import { MainNav } from "./_components/main-nav"
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -43,6 +42,7 @@ export const viewport: Viewport = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerAuthSession()
+
   if (!session?.user) redirect("/api/auth/signin")
 
   const data = await api.board.getRecent.query({
@@ -62,7 +62,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               disableTransitionOnChange
             >
               <RecentContextProvider recentBoards={data}>
-                <MainNav />
                 {children}
               </RecentContextProvider>
             </ThemeProvider>

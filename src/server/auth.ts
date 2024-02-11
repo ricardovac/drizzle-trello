@@ -1,10 +1,9 @@
 import { env } from "@/env.mjs"
 import { db } from "@/server/db"
 import { DrizzleAdapter } from "@auth/drizzle-adapter"
+import { mysqlTable } from "drizzle-orm/mysql-core"
 import { getServerSession, type DefaultSession, type NextAuthOptions } from "next-auth"
 import GoogleProvider, { type GoogleProfile } from "next-auth/providers/google"
-
-import { mysqlTable } from "./db/schema"
 
 declare module "next-auth" {
   interface Session extends DefaultSession {
@@ -29,7 +28,7 @@ export const authOptions: NextAuthOptions = {
         ...session.user,
         id: user.id
       }
-    })
+    }),
   },
   // @ts-expect-error
   adapter: DrizzleAdapter(db, mysqlTable),

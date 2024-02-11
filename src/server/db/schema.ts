@@ -5,7 +5,8 @@ import {
   index,
   int,
   json,
-  mysqlTableCreator,
+  mysqlEnum,
+  mysqlTable,
   primaryKey,
   text,
   timestamp,
@@ -13,48 +14,97 @@ import {
 } from "drizzle-orm/mysql-core"
 import { type AdapterAccount } from "next-auth/adapters"
 
-export const mysqlTable = mysqlTableCreator((name) => `trello_clone_${name}`)
+const ID_LENGTH = 24
 
-const cuid2_length = 24
-//
-// export const workspaces = mysqlTable(
-//   "workspaces",
-//   {
-//     id: varchar("id", { length: cuid2_length })
-//       .$defaultFn(() => createId())
-//       .primaryKey(),
-//     name: varchar("name", { length: 256 }).notNull(),
-//     type: mysqlEnum("type", [
-//       "CRM de vendas",
-//       "Operações",
-//       "Pequena Empresa",
-//       "RH",
-//       "Marketing",
-//       "Engenharia/TI",
-//       "Outro"
-//     ]).notNull(),
-//     description: text("description"),
-//     ownerId: varchar("owner_id", { length: 128 })
-//       .notNull()
-//       .references(() => users.id, { onDelete: "cascade" }), 
-//     createdAt: timestamp("created_at")
-//       .default(sql`CURRENT_TIMESTAMP`)
-//       .notNull(),
-//     updatedAt: timestamp("updated_at").onUpdateNow(),
-//   },
-//   (workspaces) => ({
-//     ownerIdIdx: index("ownerId_idx").on(workspaces.ownerId),
-//   })
-// )
-//
-// export const workspaceRelations = relations(workspaces, ({ many }) => ({
-//   boards: many(boards),
-// }));
+export const workspaces = mysqlTable(
+  "workspaces",
+  {
+    id: varchar("id", { length: ID_LENGTH })
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    name: varchar("name", { length: 256 }).notNull(),
+    type: mysqlEnum("type", [
+      "CRM de vendas",
+      "Operações",
+      "Pequena Empresa",
+      "RH",
+      "Marketing",
+      "Engenharia/TI",
+      "Outro"
+    ]).notNull(),
+    description: text("description"),
+    ownerId: varchar("owner_id", { length: 128 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at")
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp("updated_at").onUpdateNow()
+  },
+  (workspaces) => ({
+    ownerIdIdx: index("ownerId_idx").on(workspaces.ownerId)
+  })
+)
+
+export const workspaceRoles = mysqlTable("workspace_roles", {
+  id: varchar("id", { length: ID_LENGTH })
+    .$defaultFn(() => createId())
+    .primaryKey(),
+  name: varchar("name", { length: 128 }).notNull().default("MEMBER"),
+  workspaceId: varchar("workspace_id", { length: ID_LENGTH })
+    .notNull()
+    .references(() => workspaces.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").onUpdateNow()
+})
+
+export const workspaceMembers = mysqlTable("workspace_members", {
+  id: varchar("id", { length: ID_LENGTH })
+    .$defaultFn(() => createId())
+    .primaryKey(),
+  workspaceId: varchar("workspace_id", { length: ID_LENGTH })
+    .notNull()
+    .references(() => workspaces.id, { onDelete: "cascade" }),
+  memberId: varchar("member_id", { length: ID_LENGTH })
+    .notNull()
+    .references(() => users.id),
+  memberRoleId: varchar("member_role_id", { length: ID_LENGTH })
+    .notNull()
+    .references(() => workspaceRoles.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").onUpdateNow()
+})
+
+export const workspaceInvitations = mysqlTable(
+  "workspace_invitations",
+  {
+    id: varchar("id", { length: ID_LENGTH })
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    workspaceId: varchar("workspace_id", { length: ID_LENGTH })
+      .notNull()
+      .references(() => workspaces.id),
+    email: varchar("email", { length: ID_LENGTH }).notNull(),
+    memberRoleId: varchar("member_role_id", { length: ID_LENGTH })
+      .notNull()
+      .references(() => workspaceRoles.id),
+    expiresAt: timestamp("expires_at").defaultNow(),
+  },
+  (table) => ({
+    workspaceIdx: index("workspace_invitations_workspace_idx").on(
+      table.workspaceId,
+    ),
+  }),
+);
+
+export const workspaceRelations = relations(workspaces, ({ many }) => ({
+  boards: many(boards)
+}))
 
 export const boards = mysqlTable(
   "boards",
   {
-    id: varchar("id", { length: cuid2_length })
+    id: varchar("id", { length: ID_LENGTH })
       .$defaultFn(() => createId())
       .primaryKey(),
     title: varchar("title", { length: 256 }).notNull(),
@@ -66,7 +116,9 @@ export const boards = mysqlTable(
     updatedAt: timestamp("updated_at").onUpdateNow(),
     openedAt: timestamp("opened_at").onUpdateNow(),
     ownerId: varchar("ownerId", { length: 128 }).notNull(),
-    // workspaceId: varchar('workspaceId', { length: 128 }).notNull().references(() => workspaces.id, { onDelete: "cascade" })
+    workspaceId: varchar("workspace_id", { length: 128 })
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" })
   },
   (boards) => ({
     ownerIdIdx: index("ownerId_idx").on(boards.ownerId)
@@ -79,7 +131,7 @@ export const boardsRelations = relations(boards, ({ one, many }) => ({
 }))
 
 export const lists = mysqlTable("lists", {
-  id: varchar("id", { length: cuid2_length })
+  id: varchar("id", { length: ID_LENGTH })
     .$defaultFn(() => createId())
     .primaryKey(),
   title: varchar("title", { length: 256 }).notNull(),
@@ -99,7 +151,7 @@ export const listsRelations = relations(lists, ({ one, many }) => ({
 }))
 
 export const cards = mysqlTable("cards", {
-  id: varchar("id", { length: cuid2_length })
+  id: varchar("id", { length: ID_LENGTH })
     .$defaultFn(() => createId())
     .primaryKey(),
   title: varchar("title", { length: 256 }).notNull(),

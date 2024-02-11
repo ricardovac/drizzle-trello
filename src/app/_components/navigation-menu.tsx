@@ -13,12 +13,11 @@ import {
   NavigationMenuTrigger
 } from "components/ui/navigation-menu"
 import { cn } from "lib/utils"
-import { Loader2 } from "lucide-react"
 
 import { BoardImage } from "./board-background"
 
 export function MainNavigationMenu() {
-  const { recentBoards, isLoading, noRecentBoards } = useRecentContext()
+  const { recentBoards } = useRecentContext()
 
   return (
     <NavigationMenu>
@@ -26,13 +25,7 @@ export function MainNavigationMenu() {
         <NavigationMenuItem>
           <NavigationMenuTrigger>Recentes</NavigationMenuTrigger>
           <NavigationMenuContent>
-            {isLoading && (
-              <div className="flex items-center justify-center py-10 md:w-[300px] lg:w-[400px]">
-                <Loader2 className="size-5 animate-spin" />
-              </div>
-            )}
-
-            {noRecentBoards && (
+            {!recentBoards.length && (
               <div className="p-4 text-center text-muted-foreground md:w-[300px] lg:w-[400px]">
                 Você não tem nenhum quadro recente.
               </div>

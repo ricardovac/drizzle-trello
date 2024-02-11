@@ -1,13 +1,16 @@
 import { getServerAuthSession } from "@/server/auth"
 
 import "@/styles/globals.css"
+import { redirect } from "next/navigation"
 import { AuthContextProvider } from "@/context/auth-context"
 
+import { MainNav } from "../_components/main-nav"
 import { SidebarNav } from "../_components/sidebar"
 
 export default async function MainLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerAuthSession()
-  if (!session) return null
+
+  if (!session) redirect("/api/auth/signin")
 
   const user = session.user
 
@@ -17,7 +20,10 @@ export default async function MainLayout({ children }: { children: React.ReactNo
         <aside className="fixed top-14 hidden h-[calc(100vh-3.5rem)] w-full shrink-0 overflow-y-auto  md:sticky md:block lg:py-10">
           <SidebarNav />
         </aside>
-        <div className="mx-auto flex flex-col items-center gap-10 py-8">{children}</div>
+        <div className="flex flex-col gap-10 py-8">
+          <MainNav />
+          {children}
+        </div>
       </div>
     </AuthContextProvider>
   )

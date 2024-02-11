@@ -3,7 +3,7 @@ import { type Cards } from "@/trpc/shared"
 import { Droppable } from "@hello-pangea/dnd"
 import { cn } from "lib/utils"
 
-import Card from "./card"
+import CardItem from "./card-item"
 
 interface ListAreaProps {
   cards: Cards
@@ -20,7 +20,7 @@ const ListArea: FC<ListAreaProps> = ({ cards, columnId }) => {
           className={cn("min-h-4 rounded-md", snapshot.isDraggingOver && "bg-primary/[.055]")}
         >
           {cards.map((card, i) => (
-            <Card card={card} key={card.id} index={i} />
+            <CardItem card={card} key={card.id} index={i} />
           ))}
           {provided.placeholder}
         </div>

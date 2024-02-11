@@ -27,17 +27,19 @@ const Boards: FC<BoardsPageProps> = ({ params }) => {
 
   return (
     <>
-      <div className="w-full">
-        <div className="flex items-center space-x-2 p-2">
-          <Clock />
-          <h2 className="text-xl font-bold">Vizualizados recentemente</h2>
+      {!!recentBoards.length && (
+        <div className="w-full">
+          <div className="flex items-center space-x-2 p-2">
+            <Clock />
+            <h2 className="text-xl font-bold">Vizualizados recentemente</h2>
+          </div>
+
+          <BoardList boards={recentBoards} />
         </div>
-
-        <BoardList boards={recentBoards} />
-      </div>
+      )}
 
       <div className="w-full">
-        <h2 className="mb-6 text-xl font-bold">Seus quadros</h2>
+        <h2 className="mb-6 text-xl font-bold">Suas áreas de trabalho</h2>
 
         <BoardList boards={dataToShow} showButton loading={isLoading} />
       </div>
