@@ -4,7 +4,6 @@ import "@/styles/globals.css"
 import { redirect } from "next/navigation"
 import { AuthContextProvider } from "@/context/auth-context"
 
-import { MainNav } from "../_components/main-nav"
 import { SidebarNav } from "../_components/sidebar"
 
 export default async function MainLayout({ children }: { children: React.ReactNode }) {
@@ -21,7 +20,6 @@ export default async function MainLayout({ children }: { children: React.ReactNo
           <SidebarNav />
         </aside>
         <div className="flex flex-col gap-10 py-8">
-          <MainNav />
           {children}
         </div>
       </div>

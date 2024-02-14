@@ -1,13 +1,13 @@
 "use client"
 
 import { FC } from "react"
+import { useBoardContext } from "@/context/board-context"
 import { api } from "@/trpc/react"
 
-import { useBoardContext } from "@/context/board-context"
 import EditableTitle from "./editable-title"
 
 const BoardHeader: FC = () => {
-  const { board } = useBoardContext()
+  const { board, permission } = useBoardContext()
   const { mutate } = api.board.edit.useMutation()
 
   return (

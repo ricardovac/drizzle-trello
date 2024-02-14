@@ -24,6 +24,7 @@ const Boards: FC<BoardsPageProps> = ({ params }) => {
     }
   )
   const dataToShow = useMemo(() => data?.pages.flatMap((page) => page.items), [data])
+  console.log(dataToShow)
 
   return (
     <>
@@ -39,7 +40,7 @@ const Boards: FC<BoardsPageProps> = ({ params }) => {
       )}
 
       <div className="w-full">
-        <h2 className="mb-6 text-xl font-bold">Suas áreas de trabalho</h2>
+        <h2 className="mb-6 text-xl font-bold">Seus quadros</h2>
 
         <BoardList boards={dataToShow} showButton loading={isLoading} />
       </div>

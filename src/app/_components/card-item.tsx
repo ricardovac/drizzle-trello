@@ -1,5 +1,6 @@
 import { type FC } from "react"
 import Link from "next/link"
+import { useBoardContext } from "@/context/board-context"
 import { type SingleCard } from "@/trpc/shared"
 import { Draggable, DraggableStateSnapshot, DraggableStyle } from "@hello-pangea/dnd"
 import { Button } from "components/ui/button"
@@ -21,8 +22,9 @@ function getStyle(style: DraggableStyle | undefined, snapshot: DraggableStateSna
 }
 
 const Card: FC<CardProps> = ({ card, index }) => {
+  const { permission } = useBoardContext()
   return (
-    <Draggable draggableId={card.id ?? ""} index={index}>
+    <Draggable draggableId={card.id ?? ""} index={index} isDragDisabled={permission === "VISITOR"}>
       {(provided, snapshot) => (
         <Button
           {...provided.draggableProps}

@@ -5,7 +5,6 @@ import {
   index,
   int,
   json,
-  mysqlEnum,
   mysqlTable,
   primaryKey,
   text,
@@ -15,91 +14,6 @@ import {
 import { type AdapterAccount } from "next-auth/adapters"
 
 const ID_LENGTH = 24
-
-export const workspaces = mysqlTable(
-  "workspaces",
-  {
-    id: varchar("id", { length: ID_LENGTH })
-      .$defaultFn(() => createId())
-      .primaryKey(),
-    name: varchar("name", { length: 256 }).notNull(),
-    type: mysqlEnum("type", [
-      "CRM de vendas",
-      "Operações",
-      "Pequena Empresa",
-      "RH",
-      "Marketing",
-      "Engenharia/TI",
-      "Outro"
-    ]).notNull(),
-    description: text("description"),
-    ownerId: varchar("owner_id", { length: 128 })
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    createdAt: timestamp("created_at")
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: timestamp("updated_at").onUpdateNow()
-  },
-  (workspaces) => ({
-    ownerIdIdx: index("ownerId_idx").on(workspaces.ownerId)
-  })
-)
-
-export const workspaceRoles = mysqlTable("workspace_roles", {
-  id: varchar("id", { length: ID_LENGTH })
-    .$defaultFn(() => createId())
-    .primaryKey(),
-  name: varchar("name", { length: 128 }).notNull().default("MEMBER"),
-  workspaceId: varchar("workspace_id", { length: ID_LENGTH })
-    .notNull()
-    .references(() => workspaces.id, { onDelete: "cascade" }),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").onUpdateNow()
-})
-
-export const workspaceMembers = mysqlTable("workspace_members", {
-  id: varchar("id", { length: ID_LENGTH })
-    .$defaultFn(() => createId())
-    .primaryKey(),
-  workspaceId: varchar("workspace_id", { length: ID_LENGTH })
-    .notNull()
-    .references(() => workspaces.id, { onDelete: "cascade" }),
-  memberId: varchar("member_id", { length: ID_LENGTH })
-    .notNull()
-    .references(() => users.id),
-  memberRoleId: varchar("member_role_id", { length: ID_LENGTH })
-    .notNull()
-    .references(() => workspaceRoles.id),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").onUpdateNow()
-})
-
-export const workspaceInvitations = mysqlTable(
-  "workspace_invitations",
-  {
-    id: varchar("id", { length: ID_LENGTH })
-      .$defaultFn(() => createId())
-      .primaryKey(),
-    workspaceId: varchar("workspace_id", { length: ID_LENGTH })
-      .notNull()
-      .references(() => workspaces.id),
-    email: varchar("email", { length: ID_LENGTH }).notNull(),
-    memberRoleId: varchar("member_role_id", { length: ID_LENGTH })
-      .notNull()
-      .references(() => workspaceRoles.id),
-    expiresAt: timestamp("expires_at").defaultNow(),
-  },
-  (table) => ({
-    workspaceIdx: index("workspace_invitations_workspace_idx").on(
-      table.workspaceId,
-    ),
-  }),
-);
-
-export const workspaceRelations = relations(workspaces, ({ many }) => ({
-  boards: many(boards)
-}))
 
 export const boards = mysqlTable(
   "boards",
@@ -115,20 +29,50 @@ export const boards = mysqlTable(
       .notNull(),
     updatedAt: timestamp("updated_at").onUpdateNow(),
     openedAt: timestamp("opened_at").onUpdateNow(),
-    ownerId: varchar("ownerId", { length: 128 }).notNull(),
-    workspaceId: varchar("workspace_id", { length: 128 })
+    ownerId: varchar("ownerId", { length: 128 })
       .notNull()
-      .references(() => workspaces.id, { onDelete: "cascade" })
+      .references(() => users.id, { onDelete: "cascade" })
   },
   (boards) => ({
     ownerIdIdx: index("ownerId_idx").on(boards.ownerId)
   })
 )
 
-export const boardsRelations = relations(boards, ({ one, many }) => ({
-  owner: one(users, { fields: [boards.ownerId], references: [users.id] }),
-  lists: many(lists)
+export const boardsRelations = relations(boards, ({ many, one }) => ({
+  lists: many(lists),
+  users: one(users, { fields: [boards.ownerId], references: [users.id] })
 }))
+
+export const boardMembers = mysqlTable(
+  "boardMembers",
+  {
+    id: varchar("id", { length: ID_LENGTH })
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    boardId: varchar("board_id", { length: ID_LENGTH })
+      .notNull()
+      .references(() => boards.id),
+    userId: varchar("user_id", { length: 128 })
+      .notNull()
+      .references(() => users.id),
+    roleId: varchar("role_id", { length: 128 })
+      .notNull()
+      .references(() => boardRoles.id)
+  },
+  (bm) => ({
+    compoundKey: primaryKey(bm.boardId, bm.userId)
+  })
+)
+
+export const boardRoles = mysqlTable("boardRoles", {
+  id: varchar("id", { length: ID_LENGTH })
+    .$defaultFn(() => createId())
+    .primaryKey(),
+  name: varchar("name", { length: 128 }).notNull(),
+  boardId: varchar("board_id", { length: 128 })
+    .notNull()
+    .references(() => boards.id, { onDelete: "cascade" })
+})
 
 export const lists = mysqlTable("lists", {
   id: varchar("id", { length: ID_LENGTH })
@@ -136,7 +80,7 @@ export const lists = mysqlTable("lists", {
     .primaryKey(),
   title: varchar("title", { length: 256 }).notNull(),
   position: int("position").notNull(),
-  boardId: varchar("boardId", { length: 128 })
+  boardId: varchar("board_id", { length: 128 })
     .notNull()
     .references(() => boards.id),
   createdAt: timestamp("created_at")

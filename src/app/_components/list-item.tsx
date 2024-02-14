@@ -1,6 +1,7 @@
 "use client"
 
 import { type FC } from "react"
+import { useBoardContext } from "@/context/board-context"
 import { api } from "@/trpc/react"
 import { type SingleList } from "@/trpc/shared"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "components/ui/card"
@@ -17,6 +18,7 @@ interface ListItemProps {
 
 const ListItem: FC<ListItemProps> = ({ list, columnId }) => {
   const { mutate } = api.list.edit.useMutation()
+  const { permission } = useBoardContext()
   return (
     <Card id="list-card" className="flex h-fit min-w-[300px] max-w-[300px] flex-col">
       <CardHeader>
@@ -35,9 +37,11 @@ const ListItem: FC<ListItemProps> = ({ list, columnId }) => {
         <ListArea cards={list.cards} columnId={columnId} />
       </CardContent>
 
-      <CardFooter>
-        <CardForm list={list} />
-      </CardFooter>
+      {permission !== "VISITOR" && (
+        <CardFooter>
+          <CardForm list={list} />
+        </CardFooter>
+      )}
     </Card>
   )
 }
