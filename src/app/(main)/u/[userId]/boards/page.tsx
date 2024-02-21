@@ -24,7 +24,6 @@ const Boards: FC<BoardsPageProps> = ({ params }) => {
     }
   )
   const dataToShow = useMemo(() => data?.pages.flatMap((page) => page.items), [data])
-  console.log(dataToShow)
 
   return (
     <>
@@ -35,7 +34,7 @@ const Boards: FC<BoardsPageProps> = ({ params }) => {
             <h2 className="text-xl font-bold">Vizualizados recentemente</h2>
           </div>
 
-          <BoardList boards={recentBoards} />
+          <BoardList boards={recentBoards ?? []} />
         </div>
       )}
 

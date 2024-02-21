@@ -20,7 +20,7 @@ export const createBoard = z.object({
     type: z.enum(["color", "image"]),
     value: z.string()
   }),
-  ownerId: z.string(),
+  userId: z.string(),
   public: z.boolean().default(false)
 })
 

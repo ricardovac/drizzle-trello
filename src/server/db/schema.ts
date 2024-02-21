@@ -40,7 +40,8 @@ export const boards = mysqlTable(
 
 export const boardsRelations = relations(boards, ({ many, one }) => ({
   lists: many(lists),
-  users: one(users, { fields: [boards.ownerId], references: [users.id] })
+  owner: one(users, { fields: [boards.ownerId], references: [users.id] }),
+  members: many(boardMembers)
 }))
 
 export const boardMembers = mysqlTable(
@@ -49,30 +50,24 @@ export const boardMembers = mysqlTable(
     id: varchar("id", { length: ID_LENGTH })
       .$defaultFn(() => createId())
       .primaryKey(),
+    // change this to foreign key maybe
     boardId: varchar("board_id", { length: ID_LENGTH })
       .notNull()
       .references(() => boards.id),
     userId: varchar("user_id", { length: 128 })
       .notNull()
       .references(() => users.id),
-    roleId: varchar("role_id", { length: 128 })
-      .notNull()
-      .references(() => boardRoles.id)
   },
   (bm) => ({
-    compoundKey: primaryKey(bm.boardId, bm.userId)
+    boardIdIndex: index("boardId_idx").on(bm.boardId),
+    userIdIndex: index("userId_idx").on(bm.userId)
   })
 )
 
-export const boardRoles = mysqlTable("boardRoles", {
-  id: varchar("id", { length: ID_LENGTH })
-    .$defaultFn(() => createId())
-    .primaryKey(),
-  name: varchar("name", { length: 128 }).notNull(),
-  boardId: varchar("board_id", { length: 128 })
-    .notNull()
-    .references(() => boards.id, { onDelete: "cascade" })
-})
+export const boardMembersRelations = relations(boardMembers, ({ one }) => ({
+  board: one(boards, { fields: [boardMembers.boardId], references: [boards.id] }),
+  user: one(users, { fields: [boardMembers.userId], references: [users.id] })
+}))
 
 export const lists = mysqlTable("lists", {
   id: varchar("id", { length: ID_LENGTH })

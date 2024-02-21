@@ -9,13 +9,13 @@ import {
   type PropsWithChildren
 } from "react"
 import { api } from "@/trpc/react"
-import { type BoardMemberType, type List, type SingleBoard } from "@/trpc/shared"
+import { type List, type SingleBoard } from "@/trpc/shared"
 import { DragDropContext, type DropResult } from "@hello-pangea/dnd"
 
 interface BoardContextProps {
   board: SingleBoard
   lists: List
-  permission: BoardMemberType
+  permission: string
 }
 
 const BoardContext = createContext<BoardContextProps>({} as BoardContextProps)
@@ -27,7 +27,7 @@ export function useBoardContext() {
 interface BoardContextProviderProps extends PropsWithChildren {
   board: SingleBoard
   lists: List
-  permission: BoardMemberType
+  permission: string
 }
 
 const BoardContextProvider: FC<BoardContextProviderProps> = ({
@@ -44,7 +44,7 @@ const BoardContextProvider: FC<BoardContextProviderProps> = ({
     {
       initialData: initialLists,
       refetchOnMount: false,
-      refetchOnReconnect: false,
+      refetchOnReconnect: false
     }
   )
 

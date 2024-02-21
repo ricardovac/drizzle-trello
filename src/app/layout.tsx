@@ -10,6 +10,7 @@ import { RecentContextProvider } from "@/context/recent-boards-context"
 import { TRPCReactProvider } from "@/trpc/react"
 import { api } from "@/trpc/server"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
+import { Toaster } from "components/ui/toaster"
 import { siteConfig } from "config/site"
 
 import { ThemeProvider } from "../../components/ui/theme-provider"
@@ -65,6 +66,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               <RecentContextProvider recentBoards={data}>
                 <MainNav />
                 {children}
+                <Toaster />
               </RecentContextProvider>
             </ThemeProvider>
             <ReactQueryDevtools initialIsOpen={false} />

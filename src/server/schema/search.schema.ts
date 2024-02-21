@@ -7,7 +7,7 @@ export const search = z.object({
   limit: z.number().default(5),
   sort: z.enum(["desc", "asc"]).default("desc"),
   offset: z.number().default(0),
-  type: type.default("boards"),
+  type: type.optional(),
   cursor: z.string().optional()
 })
 

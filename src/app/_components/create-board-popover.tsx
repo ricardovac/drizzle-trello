@@ -44,7 +44,7 @@ export default function CreateBoardPopover({
     mode: "onSubmit",
     defaultValues: {
       title: "",
-      ownerId: "",
+      userId: "",
       background: { type: "color", value: generateRandomHex() },
       public: true
     }
@@ -64,7 +64,7 @@ export default function CreateBoardPopover({
   const onSubmit = (values: z.infer<typeof createBoard>) => {
     mutate({
       ...values,
-      ownerId: user.id
+      userId: user.id
     })
   }
 

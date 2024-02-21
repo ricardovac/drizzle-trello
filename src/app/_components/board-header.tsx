@@ -4,6 +4,7 @@ import { FC } from "react"
 import { useBoardContext } from "@/context/board-context"
 import { api } from "@/trpc/react"
 
+import AddMember from "./members/add-member"
 import EditableTitle from "./editable-title"
 
 const BoardHeader: FC = () => {
@@ -22,6 +23,8 @@ const BoardHeader: FC = () => {
           className="text-lg"
         />
       </h1>
+
+      <div className="flex items-center gap-4">{permission === "OWNER" && <AddMember />}</div>
     </header>
   )
 }

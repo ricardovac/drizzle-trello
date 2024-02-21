@@ -46,6 +46,9 @@ const AccountMenu: FC<AccountMenuProps> = ({}) => {
           className="cursor-pointer"
           onSelect={(e) => {
             e.preventDefault()
+            signOut({
+              redirect: false,
+            })
             signIn("google")
           }}
         >

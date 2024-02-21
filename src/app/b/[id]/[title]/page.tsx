@@ -1,12 +1,12 @@
 import BoardContext from "@/context/board-context"
-import { getServerAuthSession } from "@/server/auth"
 import { api } from "@/trpc/server"
-import { type SingleBoard } from "@/trpc/shared"
+import { SingleBoard } from "@/trpc/shared"
 
 import BoardAppShell from "@/app/_components/board-appshell"
 import BoardHeader from "@/app/_components/board-header"
 import List from "@/app/_components/list"
 import ListForm from "@/app/_components/list-form"
+import { getServerAuthSession } from "@/server/auth"
 
 interface BoardPageProps {
   params: { id: string; title: string }
@@ -25,9 +25,10 @@ export default async function Page({ params }: BoardPageProps) {
   const initialLists = await api.list.all.query({
     boardId: id
   })
-  const permission = await getBoardUserPermission(board)
 
   await api.board.createRecent.mutate({ boardId: board.id, userId: board.ownerId })
+
+  const permission = await getBoardUserPermission(board)
 
   return (
     <BoardContext lists={initialLists} board={board} permission={permission}>
@@ -51,7 +52,7 @@ export async function getBoardUserPermission(board: SingleBoard) {
     return "OWNER"
   }
 
-  if (board.memberId === session?.user.id) {
+  if (board.members.map((x) => x.id).includes(session?.user.id ?? "")) {
     return "MEMBER"
   }
 

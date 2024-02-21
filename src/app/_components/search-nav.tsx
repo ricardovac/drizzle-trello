@@ -30,7 +30,7 @@ const SearchNav: FC<SearchNavProps> = ({ className }) => {
 
   const { recentBoards } = useRecentContext()
 
-  const { data, isLoading, isFetching } = api.search.dropdown.useQuery(
+  const { data, isLoading, isFetching } = api.search.byType.useQuery(
     {
       query: debouncedQuery,
       limit: 4
@@ -103,19 +103,19 @@ const SearchNav: FC<SearchNavProps> = ({ className }) => {
                 {boardType === "boards" && (
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground">Quadros</h3>
-                    <BoardItem board={data?.boards} type="boards" />
+                    <DropdownItem board={data?.boards} type="boards" />
                   </div>
                 )}
                 {boardType === "users" && (
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground">Pessoas</h3>
-                    <BoardItem users={data?.users} type="users" />
+                    <DropdownItem users={data?.users} type="users" />
                   </div>
                 )}
               </div>
             )}
 
-            {isFetching && (
+            {(isFetching || isLoading) && (
               <div className="flex items-center justify-center py-4">
                 <Loader2 className="size-5 animate-spin" />
               </div>
@@ -133,7 +133,7 @@ interface SearchNavItemProps {
   type: SearchFilterTypes
 }
 
-const BoardItem: FC<SearchNavItemProps> = ({ board, users }) => {
+export const DropdownItem: FC<SearchNavItemProps> = ({ board, users }) => {
   return (
     <ul className="w-full divide-muted">
       {board?.map((item) => (

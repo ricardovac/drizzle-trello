@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import dynamic from "next/dynamic"
 import { useRouter } from "next/navigation"
 import { MainNavItem } from "@/utils/types"
 import { Button } from "components/ui/button"
@@ -11,14 +10,8 @@ import { siteConfig } from "config/site"
 import CreateBoardPopover from "./create-board-popover"
 import { MobileNav } from "./mobile-nav"
 import { MainNavigationMenu } from "./navigation-menu"
-
-const AccountMenu = dynamic(() => import("./account-menu"), {
-  ssr: false
-})
-
-const SearchNav = dynamic(() => import("./search-nav"), {
-  ssr: false
-})
+import AccountMenu from "./account-menu"
+import SearchNav from "./search-nav"
 
 interface MainNavProps {
   items?: MainNavItem[]

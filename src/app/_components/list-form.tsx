@@ -20,12 +20,12 @@ import { useAuthContext } from "@/context/auth-context"
 export default function ListForm() {
   const [mode, setMode] = useState<"button" | "form">("button")
   const cardRef = useClickOutside(() => setMode("button"))
-  const { board } = useBoardContext()
+  const { board, lists } = useBoardContext()
 
   if (mode === "button") {
     return (
       <Button ref={cardRef} onClick={() => setMode("form")} className="opacity-45">
-        Adicionar uma lista
+        Adicionar {lists.length === 0 ? "uma" : "outra"} lista
       </Button>
     )
   }

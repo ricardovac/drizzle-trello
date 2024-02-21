@@ -1,5 +1,6 @@
 import { type AppRouter } from "@/server/api/root"
 import { type inferRouterInputs, type inferRouterOutputs } from "@trpc/server"
+import { ControllerRenderProps, FieldValues } from "react-hook-form"
 import superjson from "superjson"
 
 export const transformer = superjson
@@ -23,4 +24,5 @@ export type SingleBoard = RouterOutputs["board"]["get"]
 export type InfiniteBoard = RouterOutputs["board"]["all"]["items"][number]
 export type Cards = Pick<SingleList, "cards">["cards"]
 export type SingleCard = Pick<SingleList, "cards">["cards"][0]
-export type BoardMemberType = "OWNER" | "MEMBER" | "VISITOR"
+
+export type FieldType = ControllerRenderProps<FieldValues, string>;

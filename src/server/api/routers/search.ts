@@ -1,12 +1,12 @@
 import { boards, users } from "@/server/db/schema"
 import { search } from "@/server/schema/search.schema"
-import { asc, desc, gte, like, sql } from "drizzle-orm"
+import { asc, desc, gte, like, or, sql } from "drizzle-orm"
 
 import { createTRPCRouter, protectedProcedure } from "../trpc"
 
 export const searchRouter = createTRPCRouter({
-  dropdown: protectedProcedure.input(search).query(async ({ ctx, input }) => {
-    const { limit, query, sort, cursor, offset } = input
+  byType: protectedProcedure.input(search).query(async ({ ctx, input }) => {
+    const { limit, query, sort, cursor, offset, type } = input
     const { db } = ctx
 
     const countRows = await db
@@ -39,7 +39,7 @@ export const searchRouter = createTRPCRouter({
       const returnableItems = items.map((item) => ({
         id: item.id,
         title: item.title,
-        background: item.background,
+        background: item.background
       }))
 
       return {
@@ -52,7 +52,7 @@ export const searchRouter = createTRPCRouter({
       let usersQuery = db
         .select()
         .from(users)
-        .where(like(users.name, `%${query}%`))
+        .where(or(like(users.name, `%${query}%`), like(users.email, `%${query}%`)))
         .orderBy(sort === "desc" ? desc(users.name) : asc(users.name))
         .limit(limit)
         .offset(offset)
@@ -81,21 +81,36 @@ export const searchRouter = createTRPCRouter({
       }
     }
 
-    const fetchedBoards = await fetchBoards()
-    const fetchedUsers = await fetchUsers()
+    switch (type) {
+      case "boards":
+        const fetchedBoards = await fetchBoards()
+        return {
+          boards: fetchedBoards.items,
+          type: "boards" as const
+        }
+      case "users":
+        const fetchedUsers = await fetchUsers()
+        return {
+          users: fetchedUsers.items,
+          type: "users" as const
+        }
+      default:
+        const boards = await fetchBoards()
+        const users = await fetchUsers()
 
-    if (!!fetchedBoards.items.length) {
-      return {
-        boards: fetchedBoards.items || [],
-        type: "boards"
-      }
-    }
+        if (!!boards.items.length) {
+          return {
+            boards: boards.items,
+            type: "boards" as const
+          }
+        }
 
-    if (!!fetchedUsers.items.length) {
-      return {
-        users: fetchedUsers.items || [],
-        type: "users"
-      }
+        if (!!users.items.length) {
+          return {
+            users: users.items,
+            type: "users" as const
+          }
+        }
     }
   })
 })
