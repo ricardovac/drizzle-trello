@@ -9,7 +9,7 @@ import { Input } from "./input"
 import { Popover, PopoverContent, PopoverTrigger } from "./popover"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./tabs"
 
-interface ColorPickerProps  {
+interface ColorPickerProps {
   background: string
   setBackground: (background: string) => void
   className?: string
