@@ -1,23 +1,30 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc"
 import { boardMembers, boards } from "@/server/db/schema"
-import {
-  createBoard,
-  createRecent,
-  getAllBoards,
-  getBoardById,
-  getRecent,
-  updateBoard
-} from "@/server/schema/board.schema"
+import { createBoard, getAllBoards, getBoardById, updateBoard } from "@/server/schema/board.schema"
 import { TRPCError } from "@trpc/server"
-import { and, desc, eq, isNotNull, sql } from "drizzle-orm"
+import { and, desc, eq, sql } from "drizzle-orm"
 
 export const boardRouter = createTRPCRouter({
   get: protectedProcedure.input(getBoardById).query(async ({ ctx, input }) => {
-    const board = await ctx.db.query.boards.findFirst({
-      where: eq(boards.id, input.id),
+    const { session } = ctx
+    const { boardId } = input
+    const userId = session.user.id
+
+    const board = await ctx.db.query.boardMembers.findFirst({
+      columns: {
+        role: true
+      },
       with: {
-        members: true
-      }
+        board: {
+          columns: {
+            id: true,
+            title: true,
+            background: true,
+            ownerId: true
+          }
+        }
+      },
+      where: and(eq(boardMembers.userId, userId), eq(boardMembers.boardId, boardId))
     })
 
     if (!board) {
@@ -41,66 +48,74 @@ export const boardRouter = createTRPCRouter({
     const totalCount = countRows[0]?.board_count
     if (totalCount === undefined) throw new Error("totalCount is undefined")
 
-    let boardsQuery = await db.query.boards.findMany({
-      limit,
-      where: eq(boards.ownerId, input.userId),
-      orderBy: desc(boards.createdAt),
+    let userBoards = await db.query.boardMembers.findMany({
+      columns: {
+        role: true
+      },
+      where: eq(boardMembers.userId, input.userId),
       with: {
-        members: true
+        board: {
+          columns: {
+            id: true,
+            title: true,
+            background: true
+          }
+        }
       }
     })
 
     let nextCursor: typeof input.cursor | undefined = undefined
-    if (boardsQuery.length > limit) {
-      const nextItem = boardsQuery.pop()!
-      nextCursor = nextItem.id
+    if (userBoards.length > limit) {
+      const nextItem = userBoards.pop()!
+      nextCursor = nextItem.board.id
     }
 
     return {
-      items: boardsQuery,
+      items: userBoards,
       nextCursor,
       totalCount
     }
   }),
   create: protectedProcedure.input(createBoard).mutation(async ({ ctx, input }) => {
-    const board = await ctx.db.transaction(async (tx) => {
+    const { db, session } = ctx
+    const userId = session.user.id
+
+    const board = await db.transaction(async (tx) => {
       const foundBoard = await tx
         .select({ id: boards.id })
         .from(boards)
-        .where(and(eq(boards.title, input.title), eq(boards.ownerId, input.userId)))
+        .where(and(eq(boards.title, input.title), eq(boards.ownerId, userId)))
         .limit(1)
         .execute()
 
       if (!!foundBoard.length) {
-        tx.rollback()
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Board already exists"
+          message: "Um board com este nome já existe."
         })
       }
 
       await tx.insert(boards).values({
         title: input.title,
         background: input.background,
-        ownerId: input.userId,
-        public: input.public
+        ownerId: userId
       })
 
       const [returnedBoard] = await tx
         .select({ id: boards.id })
         .from(boards)
-        .where(and(eq(boards.title, input.title), eq(boards.ownerId, input.userId)))
+        .where(and(eq(boards.title, input.title), eq(boards.ownerId, userId)))
         .orderBy(desc(boards.createdAt))
         .limit(1)
 
       if (!returnedBoard) {
-        tx.rollback()
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Created board not found" })
       }
 
       await tx.insert(boardMembers).values({
         boardId: returnedBoard.id,
-        userId: input.userId
+        userId,
+        role: "admin"
       })
     })
 
@@ -124,26 +139,5 @@ export const boardRouter = createTRPCRouter({
         title: input.title
       })
       .where(eq(boards.id, input.boardId))
-  }),
-  createRecent: protectedProcedure.input(createRecent).mutation(async ({ ctx, input }) => {
-    return await ctx.db
-      .update(boards)
-      .set({
-        openedAt: new Date()
-      })
-      .where(and(eq(boards.id, input.boardId), eq(boards.ownerId, input.userId)))
-  }),
-  getRecent: protectedProcedure.input(getRecent).query(async ({ ctx, input }) => {
-    const { userId } = input
-
-    const board = await ctx.db.query.boards.findMany({
-      limit: 5,
-      where: and(eq(boards.ownerId, userId), isNotNull(boards.openedAt)),
-      with: {
-        members: true
-      }
-    })
-
-    return board
   })
 })

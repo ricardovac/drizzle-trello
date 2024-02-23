@@ -15,7 +15,7 @@ const Boards: FC<BoardsPageProps> = ({ params }) => {
   const userId = params.userId
   const { recentBoards } = useRecentContext()
 
-  const { data, isLoading } = api.board.all.useInfiniteQuery(
+  const { data: userBoards, isLoading } = api.board.all.useInfiniteQuery(
     { limit: 10, userId },
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -23,25 +23,24 @@ const Boards: FC<BoardsPageProps> = ({ params }) => {
       cacheTime: 1000 * 60 * 10
     }
   )
-  const dataToShow = useMemo(() => data?.pages.flatMap((page) => page.items), [data])
+  const dataToShow = useMemo(() => userBoards?.pages.flatMap((page) => page.items), [userBoards])
 
   return (
     <>
-      {!!recentBoards.length && (
+      {recentBoards.length !== 0 && (
         <div className="w-full">
           <div className="flex items-center space-x-2 p-2">
             <Clock />
             <h2 className="text-xl font-bold">Vizualizados recentemente</h2>
           </div>
 
-          <BoardList boards={recentBoards ?? []} />
+          <BoardList recentBoards={recentBoards} />
         </div>
       )}
 
       <div className="w-full">
         <h2 className="mb-6 text-xl font-bold">Seus quadros</h2>
-
-        <BoardList boards={dataToShow} showButton loading={isLoading} />
+        <BoardList userBoards={dataToShow} showButton loading={isLoading} />
       </div>
     </>
   )

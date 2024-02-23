@@ -7,11 +7,12 @@ import { Button } from "components/ui/button"
 import { Icons } from "components/ui/icons"
 import { siteConfig } from "config/site"
 
+import AccountMenu from "./account-menu"
 import CreateBoardPopover from "./create-board-popover"
 import { MobileNav } from "./mobile-nav"
 import { MainNavigationMenu } from "./navigation-menu"
-import AccountMenu from "./account-menu"
 import SearchNav from "./search-nav"
+import { Plus } from "lucide-react"
 
 interface MainNavProps {
   items?: MainNavItem[]
@@ -35,7 +36,10 @@ export function MainNav({ items, children }: MainNavProps) {
       <div className="relative flex w-full items-center justify-between">
         <nav className="hidden gap-6 md:flex">
           <MainNavigationMenu />
-          <CreateBoardPopover>Criar</CreateBoardPopover>
+          <CreateBoardPopover>
+            <span className="hidden xl:block">Criar</span>
+            <Plus className="block xl:hidden"/>
+          </CreateBoardPopover>
         </nav>
         <nav className="relative gap-6 md:flex">
           <SearchNav />

@@ -5,7 +5,8 @@ import Image from "next/image"
 import { BackgroundTypeSchema, createBoard } from "@/server/schema/board.schema"
 import { api } from "@/trpc/react"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Button } from "components/ui/button"
+import { VariantProps } from "class-variance-authority"
+import { Button, buttonVariants } from "components/ui/button"
 import { ColorPicker } from "components/ui/color-picker"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "components/ui/form"
 import { Input } from "components/ui/input"
@@ -15,20 +16,10 @@ import { LoaderIcon } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-import { useAuthContext } from "@/context/auth-context"
-
-interface CreateBoardPopoverProps {
+interface CreateBoardPopoverProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
   children: React.ReactNode
-  className?: string
-  variant?:
-    | "default"
-    | "secondary"
-    | "link"
-    | "destructive"
-    | "outline"
-    | "ghost"
-    | null
-    | undefined
 }
 
 export default function CreateBoardPopover({
@@ -36,7 +27,6 @@ export default function CreateBoardPopover({
   variant,
   className
 }: CreateBoardPopoverProps) {
-  const { user } = useAuthContext()
   const [backgroundColor, setBackgroundColor] = useState("")
 
   const form = useForm<z.infer<typeof createBoard>>({
@@ -44,13 +34,11 @@ export default function CreateBoardPopover({
     mode: "onSubmit",
     defaultValues: {
       title: "",
-      userId: "",
-      background: { type: "color", value: generateRandomHex() },
-      public: true
+      background: { type: "color", value: generateRandomHex() }
     }
   })
   const utils = api.useUtils()
-  const { mutate, isLoading } = api.board.create.useMutation({
+  const { mutate, isLoading, error, isError } = api.board.create.useMutation({
     onSuccess: async () => {
       form.reset()
       await utils.board.all.invalidate({ limit: 10 })
@@ -63,8 +51,7 @@ export default function CreateBoardPopover({
 
   const onSubmit = (values: z.infer<typeof createBoard>) => {
     mutate({
-      ...values,
-      userId: user.id
+      ...values
     })
   }
 
@@ -109,7 +96,7 @@ export default function CreateBoardPopover({
                     <FormControl>
                       <Input placeholder="Insira o título do quadro" {...field} />
                     </FormControl>
-                    <FormMessage />
+                    {isError && <FormMessage>{error?.message}</FormMessage>}
                   </FormItem>
                 )}
               />
@@ -131,7 +118,7 @@ interface BoardPreviewProps {
 
 function BoardPreview({ watchedBackground }: BoardPreviewProps) {
   return (
-    <div className="flex justify-center p-6" style={{ backgroundColor: watchedBackground.value }}>
+    <div className="flex justify-center p-6 rounded" style={{ backgroundColor: watchedBackground.value }}>
       <Image src="/assets/board.svg" alt="Board SVG" width={160} height={90} />
     </div>
   )

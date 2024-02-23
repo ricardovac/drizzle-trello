@@ -1,11 +1,12 @@
 import { FC, useEffect, useState } from "react"
+import { useAuthContext } from "@/context/auth-context"
 import { CommandGroup } from "cmdk"
 import { Command, CommandInput, CommandItem, CommandList } from "components/ui/command"
 import { Session } from "next-auth"
 
 import { UserAvatar } from "../user-avatar"
 
-interface AddMemberInputProps extends React.InputHTMLAttributes<HTMLInputElement>{
+interface AddMemberInputProps {
   setQuery: (query: string) => void
   query: string
   members: Session["user"][] | undefined
@@ -20,6 +21,7 @@ const AddMemberInput: FC<AddMemberInputProps> = ({
   isLoading,
   handleSelectUser
 }) => {
+  const { user } = useAuthContext()
   const [isCommandListOpen, setIsCommandListOpen] = useState(false)
 
   const hasDataToShow = !isLoading && !!members?.length
@@ -39,15 +41,16 @@ const AddMemberInput: FC<AddMemberInputProps> = ({
       {isCommandListOpen && (
         <CommandList className="absolute top-12 z-10 w-full rounded border bg-background">
           <CommandGroup>
-            {members?.map((user) => (
+            {members?.map((member) => (
               <CommandItem
-                key={user.id}
-                value={user.name!}
-                onSelect={() => handleSelectUser(user, setIsCommandListOpen)}
+                key={member.id}
+                value={member.name!}
+                onSelect={() => handleSelectUser(member, setIsCommandListOpen)}
                 className="cursor-pointer gap-2"
+                disabled={member.id === user.id}
               >
-                <UserAvatar user={user} />
-                <span>{user.name}</span>
+                <UserAvatar user={member} />
+                <span>{member.name}</span>
               </CommandItem>
             ))}
           </CommandGroup>

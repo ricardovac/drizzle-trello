@@ -4,11 +4,12 @@ import { FC } from "react"
 import { useBoardContext } from "@/context/board-context"
 import { api } from "@/trpc/react"
 
-import AddMember from "./members/add-member"
 import EditableTitle from "./editable-title"
+import AddMember from "./members/add-member"
+import { UserAvatar } from "./user-avatar"
 
 const BoardHeader: FC = () => {
-  const { board, permission } = useBoardContext()
+  const { board, permission, members } = useBoardContext()
   const { mutate } = api.board.edit.useMutation()
 
   return (
@@ -24,7 +25,15 @@ const BoardHeader: FC = () => {
         />
       </h1>
 
-      <div className="flex items-center gap-4">{permission === "OWNER" && <AddMember />}</div>
+      <div className="flex space-x-2">
+        {members.map((member, idx) => (
+          <div className="flex gap-4" key={idx}>
+            <UserAvatar user={member} />
+          </div>
+        ))}
+
+        <div className="flex items-center gap-4">{permission === "admin" && <AddMember />}</div>
+      </div>
     </header>
   )
 }

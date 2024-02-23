@@ -5,7 +5,7 @@ import { type InfiniteBoard } from "@/trpc/shared"
 import { BoardImage } from "./board-background"
 
 interface BoardCardProps {
-  board?: InfiniteBoard
+  board?: InfiniteBoard["board"]
 }
 
 export default function BoardCard({ board }: BoardCardProps) {

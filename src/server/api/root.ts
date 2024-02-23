@@ -4,6 +4,8 @@ import { createTRPCRouter } from "@/server/api/trpc"
 import { cardRouter } from "./routers/card"
 import { listRouter } from "./routers/list"
 import { searchRouter } from "./routers/search"
+import { memberRouter } from "./routers/member"
+import { recentRouter } from "./routers/recent"
 
 /**
  * This is the primary router for your server.
@@ -15,6 +17,8 @@ export const appRouter = createTRPCRouter({
   list: listRouter,
   card: cardRouter,
   search: searchRouter,
+  member: memberRouter,
+  recent: recentRouter
 })
 
 // export type definition of API

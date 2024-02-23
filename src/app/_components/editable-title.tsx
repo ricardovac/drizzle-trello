@@ -24,6 +24,7 @@ const EditableTitle: FC<EditableTitleProps> = ({ title: initialTitle, onSave, cl
     setMode("view")
 
     if (!title.trim()) return
+    if (title === initialTitle) return
 
     onSave(title)
     router.refresh()
@@ -58,6 +59,15 @@ const EditableTitle: FC<EditableTitleProps> = ({ title: initialTitle, onSave, cl
       className={cn("w-full px-2", className)}
       value={title}
       onChange={(e) => setTitle(e.target.value)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          setMode("view")
+          if (!title.trim()) return
+          if (title === initialTitle) return
+          onSave(title)
+          router.refresh()
+        }
+      }}
     />
   )
 }

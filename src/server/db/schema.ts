@@ -1,10 +1,10 @@
 import { createId } from "@paralleldrive/cuid2"
 import { relations, sql } from "drizzle-orm"
 import {
-  boolean,
   index,
   int,
   json,
+  mysqlEnum,
   mysqlTable,
   primaryKey,
   text,
@@ -23,18 +23,15 @@ export const boards = mysqlTable(
       .primaryKey(),
     title: varchar("title", { length: 256 }).notNull(),
     background: json("background"),
-    public: boolean("public").default(false),
     createdAt: timestamp("created_at")
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
     updatedAt: timestamp("updated_at").onUpdateNow(),
     openedAt: timestamp("opened_at").onUpdateNow(),
-    ownerId: varchar("ownerId", { length: 128 })
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" })
+    ownerId: varchar("owner_id", { length: 128 }).references(() => users.id)
   },
   (boards) => ({
-    ownerIdIdx: index("ownerId_idx").on(boards.ownerId)
+    titleIndex: index("title_idx").on(boards.title)
   })
 )
 
@@ -50,13 +47,12 @@ export const boardMembers = mysqlTable(
     id: varchar("id", { length: ID_LENGTH })
       .$defaultFn(() => createId())
       .primaryKey(),
-    // change this to foreign key maybe
     boardId: varchar("board_id", { length: ID_LENGTH })
       .notNull()
       .references(() => boards.id),
     userId: varchar("user_id", { length: 128 })
-      .notNull()
       .references(() => users.id),
+    role: mysqlEnum("role", ["admin", "member"]).notNull()
   },
   (bm) => ({
     boardIdIndex: index("boardId_idx").on(bm.boardId),
@@ -111,11 +107,11 @@ export const users = mysqlTable("user", {
     mode: "date",
     fsp: 3
   }).default(sql`CURRENT_TIMESTAMP(3)`),
-  image: varchar("image", { length: 255 })
+  image: varchar("image", { length: 255 }),
+  token: int("token").default(120)
 })
 
 export const usersRelations = relations(users, ({ many }) => ({
-  board: many(boards),
   accounts: many(accounts)
 }))
 

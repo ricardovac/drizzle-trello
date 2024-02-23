@@ -30,15 +30,12 @@ import MemberTag from "./member-tag"
 type Member = Session["user"]
 
 const formSchema = z.object({
-  shareMessage: z.string().optional(),
-  members: z
-    .array(z.object({ id: z.string(), name: z.string(), image: z.string(), email: z.string() }))
-    .nonempty()
+  shareMessage: z.string().optional()
 })
 
 const AddMember = () => {
   const { user } = useAuthContext()
-  const { permission } = useBoardContext()
+  const { permission, board } = useBoardContext()
   const [selectedMembers, setSelectedMembers] = React.useState<Member[]>([])
   const [dialogOpen, setDialogOpen] = React.useState(false)
 
@@ -50,12 +47,9 @@ const AddMember = () => {
     resolver: zodResolver(formSchema),
     shouldFocusError: false,
     defaultValues: {
-      shareMessage: "",
-      members: []
+      shareMessage: ""
     }
   })
-
-  const members = form.watch("members")
 
   const debouncedQuery = useDebounce(query, 200)
 
@@ -70,34 +64,24 @@ const AddMember = () => {
     }
   )
 
-  // const hasDataToShow = !isLoading && !!(data?.boards?.length || data?.users?.length)
-
   function handleDeleteTag(user: Session["user"]) {
-    // setSelectedMembers((prevUsers) => prevUsers.filter((u) => u.id !== user.id))
-    form.setValue(
-      "members",
-      members.filter((u) => u.id !== user.id)
-    )
+    setSelectedMembers((prevUsers) => prevUsers.filter((u) => u.id !== user.id))
   }
 
   const handleSelectUser = useCallback(
     (user: Session["user"], setIsCommandListOpen: (boolean: any) => void) => {
-      // const isUserAlreadyAdded = selectedMembers.some((u) => u.id === user.id)
+      const isUserAlreadyAdded = selectedMembers.some((u) => u.id === user.id)
+      const isUserOwner = user.id === board.ownerId
 
-      const isUserAlreadyAdded = members.some((u) => u.id === user.id)
-
-      if (!isUserAlreadyAdded) {
-        // @ts-ignore
-        form.setValue("members", [...members, user])
-
-        // setSelectedMembers((prevUsers) => [...prevUsers, user])
+      if (!isUserAlreadyAdded && !isUserOwner) {
+        setSelectedMembers((prevUsers) => [...prevUsers, user])
       }
 
       setQuery("")
       setIsCommandListOpen(false)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [members]
+    [selectedMembers]
   )
 
   const hasSelectedMembers = selectedMembers.length > 0
@@ -108,15 +92,33 @@ const AddMember = () => {
     }
   }, [dialogOpen, form])
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  const { mutate, error, isError } = api.member.add.useMutation()
+
+  function onSubmit({shareMessage}: z.infer<typeof formSchema>) {
+    if (isError) {
+      toast({
+        title: "Ocorreu um erro ao compartilhar o quadro!",
+        description: error.message,
+        variant: "destructive"
+      })
+      return
+    }
+
     toast({
       title: "Compartilhado!",
       description: "O quadro foi compartilhado com sucesso!"
     })
-    console.log(values)
-  }
 
-  console.log(form.getValues("members"))
+    selectedMembers.forEach((member) => {
+      mutate({
+        boardId: board.id,
+        userId: member.id,
+        shareMessage,
+      })
+    })
+
+    setDialogOpen(false)
+  }
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -131,7 +133,7 @@ const AddMember = () => {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <div className="mb-2 flex flex-wrap gap-2">
-              {members.map((member) => (
+              {selectedMembers.map((member) => (
                 <MemberTag
                   member={member}
                   onClick={() => handleDeleteTag(member)}

@@ -1,7 +1,7 @@
 import { z } from "zod"
 
 export const getBoardById = z.object({
-  id: z.string()
+  boardId: z.string()
 })
 
 export type getBoardByIdSchema = z.TypeOf<typeof getBoardById>
@@ -20,8 +20,6 @@ export const createBoard = z.object({
     type: z.enum(["color", "image"]),
     value: z.string()
   }),
-  userId: z.string(),
-  public: z.boolean().default(false)
 })
 
 export type createBoardSchema = z.TypeOf<typeof createBoard>
@@ -46,3 +44,18 @@ export const getRecent = z.object({
 
 export type getRecentSchema = z.TypeOf<typeof getRecent>
 
+
+export const addMember = z.object({
+  boardId: z.string(),
+  userId: z.string(),
+  shareMessage: z.string().optional()
+})
+
+export type addMemberSchema = z.TypeOf<typeof addMember>
+
+export const getMembers = z.object({
+  boardId: z.string(),
+  ownerId: z.string()
+})
+
+export type getMembersSchema = z.TypeOf<typeof getMembers>

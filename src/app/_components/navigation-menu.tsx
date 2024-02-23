@@ -33,7 +33,7 @@ export function MainNavigationMenu() {
 
             {!!recentBoards?.length && (
               <ul className="grid gap-3 p-2 md:w-[300px] lg:w-[400px] lg:grid-rows-[.75fr_1fr]">
-                {recentBoards?.map((board) => (
+                {recentBoards.map((board) => (
                   <li className="row-span-5" key={board.id}>
                     <NavigationMenuLink asChild>
                       <Link
@@ -48,7 +48,7 @@ export function MainNavigationMenu() {
                         <div className="text-md flex w-full flex-col font-medium">
                           {board.title}
                           <p className="text-xs leading-tight text-muted-foreground">
-                            Área de trabalho de
+                            Quadro de {board.owner?.name}
                           </p>
                         </div>
                       </Link>

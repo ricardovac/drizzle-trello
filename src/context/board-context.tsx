@@ -9,13 +9,14 @@ import {
   type PropsWithChildren
 } from "react"
 import { api } from "@/trpc/react"
-import { type List, type SingleBoard } from "@/trpc/shared"
+import { BoardMembers, type List, type SingleBoard } from "@/trpc/shared"
 import { DragDropContext, type DropResult } from "@hello-pangea/dnd"
 
 interface BoardContextProps {
   board: SingleBoard
   lists: List
   permission: string
+  members: BoardMembers
 }
 
 const BoardContext = createContext<BoardContextProps>({} as BoardContextProps)
@@ -28,13 +29,15 @@ interface BoardContextProviderProps extends PropsWithChildren {
   board: SingleBoard
   lists: List
   permission: string
+  members: BoardMembers
 }
 
 const BoardContextProvider: FC<BoardContextProviderProps> = ({
   children,
   board,
   lists: initialLists,
-  permission
+  permission,
+  members
 }) => {
   const { mutate: updateCardPositions } = api.card.updateCardPositions.useMutation()
   const { mutate: updateCard } = api.card.updateCard.useMutation()
@@ -62,7 +65,6 @@ const BoardContextProvider: FC<BoardContextProviderProps> = ({
     }
 
     if (source.droppableId === destination.droppableId) {
-      console.log(source.droppableId)
       const column = lists[Number(source.droppableId)]
       if (!column) return
       const copiedItems = [...column?.cards]
@@ -135,7 +137,7 @@ const BoardContextProvider: FC<BoardContextProviderProps> = ({
   }
 
   return (
-    <BoardContext.Provider value={{ board, lists, permission }}>
+    <BoardContext.Provider value={{ board, lists, permission, members }}>
       <DragDropContext onDragEnd={onDragEnd}>{children}</DragDropContext>
     </BoardContext.Provider>
   )

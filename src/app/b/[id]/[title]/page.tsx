@@ -1,12 +1,10 @@
 import BoardContext from "@/context/board-context"
 import { api } from "@/trpc/server"
-import { SingleBoard } from "@/trpc/shared"
 
 import BoardAppShell from "@/app/_components/board-appshell"
 import BoardHeader from "@/app/_components/board-header"
 import List from "@/app/_components/list"
 import ListForm from "@/app/_components/list-form"
-import { getServerAuthSession } from "@/server/auth"
 
 interface BoardPageProps {
   params: { id: string; title: string }
@@ -21,44 +19,29 @@ export function generateMetadata({ params }: BoardPageProps) {
 export default async function Page({ params }: BoardPageProps) {
   const id = params.id
 
-  const board = await api.board.get.query({ id })
+  const boardAndRole = await api.board.get.query({ boardId: id })
   const initialLists = await api.list.all.query({
     boardId: id
   })
 
-  await api.board.createRecent.mutate({ boardId: board.id, userId: board.ownerId })
+  const board = boardAndRole.board
+  const role = boardAndRole.role
 
-  const permission = await getBoardUserPermission(board)
+  await api.recent.create.mutate({ boardId: id, userId: board.ownerId! })
+
+  const members = await api.member.get.query({ boardId: id, ownerId: board.ownerId! })
 
   return (
-    <BoardContext lists={initialLists} board={board} permission={permission}>
+    <BoardContext lists={initialLists} board={board} permission={role} members={members}>
       <BoardAppShell>
         <div className="absolute inset-x-0 top-0 flex size-full flex-col text-white">
           <BoardHeader />
           <div className="flex h-full flex-1 items-start gap-6 p-6">
             <List />
-            {permission !== "VISITOR" && <ListForm />}
+            {role === "admin" && <ListForm />}
           </div>
         </div>
       </BoardAppShell>
     </BoardContext>
   )
-}
-
-export async function getBoardUserPermission(board: SingleBoard) {
-  const session = await getServerAuthSession()
-
-  if (board.ownerId === session?.user.id) {
-    return "OWNER"
-  }
-
-  if (board.members.map((x) => x.id).includes(session?.user.id ?? "")) {
-    return "MEMBER"
-  }
-
-  if (!board.public) {
-    throw new Error("This board is private!")
-  }
-
-  return "VISITOR"
 }

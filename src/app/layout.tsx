@@ -47,7 +47,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   if (!session?.user) redirect("/api/auth/signin")
 
-  const data = await api.board.getRecent.query({
+  const data = await api.recent.get.query({
     userId: session.user.id
   })
 

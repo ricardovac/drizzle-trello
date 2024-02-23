@@ -20,9 +20,11 @@ export type RouterOutputs = inferRouterOutputs<AppRouter>
 
 export type List = RouterOutputs["list"]["all"]
 export type SingleList = RouterOutputs["list"]["all"][number]
-export type SingleBoard = RouterOutputs["board"]["get"]
+export type SingleBoard = RouterOutputs["board"]["get"]["board"]
 export type InfiniteBoard = RouterOutputs["board"]["all"]["items"][number]
 export type Cards = Pick<SingleList, "cards">["cards"]
 export type SingleCard = Pick<SingleList, "cards">["cards"][0]
+export type RecentBoards = RouterOutputs["recent"]["get"]
+export type BoardMembers = RouterOutputs["member"]["get"]
 
 export type FieldType = ControllerRenderProps<FieldValues, string>;
