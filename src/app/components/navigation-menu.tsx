@@ -14,7 +14,7 @@ import {
 } from "components/ui/navigation-menu"
 import { cn } from "lib/utils"
 
-import { BoardImage } from "./board-background"
+import { BoardBackground } from "./board-background"
 
 export function MainNavigationMenu() {
   const { recentBoards } = useRecentContext()
@@ -40,7 +40,7 @@ export function MainNavigationMenu() {
                         className="flex size-full select-none items-center gap-4 rounded-md p-2 no-underline outline-none hover:bg-muted focus:shadow-md"
                         href={`/b/${board.id}/${encodeURIComponent(board.title)}`}
                       >
-                        <BoardImage
+                        <BoardBackground
                           image={board.background as BackgroundTypeSchema}
                           width={50}
                           height={50}

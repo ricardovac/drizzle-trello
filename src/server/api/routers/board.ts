@@ -38,6 +38,7 @@ export const boardRouter = createTRPCRouter({
   }),
   all: protectedProcedure.input(getAllBoards).query(async ({ ctx, input }) => {
     const { db } = ctx
+    const { onlyAdmin, userId } = input
 
     const limit = input.limit ?? 20
     const countRows = await db
@@ -52,8 +53,15 @@ export const boardRouter = createTRPCRouter({
       columns: {
         role: true
       },
-      where: eq(boardMembers.userId, input.userId),
+      where: onlyAdmin
+        ? and(eq(boardMembers.userId, userId), eq(boardMembers.role, "admin"))
+        : and(eq(boardMembers.userId, userId), eq(boardMembers.role, "member")),
       with: {
+        user: {
+          columns: {
+            name: true
+          }
+        },
         board: {
           columns: {
             id: true,
@@ -115,7 +123,8 @@ export const boardRouter = createTRPCRouter({
       await tx.insert(boardMembers).values({
         boardId: returnedBoard.id,
         userId,
-        role: "admin"
+        role: "admin",
+        status: "active"
       })
     })
 

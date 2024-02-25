@@ -3,6 +3,7 @@ import { db } from "@/server/db"
 import { DrizzleAdapter } from "@auth/drizzle-adapter"
 import { mysqlTable } from "drizzle-orm/mysql-core"
 import { getServerSession, type DefaultSession, type NextAuthOptions } from "next-auth"
+import { Adapter } from "next-auth/adapters"
 import GoogleProvider, { type GoogleProfile } from "next-auth/providers/google"
 
 declare module "next-auth" {
@@ -30,8 +31,7 @@ export const authOptions: NextAuthOptions = {
       }
     }),
   },
-  // @ts-expect-error
-  adapter: DrizzleAdapter(db, mysqlTable),
+  adapter: DrizzleAdapter(db, mysqlTable) as Adapter,
   secret: env.NEXTAUTH_SECRET,
   providers: [
     GoogleProvider({

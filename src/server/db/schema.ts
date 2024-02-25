@@ -9,6 +9,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  uniqueIndex,
   varchar
 } from "drizzle-orm/mysql-core"
 import { type AdapterAccount } from "next-auth/adapters"
@@ -50,13 +51,16 @@ export const boardMembers = mysqlTable(
     boardId: varchar("board_id", { length: ID_LENGTH })
       .notNull()
       .references(() => boards.id),
-    userId: varchar("user_id", { length: 128 })
-      .references(() => users.id),
-    role: mysqlEnum("role", ["admin", "member"]).notNull()
+    userId: varchar("user_id", { length: 128 }).references(() => users.id),
+    role: mysqlEnum("role", ["admin", "member"]).notNull(),
+    status: mysqlEnum("status", ["active", "invited", "removed"]).notNull(),
+    addedAt: timestamp("added_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+    removedAt: timestamp("removed_at").onUpdateNow()
   },
   (bm) => ({
     boardIdIndex: index("boardId_idx").on(bm.boardId),
-    userIdIndex: index("userId_idx").on(bm.userId)
+    userIdIndex: index("userId_idx").on(bm.userId),
+    boardUserIndex: uniqueIndex("boardUser_idx").on(bm.boardId, bm.userId)
   })
 )
 
@@ -112,13 +116,14 @@ export const users = mysqlTable("user", {
 })
 
 export const usersRelations = relations(users, ({ many }) => ({
-  accounts: many(accounts)
+  accounts: many(accounts),
+  sessions: many(sessions),
 }))
 
 export const accounts = mysqlTable(
   "account",
   {
-    userId: varchar("userId", { length: 255 }).notNull(),
+    userId: varchar("userId", { length: 255 }).notNull().references(() => users.id),
     type: varchar("type", { length: 255 }).$type<AdapterAccount["type"]>().notNull(),
     provider: varchar("provider", { length: 255 }).notNull(),
     providerAccountId: varchar("providerAccountId", { length: 255 }).notNull(),
@@ -132,7 +137,7 @@ export const accounts = mysqlTable(
   },
   (account) => ({
     compoundKey: primaryKey(account.provider, account.providerAccountId),
-    userIdIdx: index("userId_idx").on(account.userId)
+    userIdIdx: index("account_userId_idx").on(account.userId)
   })
 )
 
@@ -144,11 +149,13 @@ export const sessions = mysqlTable(
   "session",
   {
     sessionToken: varchar("sessionToken", { length: 255 }).notNull().primaryKey(),
-    userId: varchar("userId", { length: 255 }).notNull(),
+    userId: varchar("userId", { length: 255 })
+      .notNull()
+      .references(() => users.id),
     expires: timestamp("expires", { mode: "date" }).notNull()
   },
   (session) => ({
-    userIdIdx: index("userId_idx").on(session.userId)
+    userIdIdx: index("session_userId_idx").on(session.userId)
   })
 )
 

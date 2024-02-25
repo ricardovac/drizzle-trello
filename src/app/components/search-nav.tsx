@@ -19,7 +19,7 @@ import { Session } from "next-auth"
 
 import { useDebounce } from "@/hooks/useDebounce"
 
-import { BoardImage } from "./board-background"
+import { BoardBackground } from "./board-background"
 
 interface SearchNavProps extends React.HTMLAttributes<HTMLFormElement> {}
 
@@ -140,7 +140,7 @@ export const DropdownItem: FC<SearchNavItemProps> = ({ board, users }) => {
         <Link href={`/b/${item.id}/${item.title}`} key={item.id}>
           <li className="cursor-pointer rounded p-2 hover:bg-muted">
             <div className="flex items-center space-x-4">
-              <BoardImage image={item.background as BackgroundTypeSchema} width={32} height={32} />
+              <BoardBackground image={item.background as BackgroundTypeSchema} width={32} height={32} />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium">{item.title}</p>
                 <p className="text-sm text-gray-400">Área de trabalho de</p>

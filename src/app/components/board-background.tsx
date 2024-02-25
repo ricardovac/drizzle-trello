@@ -2,25 +2,16 @@ import { FC } from "react"
 import Image from "next/image"
 import { BackgroundTypeSchema } from "@/server/schema/board.schema"
 
-interface BoardImageProps {
+interface BoardBackgroundProps {
   image: BackgroundTypeSchema
   width?: number
   height?: number
 }
 
-export const BoardImage: FC<BoardImageProps> = ({ image, width, height }) => {
+export const BoardBackground: FC<BoardBackgroundProps> = ({ image, width, height }) => {
   return (
     <>
-      {image.type === "color" ? (
-        <div
-          className="aspect-[16/8] w-full"
-          style={{
-            width: width ?? 500,
-            height: height ?? 100,
-            backgroundColor: image.value
-          }}
-        />
-      ) : (
+      {image.type === "image" ? (
         <Image
           src={image.value}
           alt="Board Image"
@@ -28,6 +19,15 @@ export const BoardImage: FC<BoardImageProps> = ({ image, width, height }) => {
           height={height ?? 100}
           className="aspect-[16/8] object-cover transition-all hover:scale-105"
           priority
+        />
+      ) : (
+        <div
+          className="aspect-[16/8] w-full"
+          style={
+            image.type === "color" || "gradient"
+              ? { background: image.value, width, height }
+              : { backgroundImage: `url(${image.value})`, width, height }
+          }
         />
       )}
     </>

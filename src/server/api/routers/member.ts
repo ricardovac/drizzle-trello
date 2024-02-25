@@ -1,12 +1,13 @@
-import { addMember, getMembers } from "@/server/schema/board.schema";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { boardMembers, boards } from "@/server/db/schema";
-import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
+import { boardMembers, boards } from "@/server/db/schema"
+import { addMember, getMembers } from "@/server/schema/board.schema"
+import { TRPCError } from "@trpc/server"
+import { and, eq } from "drizzle-orm"
+
+import { createTRPCRouter, protectedProcedure } from "../trpc"
 
 export const memberRouter = createTRPCRouter({
   add: protectedProcedure.input(addMember).mutation(async ({ ctx, input }) => {
-    const {shareMessage, boardId, userId} = input
+    const { shareMessage, boardId, userId } = input
 
     const foundBoard = await ctx.db.query.boards.findFirst({
       where: eq(boards.id, boardId),
@@ -30,38 +31,41 @@ export const memberRouter = createTRPCRouter({
     }
 
     // do something with shareMessage
-    console.log(shareMessage) 
+    console.log(shareMessage)
 
     return await ctx.db.insert(boardMembers).values({
-      boardId: input.boardId,
-      userId: input.userId,
-      role: "member"
+      boardId,
+      userId,
+      role: "member",
+      status: "invited"
     })
   }),
   get: protectedProcedure.input(getMembers).query(async ({ ctx, input }) => {
     const { boardId } = input
 
-    const membersQuery =  await ctx.db.query.boardMembers.findMany({
-      where: and(eq(boardMembers.boardId, boardId)),
+    const boardQuery = await ctx.db.query.boards.findFirst({
+      where: and(eq(boards.id, boardId)),
       with: {
-        user: {
+        members: {
           columns: {
-            image: true,
-            name: true,
-            email: true
+            role: true,
+            status: true,
+            addedAt: true,
+            removedAt: true
+          },
+          with: {
+            user: {
+              columns: {
+                name: true,
+                email: true,
+                image: true
+              }
+            }
           }
         }
       }
     })
 
-    const returnableItems = membersQuery.map((item) => {
-      return {
-        image: item.user?.image,
-        name: item.user?.name,
-        email: item.user?.email
-      }
-    })
-
-    return returnableItems
+    return boardQuery?.members
   })
 })

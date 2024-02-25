@@ -26,9 +26,9 @@ const BoardHeader: FC = () => {
       </h1>
 
       <div className="flex space-x-2">
-        {members.map((member, idx) => (
+        {members?.map((member, idx) => (
           <div className="flex gap-4" key={idx}>
-            <UserAvatar user={member} />
+            <UserAvatar user={member.user!} />
           </div>
         ))}
 

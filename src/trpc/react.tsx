@@ -1,23 +1,35 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { type AppRouter } from "@/server/api/root"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { loggerLink, unstable_httpBatchStreamLink } from "@trpc/client"
-import { createTRPCReact } from "@trpc/react-query"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { loggerLink, unstable_httpBatchStreamLink } from "@trpc/client";
+import { createTRPCReact } from "@trpc/react-query";
+import { useState } from "react";
 
-import { getUrl, transformer } from "./shared"
+import { type AppRouter } from "@/server/api/root";
+import { getUrl, transformer } from "./shared";
 
-export const api = createTRPCReact<AppRouter>()
+const createQueryClient = () => new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
-export function TRPCReactProvider(props: { children: React.ReactNode; headers: Headers }) {
-  const [queryClient] = useState(() => new QueryClient({
-    defaultOptions: {
-      queries: {
-        refetchOnWindowFocus: false,
-      }
-    }
-  }))
+let clientQueryClientSingleton: QueryClient | undefined = undefined;
+const getQueryClient = () => {
+  if (typeof window === "undefined") {
+    // Server: always make a new query client
+    return createQueryClient();
+  }
+  // Browser: use singleton pattern to keep the same query client
+  return (clientQueryClientSingleton ??= createQueryClient());
+};
+
+export const api = createTRPCReact<AppRouter>();
+
+export function TRPCReactProvider(props: { children: React.ReactNode }) {
+  const queryClient = getQueryClient();
 
   const [trpcClient] = useState(() =>
     api.createClient({
@@ -26,19 +38,14 @@ export function TRPCReactProvider(props: { children: React.ReactNode; headers: H
         loggerLink({
           enabled: (op) =>
             process.env.NODE_ENV === "development" ||
-            (op.direction === "down" && op.result instanceof Error)
+            (op.direction === "down" && op.result instanceof Error),
         }),
         unstable_httpBatchStreamLink({
           url: getUrl(),
-          headers() {
-            const heads = new Map(props.headers)
-            heads.set("x-trpc-source", "react")
-            return Object.fromEntries(heads)
-          }
-        })
-      ]
+        }),
+      ],
     })
-  )
+  );
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -46,5 +53,5 @@ export function TRPCReactProvider(props: { children: React.ReactNode; headers: H
         {props.children}
       </api.Provider>
     </QueryClientProvider>
-  )
+  );
 }

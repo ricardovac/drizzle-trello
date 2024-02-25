@@ -5,7 +5,7 @@ import { useRecentContext } from "@/context/recent-boards-context"
 import { api } from "@/trpc/react"
 import { Clock } from "lucide-react"
 
-import BoardList from "@/app/_components/board-list"
+import BoardList from "@/app/components/board-list"
 
 interface BoardsPageProps {
   params: { userId: string }
@@ -15,7 +15,16 @@ const Boards: FC<BoardsPageProps> = ({ params }) => {
   const userId = params.userId
   const { recentBoards } = useRecentContext()
 
-  const { data: userBoards, isLoading } = api.board.all.useInfiniteQuery(
+  const { data: userData, isLoading: isUserDataLoading } = api.board.all.useInfiniteQuery(
+    { limit: 10, userId, onlyAdmin: true },
+    {
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      staleTime: 1000 * 60 * 5,
+      cacheTime: 1000 * 60 * 10
+    }
+  )
+
+  const { data: memberData, isLoading: isMemberDataLoading } = api.board.all.useInfiniteQuery(
     { limit: 10, userId },
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -23,11 +32,16 @@ const Boards: FC<BoardsPageProps> = ({ params }) => {
       cacheTime: 1000 * 60 * 10
     }
   )
-  const dataToShow = useMemo(() => userBoards?.pages.flatMap((page) => page.items), [userBoards])
+
+  const userBoards = useMemo(() => userData?.pages.flatMap((page) => page.items), [userData])
+  const memberBoards = useMemo(() => memberData?.pages.flatMap((page) => page.items), [memberData])
+
+  const showMemberBoards = memberBoards?.length !== 0 && !isMemberDataLoading
+  const showRecentBoards = recentBoards.length !== 0
 
   return (
     <>
-      {recentBoards.length !== 0 && (
+      {showRecentBoards && (
         <div className="w-full">
           <div className="flex items-center space-x-2 p-2">
             <Clock />
@@ -40,8 +54,15 @@ const Boards: FC<BoardsPageProps> = ({ params }) => {
 
       <div className="w-full">
         <h2 className="mb-6 text-xl font-bold">Seus quadros</h2>
-        <BoardList userBoards={dataToShow} showButton loading={isLoading} />
+        <BoardList userBoards={userBoards} showButton loading={isUserDataLoading} />
       </div>
+
+      {showMemberBoards && (
+        <div className="w-full">
+          <h2 className="mb-6 text-xl font-bold">Compartilhados com você</h2>
+          <BoardList userBoards={memberBoards} showButton loading={isMemberDataLoading} />
+        </div>
+      )}
     </>
   )
 }

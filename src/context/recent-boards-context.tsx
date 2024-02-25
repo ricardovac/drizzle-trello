@@ -3,7 +3,7 @@
 import { createContext, useContext, type FC, type PropsWithChildren } from "react"
 import { RouterOutputs } from "@/trpc/shared"
 
-type RecentBoards = RouterOutputs["board"]["getRecent"]
+type RecentBoards = RouterOutputs["recent"]["get"]
 
 interface RecentContextType {
   recentBoards: RecentBoards

@@ -9,7 +9,8 @@ export type getBoardByIdSchema = z.TypeOf<typeof getBoardById>
 export const getAllBoards = z.object({
   cursor: z.string().nullish(),
   limit: z.number().min(1).max(100),
-  userId: z.string()
+  userId: z.string(),
+  onlyAdmin: z.boolean().default(false).optional()
 })
 
 export type getAllBoardsSchema = z.TypeOf<typeof getAllBoards>
@@ -17,7 +18,7 @@ export type getAllBoardsSchema = z.TypeOf<typeof getAllBoards>
 export const createBoard = z.object({
   title: z.string().min(2, "O título deve conter pelo menos 2 caracteres").max(54),
   background: z.object({
-    type: z.enum(["color", "image"]),
+    type: z.enum(["color", "image", "gradient"]),
     value: z.string()
   }),
 })
