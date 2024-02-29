@@ -1,8 +1,8 @@
-import { boards, lists } from "@/server/db/schema"
+import { boards, cards, lists } from "@/server/db/schema"
 import { createList, editList, getAllListsByBoardId } from "@/server/schema/list.schema"
 import { TRPCClientError } from "@trpc/client"
 import { TRPCError } from "@trpc/server"
-import { eq } from "drizzle-orm"
+import { asc, eq } from "drizzle-orm"
 
 import { createTRPCRouter, protectedProcedure } from "../trpc"
 
@@ -10,17 +10,24 @@ export const listRouter = createTRPCRouter({
   all: protectedProcedure.input(getAllListsByBoardId).query(async ({ ctx, input }) => {
     const { db } = ctx
 
-    return await db.query.lists.findMany({
-      orderBy: (lists, { asc }) => [asc(lists.position)],
-      where(fields) {
-        return eq(fields.boardId, input.boardId)
-      },
-      with: {
+    return await db
+      .select({
+        id: lists.id,
+        title: lists.title,
+        boardId: lists.boardId,
+        position: lists.position,
         cards: {
-          orderBy: (cards, { asc }) => [asc(cards.position)]
+          id: cards.id,
+          title: cards.title,
+          listId: cards.listId,
+          position: cards.position
         }
-      }
-    })
+      })
+      .from(lists)
+      .innerJoin(cards, eq(cards.listId, lists.id))
+      .where(eq(lists.boardId, input.boardId))
+      .orderBy(asc(cards.position))
+      .execute()
   }),
   create: protectedProcedure.input(createList).mutation(async ({ ctx, input }) => {
     const { db, session } = ctx

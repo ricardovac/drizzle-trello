@@ -1,11 +1,9 @@
 import { env } from "@/env.mjs"
-import { drizzle } from "drizzle-orm/mysql2"
-import * as mysql from "mysql2/promise"
+import { drizzle } from "drizzle-orm/postgres-js"
+import postgres from "postgres"
 
-import * as schema from "./schema"
+const connectionString = env.DATABASE_URL
 
-const connection = await mysql.createConnection({
-  uri: env.DATABASE_URL
-})
-
-export const db = drizzle(connection, { schema, mode: "default" })
+// Disable prefetch as it is not supported for "Transaction" pool mode
+export const client = postgres(connectionString, { prepare: false })
+export const db = drizzle(client);

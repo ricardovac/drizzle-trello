@@ -18,11 +18,13 @@ export function generateMetadata({params}: BoardPageProps) {
 
 export default async function Page({params}: BoardPageProps) {
   const id = params.id
+  console.log(id)
 
   const boardAndRole = await api.board.get.query({boardId: id})
   const initialLists = await api.list.all.query({
     boardId: id
   })
+  console.log(boardAndRole)
 
   const board = boardAndRole.board
   const role = boardAndRole.role

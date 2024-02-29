@@ -1,6 +1,6 @@
 import { cards } from "@/server/db/schema"
 import { createCard, updateCard, updateCardPosition } from "@/server/schema/card.schema"
-import { asc, eq } from "drizzle-orm"
+import { asc, eq, sql } from "drizzle-orm"
 
 import { createTRPCRouter, protectedProcedure } from "../trpc"
 
@@ -8,13 +8,11 @@ export const cardRouter = createTRPCRouter({
   create: protectedProcedure.input(createCard).mutation(async ({ ctx, input }) => {
     const { db } = ctx
 
-    const cardsQuery = await db.query.cards.findMany({
-      where: (cards, { eq }) => eq(cards.listId, input.listId),
-      orderBy: [asc(cards.position)],
-      columns: {
-        position: true
-      }
-    })
+    const cardsQuery = await db
+      .select({ position: cards.position })
+      .from(cards)
+      .where(sql`${cards.listId} = ${input.listId}`)
+      .orderBy(asc(cards.position))
 
     return await db
       .insert(cards)

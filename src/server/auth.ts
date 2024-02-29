@@ -1,7 +1,7 @@
 import { env } from "@/env.mjs"
 import { db } from "@/server/db"
 import { DrizzleAdapter } from "@auth/drizzle-adapter"
-import { mysqlTable } from "drizzle-orm/mysql-core"
+import { pgTable } from "drizzle-orm/pg-core"
 import { getServerSession, type DefaultSession, type NextAuthOptions } from "next-auth"
 import { Adapter } from "next-auth/adapters"
 import GoogleProvider, { type GoogleProfile } from "next-auth/providers/google"
@@ -31,7 +31,7 @@ export const authOptions: NextAuthOptions = {
       }
     }),
   },
-  adapter: DrizzleAdapter(db, mysqlTable) as Adapter,
+  adapter: DrizzleAdapter(db, pgTable) as Adapter,
   secret: env.NEXTAUTH_SECRET,
   providers: [
     GoogleProvider({

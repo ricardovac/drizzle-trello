@@ -1,5 +1,5 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc"
-import { boardMembers, boards } from "@/server/db/schema"
+import { boardMembers, boards, users } from "@/server/db/schema"
 import { createBoard, getAllBoards, getBoardById, updateBoard } from "@/server/schema/board.schema"
 import { TRPCError } from "@trpc/server"
 import { and, desc, eq, sql } from "drizzle-orm"
@@ -10,31 +10,30 @@ export const boardRouter = createTRPCRouter({
     const { boardId } = input
     const userId = session.user.id
 
-    const board = await ctx.db.query.boardMembers.findFirst({
-      columns: {
-        role: true
-      },
-      with: {
+    const board = await ctx.db
+      .select({
         board: {
-          columns: {
-            id: true,
-            title: true,
-            background: true,
-            ownerId: true
-          }
-        }
-      },
-      where: and(eq(boardMembers.userId, userId), eq(boardMembers.boardId, boardId))
-    })
+          id: boards.id,
+          title: boards.title,
+          background: boards.background,
+          ownerId: boards.ownerId
+        },
+        role: boardMembers.role
+      })
+      .from(boardMembers)
+      .innerJoin(boards, eq(boards.id, boardMembers.boardId))
+      .where(and(eq(boardMembers.userId, userId), eq(boardMembers.boardId, boardId)))
+      .limit(1)
+      .execute()
 
-    if (!board) {
+    if (board.length === 0) {
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: "Board not found"
       })
     }
 
-    return board
+    return board[0]
   }),
   all: protectedProcedure.input(getAllBoards).query(async ({ ctx, input }) => {
     const { db } = ctx
@@ -49,28 +48,27 @@ export const boardRouter = createTRPCRouter({
     const totalCount = countRows[0]?.board_count
     if (totalCount === undefined) throw new Error("totalCount is undefined")
 
-    let userBoards = await db.query.boardMembers.findMany({
-      columns: {
-        role: true
-      },
-      where: onlyAdmin
-        ? and(eq(boardMembers.userId, userId), eq(boardMembers.role, "admin"))
-        : and(eq(boardMembers.userId, userId), eq(boardMembers.role, "member")),
-      with: {
-        user: {
-          columns: {
-            name: true
-          }
-        },
+    let userBoards = await db
+      .select({
         board: {
-          columns: {
-            id: true,
-            title: true,
-            background: true
-          }
-        }
-      }
-    })
+          id: boards.id,
+          title: boards.title,
+          background: boards.background
+        },
+        user: {
+          name: users.name
+        },
+        role: boardMembers.role
+      })
+      .from(boardMembers)
+      .innerJoin(boards, eq(boards.id, boardMembers.boardId))
+      .innerJoin(users, eq(users.id, boardMembers.userId))
+      .where(
+        onlyAdmin
+          ? and(eq(boardMembers.userId, userId), eq(boardMembers.role, "admin"))
+          : eq(boardMembers.userId, userId)
+      )
+      .execute()
 
     let nextCursor: typeof input.cursor | undefined = undefined
     if (userBoards.length > limit) {
@@ -131,9 +129,12 @@ export const boardRouter = createTRPCRouter({
     return board
   }),
   edit: protectedProcedure.input(updateBoard).mutation(async ({ ctx, input }) => {
-    const foundBoard = await ctx.db.query.boards.findFirst({
-      where: eq(boards.id, input.boardId)
-    })
+    const foundBoard = await ctx.db
+      .select({ id: boards.id })
+      .from(boards)
+      .where(eq(boards.id, input.boardId))
+      .limit(1)
+      .execute()
 
     if (!foundBoard) {
       throw new TRPCError({
