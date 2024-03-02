@@ -1,32 +1,41 @@
-export interface PexelsResponse {
-  page: number;
-  per_page: number;
-  photos: Photo[];
-  total_results: number;
-  next_page: string;
+import { Icons } from "components/ui/icons"
+
+export type NavItem = {
+  title: string
+  href: string
+  disabled?: boolean
 }
 
-export interface Photo {
-  id: number;
-  width: number;
-  height: number;
-  url: string;
-  photographer: string;
-  photographer_url: string;
-  photographer_id: number;
-  avg_color: string;
-  src: Src;
-  liked: boolean;
-  alt: string;
+export type MainNavItem = NavItem
+
+export type SidebarNavItem = {
+  title: string
+  disabled?: boolean
+  external?: boolean
+  icon?: keyof typeof Icons
+} & (
+  | {
+      href: string
+      items?: never
+    }
+  | {
+      href?: string
+      items: any[]
+    }
+)
+
+export type SiteConfig = {
+  name: string
+  description: string
+  url: string
+  ogImage: string
+  links: {
+    twitter: string
+    github: string
+  }
 }
 
-export interface Src {
-  original: string;
-  large2x: string;
-  large: string;
-  medium: string;
-  small: string;
-  portrait: string;
-  landscape: string;
-  tiny: string;
+export type DocsConfig = {
+  mainNav: MainNavItem[]
+  sidebarNav: SidebarNavItem[]
 }

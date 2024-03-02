@@ -1,51 +1,70 @@
-'use client';
-import BoardCard from '@/components/board-card';
-import CreateBoardPopover from '@/components/create-board-popover';
-import { Button, Flex, Text } from '@mantine/core';
-import { type FC, useMemo } from 'react';
-import { api } from '~/trpc/react';
+"use client"
+
+import { useMemo, type FC } from "react"
+import { useRecentContext } from "@/context/recent-boards-context"
+import { api } from "@/trpc/react"
+import { Clock } from "lucide-react"
+
+import BoardList from "@/app/components/board-list"
 
 interface BoardsPageProps {
-  params: { userId: string };
+  params: { userId: string }
 }
 
-const LIMIT = 10;
-
 const Boards: FC<BoardsPageProps> = ({ params }) => {
-  const userId = params.userId;
+  const userId = params.userId
+  const { recentBoards } = useRecentContext()
 
-  const { data, isLoading, isFetchingNextPage } = api.board.all.useInfiniteQuery(
-    { limit: LIMIT, userId },
+  const { data: userData, isLoading: isUserDataLoading } = api.board.all.useInfiniteQuery(
+    { limit: 10, userId, onlyAdmin: true },
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
-      refetchOnWindowFocus: false,
-    },
-  );
-  const dataToShow = useMemo(() => data?.pages.flatMap((page) => page.items), [data]);
+      staleTime: 1000 * 60 * 5,
+      cacheTime: 1000 * 60 * 10
+    }
+  )
 
-  const loadingArray = Array.from<undefined>({ length: 2 });
+  const { data: memberData, isLoading: isMemberDataLoading } = api.board.all.useInfiniteQuery(
+    { limit: 10, userId },
+    {
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      staleTime: 1000 * 60 * 5,
+      cacheTime: 1000 * 60 * 10
+    }
+  )
+
+  const userBoards = useMemo(() => userData?.pages.flatMap((page) => page.items), [userData])
+  const memberBoards = useMemo(() => memberData?.pages.flatMap((page) => page.items), [memberData])
+
+  const showMemberBoards = memberBoards?.length !== 0 && !isMemberDataLoading
+  const showRecentBoards = recentBoards.length !== 0
 
   return (
-    <Flex gap="md">
-      <Flex direction="column" gap={4}>
-        <Text fw={500} mb={4}>
-          SUAS ÁREAS DE TRABALHO
-        </Text>
+    <>
+      {showRecentBoards && (
+        <div className="w-full">
+          <div className="flex items-center space-x-2 p-2">
+            <Clock />
+            <h2 className="text-xl font-bold">Vizualizados recentemente</h2>
+          </div>
 
-        <Flex maw={900} wrap="wrap" align="center" gap={8}>
-          {(isLoading ? loadingArray : dataToShow)?.map((board, idx) => (
-            <BoardCard key={isLoading ? idx : board?.id} board={board} loading={isLoading} />
-          ))}
-          {isFetchingNextPage && <BoardCard loading />}
-          <CreateBoardPopover>
-            <Button variant="default" miw={190} mih={100}>
-              <Text c="white">Criar novo quadro</Text>
-            </Button>
-          </CreateBoardPopover>
-        </Flex>
-      </Flex>
-    </Flex>
-  );
-};
+          <BoardList recentBoards={recentBoards} />
+        </div>
+      )}
 
-export default Boards;
+      <div className="w-full">
+        <h2 className="mb-6 text-xl font-bold">Seus quadros</h2>
+        <BoardList userBoards={userBoards} showButton loading={isUserDataLoading} />
+      </div>
+
+      {showMemberBoards && (
+        <div className="w-full">
+          <h2 className="mb-6 text-xl font-bold">Compartilhados com você</h2>
+          <BoardList userBoards={memberBoards} showButton loading={isMemberDataLoading} />
+        </div>
+      )}
+    </>
+  )
+}
+
+export default Boards

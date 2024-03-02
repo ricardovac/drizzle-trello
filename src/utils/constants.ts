@@ -4,5 +4,5 @@ export const slugSetting = {
   strict: true,
   remove: /[*+~.()'"!:@]/g,
   trim: true,
-  locale: "en",
-};
+  locale: "en"
+}

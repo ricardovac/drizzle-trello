@@ -1,171 +1,176 @@
-import { createId } from '@paralleldrive/cuid2';
-import { relations, sql } from 'drizzle-orm';
+import { createId } from "@paralleldrive/cuid2"
+import { relations, sql } from "drizzle-orm"
 import {
-  boolean,
   index,
   int,
-  mysqlTableCreator,
+  json,
+  mysqlEnum,
+  mysqlTable,
   primaryKey,
   text,
   timestamp,
-  varchar,
-} from 'drizzle-orm/mysql-core';
-import { type AdapterAccount } from 'next-auth/adapters';
+  uniqueIndex,
+  varchar
+} from "drizzle-orm/mysql-core"
+import { type AdapterAccount } from "next-auth/adapters"
 
-export const mysqlTable = mysqlTableCreator((name) => `trello_clone_${name}`);
-
-// export const workspaces = mysqlTable(
-//   'workspaces',
-//   {
-//     id: varchar('id', { length: 128 })
-//       .$defaultFn(() => createId())
-//       .primaryKey(),
-//     name: varchar('name', { length: 256 }).notNull(),
-//     type: mysqlEnum('type', [
-//       'small enterprise',
-//       'education',
-//       'other',
-//       'marketing',
-//       'RH',
-//       'engineer/ti',
-//     ]).notNull(),
-//     description: text('description'),
-//   },
-//   (workspaces) => ({
-//     nameIdx: index('name_idx').on(workspaces.name),
-//   }),
-// );
-
-// export const workspaceRelations = relations(workspaces, ({ many }) => ({
-//   boards: many(boards),
-// }));
+const ID_LENGTH = 24
 
 export const boards = mysqlTable(
-  'boards',
+  "boards",
   {
-    id: varchar('id', { length: 128 })
+    id: varchar("id", { length: ID_LENGTH })
       .$defaultFn(() => createId())
       .primaryKey(),
-    title: varchar('title', { length: 256 }).notNull(),
-    background: varchar('color', { length: 128 }).notNull(),
-    public: boolean('public').default(false),
-    createdAt: timestamp('created_at')
+    title: varchar("title", { length: 256 }).notNull(),
+    background: json("background"),
+    createdAt: timestamp("created_at")
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
-    updatedAt: timestamp('updatedAt').onUpdateNow(),
-    ownerId: varchar('ownerId', { length: 128 }).notNull(),
-    // workspaceId: varchar('workspaceId', { length: 128 }).references(() => workspaces.id),
+    updatedAt: timestamp("updated_at").onUpdateNow(),
+    openedAt: timestamp("opened_at").onUpdateNow(),
+    ownerId: varchar("owner_id", { length: 128 }).references(() => users.id)
   },
   (boards) => ({
-    ownerIdIdx: index('ownerId_idx').on(boards.ownerId),
-  }),
-);
+    titleIndex: index("title_idx").on(boards.title)
+  })
+)
 
-export const boardsRelations = relations(boards, ({ one, many }) => ({
-  // workspace: one(workspaces, { fields: [boards.workspaceId], references: [workspaces.id] }),
-  owner: one(users, { fields: [boards.ownerId], references: [users.id] }),
+export const boardsRelations = relations(boards, ({ many, one }) => ({
   lists: many(lists),
-}));
+  owner: one(users, { fields: [boards.ownerId], references: [users.id] }),
+  members: many(boardMembers)
+}))
 
-export const lists = mysqlTable('lists', {
-  id: varchar('id', { length: 128 })
+export const boardMembers = mysqlTable(
+  "boardMembers",
+  {
+    id: varchar("id", { length: ID_LENGTH })
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    boardId: varchar("board_id", { length: ID_LENGTH })
+      .notNull()
+      .references(() => boards.id),
+    userId: varchar("user_id", { length: 128 }).references(() => users.id),
+    role: mysqlEnum("role", ["admin", "member"]).notNull(),
+    status: mysqlEnum("status", ["active", "invited", "removed"]).notNull(),
+    addedAt: timestamp("added_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+    removedAt: timestamp("removed_at").onUpdateNow()
+  },
+  (bm) => ({
+    boardIdIndex: index("boardId_idx").on(bm.boardId),
+    userIdIndex: index("userId_idx").on(bm.userId),
+    boardUserIndex: uniqueIndex("boardUser_idx").on(bm.boardId, bm.userId)
+  })
+)
+
+export const boardMembersRelations = relations(boardMembers, ({ one }) => ({
+  board: one(boards, { fields: [boardMembers.boardId], references: [boards.id] }),
+  user: one(users, { fields: [boardMembers.userId], references: [users.id] })
+}))
+
+export const lists = mysqlTable("lists", {
+  id: varchar("id", { length: ID_LENGTH })
     .$defaultFn(() => createId())
     .primaryKey(),
-  title: varchar('title', { length: 256 }).notNull(),
-  position: int('position').notNull(),
-  boardId: varchar('boardId', { length: 128 })
+  title: varchar("title", { length: 256 }).notNull(),
+  position: int("position").notNull(),
+  boardId: varchar("board_id", { length: 128 })
     .notNull()
     .references(() => boards.id),
-  createdAt: timestamp('created_at')
+  createdAt: timestamp("created_at")
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
-  updatedAt: timestamp('updatedAt').onUpdateNow(),
-});
+  updatedAt: timestamp("updated_at").onUpdateNow()
+})
 
 export const listsRelations = relations(lists, ({ one, many }) => ({
   board: one(boards, { fields: [lists.boardId], references: [boards.id] }),
-  cards: many(cards),
-}));
+  cards: many(cards)
+}))
 
-export const cards = mysqlTable('cards', {
-  id: varchar('id', { length: 128 })
+export const cards = mysqlTable("cards", {
+  id: varchar("id", { length: ID_LENGTH })
     .$defaultFn(() => createId())
     .primaryKey(),
-  title: varchar('title', { length: 256 }).notNull(),
-  description: text('description'),
-  listId: varchar('listId', { length: 128 }).notNull(),
-  position: int('position').notNull(),
-});
+  title: varchar("title", { length: 256 }).notNull(),
+  description: text("description"),
+  listId: varchar("listId", { length: 128 }).notNull(),
+  position: int("position").notNull()
+})
 
 export const cardsRelations = relations(cards, ({ one }) => ({
-  list: one(lists, { fields: [cards.listId], references: [lists.id] }),
-}));
+  list: one(lists, { fields: [cards.listId], references: [lists.id] })
+}))
 
-export const users = mysqlTable('user', {
-  id: varchar('id', { length: 255 }).notNull().primaryKey(),
-  name: varchar('name', { length: 255 }),
-  email: varchar('email', { length: 255 }).notNull(),
-  emailVerified: timestamp('emailVerified', {
-    mode: 'date',
-    fsp: 3,
+export const users = mysqlTable("user", {
+  id: varchar("id", { length: 255 }).notNull().primaryKey(),
+  name: varchar("name", { length: 255 }),
+  email: varchar("email", { length: 255 }).notNull(),
+  emailVerified: timestamp("emailVerified", {
+    mode: "date",
+    fsp: 3
   }).default(sql`CURRENT_TIMESTAMP(3)`),
-  image: varchar('image', { length: 255 }),
-});
+  image: varchar("image", { length: 255 }),
+  token: int("token").default(120)
+})
 
 export const usersRelations = relations(users, ({ many }) => ({
-  board: many(boards),
   accounts: many(accounts),
-}));
+  sessions: many(sessions),
+}))
 
 export const accounts = mysqlTable(
-  'account',
+  "account",
   {
-    userId: varchar('userId', { length: 255 }).notNull(),
-    type: varchar('type', { length: 255 }).$type<AdapterAccount['type']>().notNull(),
-    provider: varchar('provider', { length: 255 }).notNull(),
-    providerAccountId: varchar('providerAccountId', { length: 255 }).notNull(),
-    refresh_token: text('refresh_token'),
-    access_token: text('access_token'),
-    expires_at: int('expires_at'),
-    token_type: varchar('token_type', { length: 255 }),
-    scope: varchar('scope', { length: 255 }),
-    id_token: text('id_token'),
-    session_state: varchar('session_state', { length: 255 }),
+    userId: varchar("userId", { length: 255 }).notNull().references(() => users.id),
+    type: varchar("type", { length: 255 }).$type<AdapterAccount["type"]>().notNull(),
+    provider: varchar("provider", { length: 255 }).notNull(),
+    providerAccountId: varchar("providerAccountId", { length: 255 }).notNull(),
+    refresh_token: text("refresh_token"),
+    access_token: text("access_token"),
+    expires_at: int("expires_at"),
+    token_type: varchar("token_type", { length: 255 }),
+    scope: varchar("scope", { length: 255 }),
+    id_token: text("id_token"),
+    session_state: varchar("session_state", { length: 255 })
   },
   (account) => ({
     compoundKey: primaryKey(account.provider, account.providerAccountId),
-    userIdIdx: index('userId_idx').on(account.userId),
-  }),
-);
+    userIdIdx: index("account_userId_idx").on(account.userId)
+  })
+)
 
 export const accountsRelations = relations(accounts, ({ one }) => ({
-  user: one(users, { fields: [accounts.userId], references: [users.id] }),
-}));
+  user: one(users, { fields: [accounts.userId], references: [users.id] })
+}))
 
 export const sessions = mysqlTable(
-  'session',
+  "session",
   {
-    sessionToken: varchar('sessionToken', { length: 255 }).notNull().primaryKey(),
-    userId: varchar('userId', { length: 255 }).notNull(),
-    expires: timestamp('expires', { mode: 'date' }).notNull(),
+    sessionToken: varchar("sessionToken", { length: 255 }).notNull().primaryKey(),
+    userId: varchar("userId", { length: 255 })
+      .notNull()
+      .references(() => users.id),
+    expires: timestamp("expires", { mode: "date" }).notNull()
   },
   (session) => ({
-    userIdIdx: index('userId_idx').on(session.userId),
-  }),
-);
+    userIdIdx: index("session_userId_idx").on(session.userId)
+  })
+)
 
 export const sessionsRelations = relations(sessions, ({ one }) => ({
-  user: one(users, { fields: [sessions.userId], references: [users.id] }),
-}));
+  user: one(users, { fields: [sessions.userId], references: [users.id] })
+}))
 
 export const verificationTokens = mysqlTable(
-  'verificationToken',
+  "verificationToken",
   {
-    identifier: varchar('identifier', { length: 255 }).notNull(),
-    token: varchar('token', { length: 255 }).notNull(),
-    expires: timestamp('expires', { mode: 'date' }).notNull(),
+    identifier: varchar("identifier", { length: 255 }).notNull(),
+    token: varchar("token", { length: 255 }).notNull(),
+    expires: timestamp("expires", { mode: "date" }).notNull()
   },
   (vt) => ({
-    compoundKey: primaryKey(vt.identifier, vt.token),
-  }),
-);
+    compoundKey: primaryKey(vt.identifier, vt.token)
+  })
+)

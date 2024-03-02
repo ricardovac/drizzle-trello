@@ -1,53 +1,47 @@
-import List from '@/components/list';
-import ListForm from '@/components/list-form';
-import { Flex } from '@mantine/core';
-import { getServerSession } from 'next-auth';
-import BoardAppShell from '~/app/_components/board-appshell';
-import BoardContext from '~/app/context/board-context';
-import { api } from '~/trpc/server';
-import { type SingleBoard } from '~/trpc/shared';
+import BoardContext from "@/context/board-context"
+import {api} from "@/trpc/server"
+
+import BoardAppShell from "@/app/components/board-appshell"
+import BoardHeader from "@/app/components/board-header"
+import List from "@/app/components/list"
+import ListForm from "@/app/components/list-form"
 
 interface BoardPageProps {
-  params: { id: string; title: string };
+  params: { id: string; title: string }
 }
 
-export function generateMetadata({ params }: BoardPageProps) {
+export function generateMetadata({params}: BoardPageProps) {
   return {
-    title: `${params.title} | drizzle-trello`,
-  };
+    title: decodeURIComponent(`${params.title} | drizzle-trello`)
+  }
 }
 
-export default async function Page({ params }: BoardPageProps) {
-  const id = params.id;
+export default async function Page({params}: BoardPageProps) {
+  const id = params.id
 
-  const board = await api.board.get.query({ id });
+  const boardAndRole = await api.board.get.query({boardId: id})
   const initialLists = await api.list.all.query({
-    boardId: id,
-  });
-  const permission = await getBoardUserPermission(board);
+    boardId: id
+  })
+
+  const board = boardAndRole.board
+  const role = boardAndRole.role
+
+  await api.recent.create.mutate({boardId: id, userId: board.ownerId!})
+
+  const members = await api.member.get.query({boardId: id, ownerId: board.ownerId!})
 
   return (
-    <BoardContext lists={initialLists} board={board} permission={permission}>
+    <BoardContext lists={initialLists} board={board} permission={role} members={members}>
       <BoardAppShell>
-        <Flex gap={8} align="flex-start">
-          <List />
-          <ListForm />
-        </Flex>
+        <div className="absolute inset-x-0 top-0 flex size-full flex-col text-white">
+          <BoardHeader/>
+          <div className="flex h-full flex-1 items-start gap-6 p-6">
+            <List/>
+            {role === "admin" && <ListForm/>}
+          </div>
+        </div>
       </BoardAppShell>
     </BoardContext>
-  );
-}
-
-export async function getBoardUserPermission(board: SingleBoard) {
-  const session = await getServerSession();
-
-  if (board.ownerId === session?.user.id) {
-    return 'OWNER';
-  }
-
-  if (!board.public) {
-    throw new Error('This board is private!');
-  }
-
-  return 'VISITOR';
+  )
 }

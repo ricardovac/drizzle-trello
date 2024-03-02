@@ -1,18 +1,18 @@
-import { DrizzleAdapter } from '@auth/drizzle-adapter';
-import { getServerSession, type DefaultSession, type NextAuthOptions } from 'next-auth';
-import GoogleProvider, { type GoogleProfile } from 'next-auth/providers/google';
+import { env } from "@/env.mjs"
+import { db } from "@/server/db"
+import { DrizzleAdapter } from "@auth/drizzle-adapter"
+import { mysqlTable } from "drizzle-orm/mysql-core"
+import { getServerSession, type DefaultSession, type NextAuthOptions } from "next-auth"
+import { Adapter } from "next-auth/adapters"
+import GoogleProvider, { type GoogleProfile } from "next-auth/providers/google"
 
-import { env } from '~/env.mjs';
-import { db } from '~/server/db';
-import { mysqlTable } from './db/schema';
-
-declare module 'next-auth' {
+declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
-      id: string;
+      id: string
       // ...other properties
       // role: UserRole;
-    } & DefaultSession['user'];
+    } & DefaultSession["user"]
   }
 
   // interface User {
@@ -27,11 +27,12 @@ export const authOptions: NextAuthOptions = {
       ...session,
       user: {
         ...session.user,
-        id: user.id,
-      },
+        id: user.id
+      }
     }),
   },
-  adapter: DrizzleAdapter(db, mysqlTable),
+  adapter: DrizzleAdapter(db, mysqlTable) as Adapter,
+  secret: env.NEXTAUTH_SECRET,
   providers: [
     GoogleProvider({
       clientId: env.GOOGLE_CLIENT_ID,
@@ -41,24 +42,24 @@ export const authOptions: NextAuthOptions = {
           id: profile.sub,
           name: profile.name,
           email: profile.email,
-          image: profile.picture,
-        };
+          image: profile.picture
+        }
       },
       authorization: {
         params: {
-          prompt: 'consent',
-          access_type: 'offline',
-          response_type: 'code',
-        },
-      },
-    }),
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code"
+        }
+      }
+    })
   ],
-  debug: false,
-};
+  debug: false
+}
 
 /**
  * Wrapper for `getServerSession` so that you don't need to import the `authOptions` in every file.
  *
  * @see https://next-auth.js.org/configuration/nextjs
  */
-export const getServerAuthSession = () => getServerSession(authOptions);
+export const getServerAuthSession = () => getServerSession(authOptions)
