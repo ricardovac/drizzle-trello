@@ -104,6 +104,14 @@ const AddMember = () => {
       return
     }
 
+    if (selectedMembers.length === 0) {
+      toast({
+        title: "Nenhum membro selecionado!",
+        description: "Selecione pelo menos um membro para compartilhar o quadro."
+      })
+      return
+    }
+
     toast({
       title: "Compartilhado!",
       description: "O quadro foi compartilhado com sucesso!"

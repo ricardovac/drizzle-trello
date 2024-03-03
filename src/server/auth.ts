@@ -54,7 +54,7 @@ export const authOptions: NextAuthOptions = {
       }
     })
   ],
-  debug: false
+  debug: process.env.NODE_ENV === "development" ? true : false,
 }
 
 /**

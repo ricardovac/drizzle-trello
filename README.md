@@ -1,27 +1,64 @@
-# Create T3 App
+<p align="center">
+  <img src="public/og2.png" alt="Next.js and TypeScript">
+</p>
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+### Trello-like Task Board built with Next.js, Drizzle ORM, shadcn and tRPC
 
-## What's next? How do I make an app with this?
+## Features
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+- **Next.js 14** - A React framework with hybrid static & server rendering, and route pre-fetching
+- **Drizzle ORM** - A simple and powerful ORM for TypeScript
+- **tRPC** - A modern TypeScript-first API framework
+- **mysql2** - A fast MySQL driver
+- **Tailwind CSS** - A utility-first CSS framework
+- **shadcn-ui** - An awesome component library
+- **TypeScript** - JavaScript superset
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+## Getting started 🚀
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [tRPC](https://trpc.io)
+The best way to start with this template is using `create-next-app`.
 
-## Learn More
+```
+npx create-next-app my-app -e https://github.com/ricardovac/drizzle-trello
+```
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+Alternatively, you can clone this repository and execute the following commands within the project folder:
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+1. `npm install` or `yarn`;
+2. `yarn dev`;
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+To view the project open `http://localhost:3000`.
 
-## How do I deploy this?
+## Environment variables 🔑
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+Before running the project, rename the `.env.example` file to `.env` and fill in the following environment variables:
+
+- `DB_HOST` - The database host
+- `DB_USER` - The database user
+- `DB_NAME` - The database name
+- `DB_PASSWORD` - The database password
+
+<br/>
+
+- `NEXTAUTH_URL` - The URL of the NextAuth.js provider
+- `NEXTAUTH_SECRET` - The secret used to encrypt the cookies
+
+<br/>
+
+- `GOOGLE_CLIENT_ID` - The Google OAuth client ID
+- `GOOGLE_CLIENT_SECRET` - The Google OAuth client secret
+
+## Star ✨
+
+Please express your support by starring it. Thank you!
+
+## Contributing 🤝
+
+1. Fork this repository;
+2. Create your branch: `git checkout -b my-new-feature`;
+3. Commit your changes: `git commit -m 'Add some feature'`;
+4. Push to the branch: `git push origin my-new-feature`.
+
+**Once your pull request is merged**, feel free to delete your branch.
+
+Made by ricardovac

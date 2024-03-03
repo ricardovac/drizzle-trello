@@ -7,16 +7,17 @@ export const env = createEnv({
    * isn't built with invalid env vars.
    */
   server: {
-    DATABASE_URL: z
-      .string()
-      .url()
-      .refine(
-        (str) => !str.includes("YOUR_MYSQL_URL_HERE"),
-        "You forgot to change the default URL"
-      ),
+    // DATABASE_URL: z
+    //   .string()
+    //   .url()
+    //   .refine(
+    //     (str) => !str.includes("YOUR_MYSQL_URL_HERE"),
+    //     "You forgot to change the default URL"
+    //   ),
     DB_HOST: z.string(),
     DB_USER: z.string(),
-    DB_DATABASE: z.string(),
+    DB_NAME: z.string(),
+    DB_PASSWORD: z.string(),
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
     NEXTAUTH_SECRET: process.env.NODE_ENV === "production" ? z.string() : z.string().optional(),
     NEXTAUTH_URL: z.preprocess(
@@ -37,7 +38,6 @@ export const env = createEnv({
    * `NEXT_PUBLIC_`.
    */
   client: {
-    NEXT_PUBLIC_PEXELS_API_KEY: z.string()
     // NEXT_PUBLIC_CLIENTVAR: z.string(),
   },
 
@@ -46,16 +46,16 @@ export const env = createEnv({
    * middlewares) or client-side so we need to destruct manually.
    */
   runtimeEnv: {
-    DB_DATABASE: process.env.DB_DATABASE,
+    DB_NAME: process.env.DB_NAME,
     DB_HOST: process.env.DB_HOST,
     DB_USER: process.env.DB_USER,
-    DATABASE_URL: process.env.DATABASE_URL,
+    DB_PASSWORD: process.env.DB_PASSWORD,
+    // DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
-    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
-    NEXT_PUBLIC_PEXELS_API_KEY: process.env.NEXT_PUBLIC_PEXELS_API_KEY
+    GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

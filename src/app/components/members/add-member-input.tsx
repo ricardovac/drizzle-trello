@@ -4,6 +4,8 @@ import { CommandGroup } from "cmdk"
 import { Command, CommandInput, CommandItem, CommandList } from "components/ui/command"
 import { Session } from "next-auth"
 
+import { useClickOutside } from "@/hooks/useClickOutside"
+
 import { UserAvatar } from "../user-avatar"
 
 interface AddMemberInputProps {
@@ -23,6 +25,7 @@ const AddMemberInput: FC<AddMemberInputProps> = ({
 }) => {
   const { user } = useAuthContext()
   const [isCommandListOpen, setIsCommandListOpen] = useState(false)
+  const commandListRef = useClickOutside(() => setIsCommandListOpen(false))
 
   const hasDataToShow = !isLoading && !!members?.length
 
@@ -39,7 +42,10 @@ const AddMemberInput: FC<AddMemberInputProps> = ({
         autoFocus={true}
       />
       {isCommandListOpen && (
-        <CommandList className="absolute top-12 z-10 w-full rounded border bg-background">
+        <CommandList
+          className="absolute top-12 z-10 w-full rounded border bg-background"
+          ref={commandListRef}
+        >
           <CommandGroup>
             {members?.map((member) => (
               <CommandItem

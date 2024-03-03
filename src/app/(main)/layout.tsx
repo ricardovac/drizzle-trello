@@ -17,7 +17,7 @@ export default async function MainLayout({children}: { children: React.ReactNode
     <AuthContextProvider user={user}>
       <div className="container flex-1 md:grid md:grid-cols-[220px_1fr] md:gap-6 lg:grid-cols-[240px_1fr] lg:gap-10">
         <aside
-          className="fixed top-14 hidden h-[calc(100vh-3.5rem)] w-full shrink-0 overflow-y-auto  md:sticky md:block lg:py-10">
+          className="fixed top-14 hidden h-[calc(100vh-3.5rem)] w-full shrink-0 overflow-y-auto py-10 md:sticky md:block">
           <SidebarNav/>
         </aside>
         <div className="flex flex-col gap-10 py-8">
