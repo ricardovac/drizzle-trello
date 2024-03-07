@@ -1,30 +1,23 @@
-import React, { useCallback, useEffect, useState } from "react"
-import { useAuthContext } from "@/context/auth-context"
-import { useBoardContext } from "@/context/board-context"
-import { api } from "@/trpc/react"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Avatar, AvatarFallback, AvatarImage } from "components/ui/avatar"
-import { Button } from "components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger
-} from "components/ui/dialog"
-import { Form } from "components/ui/form"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "components/ui/select"
-import { Separator } from "components/ui/separator"
-import { Textarea } from "components/ui/textarea"
-import { useToast } from "components/ui/use-toast"
-import { Session } from "next-auth"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
+import React, {useCallback, useEffect, useState} from "react"
+import {useAuthContext} from "@/context/auth-context"
+import {useBoardContext} from "@/context/board-context"
+import {api} from "@/trpc/react"
+import {zodResolver} from "@hookform/resolvers/zod"
+import {Avatar, AvatarFallback, AvatarImage} from "components/ui/avatar"
+import {Button} from "components/ui/button"
+import {Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger} from "components/ui/dialog"
+import {Form} from "components/ui/form"
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "components/ui/select"
+import {Separator} from "components/ui/separator"
+import {Textarea} from "components/ui/textarea"
+import {useToast} from "components/ui/use-toast"
+import {Session} from "next-auth"
+import {useForm} from "react-hook-form"
+import {z} from "zod"
 
-import { useDebounce } from "@/hooks/useDebounce"
+import {useDebounce} from "@/hooks/useDebounce"
 
-import AddMemberInput from "./add-member-input"
+import MemberCommand from "./member-command"
 import MemberTag from "./member-tag"
 
 type Member = Session["user"]
@@ -33,15 +26,15 @@ const formSchema = z.object({
   shareMessage: z.string().optional()
 })
 
-const AddMember = () => {
-  const { user } = useAuthContext()
-  const { permission, board } = useBoardContext()
+const MemberDialog = () => {
+  const {user} = useAuthContext()
+  const {permission, board} = useBoardContext()
   const [selectedMembers, setSelectedMembers] = React.useState<Member[]>([])
   const [dialogOpen, setDialogOpen] = React.useState(false)
 
   const [query, setQuery] = useState("")
 
-  const { toast } = useToast()
+  const {toast} = useToast()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -53,7 +46,7 @@ const AddMember = () => {
 
   const debouncedQuery = useDebounce(query, 200)
 
-  const { data, isLoading } = api.search.byType.useQuery(
+  const {data, isLoading} = api.search.byType.useQuery(
     {
       query: debouncedQuery,
       limit: 4,
@@ -92,7 +85,7 @@ const AddMember = () => {
     }
   }, [dialogOpen, form])
 
-  const { mutate, error, isError } = api.member.add.useMutation()
+  const {mutate, error, isError} = api.member.add.useMutation()
 
   function onSubmit({shareMessage}: z.infer<typeof formSchema>) {
     if (isError) {
@@ -151,7 +144,7 @@ const AddMember = () => {
             </div>
             <div className="flex items-center space-x-2">
               <div className="relative w-full">
-                <AddMemberInput
+                <MemberCommand
                   isLoading={isLoading}
                   members={data?.users}
                   handleSelectUser={handleSelectUser}
@@ -162,7 +155,7 @@ const AddMember = () => {
               <div className="relative">
                 <Select>
                   <SelectTrigger className="h-full space-x-2">
-                    <SelectValue placeholder="Membro" />
+                    <SelectValue placeholder="Membro"/>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Member">Membro</SelectItem>
@@ -177,14 +170,14 @@ const AddMember = () => {
           </form>
         </Form>
         {hasSelectedMembers && (
-          <Textarea placeholder="Junte-se a mim para trabalharmos juntos neste quadro!" />
+          <Textarea placeholder="Junte-se a mim para trabalharmos juntos neste quadro!"/>
         )}
-        <Separator />
+        <Separator/>
         <DialogFooter>
           <div className="flex w-full items-center justify-between space-x-4">
             <div className="flex items-center space-x-4">
               <Avatar>
-                <AvatarImage src={user.image ?? ""} />
+                <AvatarImage src={user.image ?? ""}/>
                 <AvatarFallback>OM</AvatarFallback>
               </Avatar>
               <div>
@@ -200,4 +193,4 @@ const AddMember = () => {
   )
 }
 
-export default AddMember
+export default MemberDialog

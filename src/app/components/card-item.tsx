@@ -35,7 +35,7 @@ const Card: FC<CardProps> = ({ card, index }) => {
           style={getStyle(provided.draggableProps.style, snapshot)}
           asChild
         >
-          <Link href={`#`}>
+          <Link href={`/c/${card.id}/${card.title}`}>
             <span>{card.title}</span>
 
             {card.description && (

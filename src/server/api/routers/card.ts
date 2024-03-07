@@ -1,10 +1,21 @@
-import { cards } from "@/server/db/schema"
-import { createCard, updateCard, updateCardPosition } from "@/server/schema/card.schema"
+import { boards, cards, lists } from "@/server/db/schema"
+import { createCard, getCard, updateCard, updateCardPosition } from "@/server/schema/card.schema"
 import { asc, eq } from "drizzle-orm"
 
 import { createTRPCRouter, protectedProcedure } from "../trpc"
 
 export const cardRouter = createTRPCRouter({
+  get: protectedProcedure.input(getCard).query(async ({ ctx, input }) => {
+    const result = await ctx.db
+      .select()
+      .from(cards)
+      .where(eq(cards.id, input.cardId))
+      .leftJoin(lists, eq(cards.listId, lists.id))
+      .limit(1)
+      .execute()
+
+    return result[0];
+  }),
   create: protectedProcedure.input(createCard).mutation(async ({ ctx, input }) => {
     const { db } = ctx
 
@@ -41,7 +52,7 @@ export const cardRouter = createTRPCRouter({
 
     return await db
       .update(cards)
-      .set({ id: cardId, listId: card.listId })
+      .set({ id: cardId, listId: card.listId!, description: card.description! })
       .where(eq(cards.id, cardId))
       .execute()
   })

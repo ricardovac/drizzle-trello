@@ -9,7 +9,7 @@ interface BoardCardProps {
 }
 
 export default function BoardCard({ board }: BoardCardProps) {
-  const image = board?.background as unknown as BackgroundTypeSchema
+  const image = board?.background as BackgroundTypeSchema
 
   return (
     <Link

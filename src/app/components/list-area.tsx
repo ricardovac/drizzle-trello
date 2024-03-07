@@ -1,7 +1,7 @@
 import { type FC } from "react"
 import { type Cards } from "@/trpc/shared"
-import { Droppable } from "@hello-pangea/dnd"
-import { cn } from "lib/utils"
+  import { Droppable } from "@hello-pangea/dnd"
+  import { cn } from "lib/utils"
 
 import CardItem from "./card-item"
 

@@ -1,15 +1,16 @@
 "use client"
 
-import { useBoardContext } from "@/context/board-context"
-import { BackgroundTypeSchema } from "@/server/schema/board.schema"
+import {useBoardContext} from "@/context/board-context"
+import {BackgroundTypeSchema} from "@/server/schema/board.schema"
 import ScrollContainer from "react-indiana-drag-scroll"
+import React from "react";
 
 interface BoardAppShellProps {
   children: React.ReactNode
 }
 
-export default function BoardAppShell({ children }: BoardAppShellProps) {
-  const { board } = useBoardContext()
+export default function BoardAppShell({children}: BoardAppShellProps) {
+  const {board} = useBoardContext()
   const background = board.background as unknown as BackgroundTypeSchema
 
   return (

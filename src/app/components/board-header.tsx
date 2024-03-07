@@ -1,16 +1,16 @@
 "use client"
 
-import { FC } from "react"
-import { useBoardContext } from "@/context/board-context"
-import { api } from "@/trpc/react"
+import {FC} from "react"
+import {useBoardContext} from "@/context/board-context"
+import {api} from "@/trpc/react"
 
 import EditableTitle from "./editable-title"
-import AddMember from "./members/add-member"
-import { UserAvatar } from "./user-avatar"
+import MemberDialog from "./members/member-dialog"
+import {UserAvatar} from "./user-avatar"
 
 const BoardHeader: FC = () => {
-  const { board, permission, members } = useBoardContext()
-  const { mutate } = api.board.edit.useMutation()
+  const {board, permission, members} = useBoardContext()
+  const {mutate} = api.board.edit.useMutation()
 
   return (
     <header
@@ -20,7 +20,7 @@ const BoardHeader: FC = () => {
       <h1 className="mr-auto text-xl font-semibold">
         <EditableTitle
           title={board.title}
-          onSave={(title) => mutate({ title, boardId: board.id })}
+          onSave={(title) => mutate({title, boardId: board.id})}
           className="text-lg"
         />
       </h1>
@@ -28,11 +28,11 @@ const BoardHeader: FC = () => {
       <div className="flex space-x-2">
         {members?.map((member, idx) => (
           <div className="flex gap-4" key={idx}>
-            <UserAvatar user={member.user!} />
+            <UserAvatar user={member.user!}/>
           </div>
         ))}
 
-        <div className="flex items-center gap-4">{permission === "admin" && <AddMember />}</div>
+        <div className="flex items-center gap-4">{permission === "admin" && <MemberDialog/>}</div>
       </div>
     </header>
   )

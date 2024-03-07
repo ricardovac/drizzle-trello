@@ -1,12 +1,12 @@
-import { FC, useEffect, useState } from "react"
-import { useAuthContext } from "@/context/auth-context"
-import { CommandGroup } from "cmdk"
-import { Command, CommandInput, CommandItem, CommandList } from "components/ui/command"
-import { Session } from "next-auth"
+import {FC, useEffect, useState} from "react"
+import {useAuthContext} from "@/context/auth-context"
+import {CommandGroup} from "cmdk"
+import {Command, CommandInput, CommandItem, CommandList} from "components/ui/command"
+import {Session} from "next-auth"
 
-import { useClickOutside } from "@/hooks/useClickOutside"
+import {useClickOutside} from "@/hooks/useClickOutside"
 
-import { UserAvatar } from "../user-avatar"
+import {UserAvatar} from "../user-avatar"
 
 interface AddMemberInputProps {
   setQuery: (query: string) => void
@@ -16,14 +16,14 @@ interface AddMemberInputProps {
   handleSelectUser: (user: Session["user"], setIsCommandListOpen: (boolean: any) => void) => void
 }
 
-const AddMemberInput: FC<AddMemberInputProps> = ({
-  setQuery,
-  query,
-  members,
-  isLoading,
-  handleSelectUser
-}) => {
-  const { user } = useAuthContext()
+const MemberCommand: FC<AddMemberInputProps> = ({
+                                                  setQuery,
+                                                  query,
+                                                  members,
+                                                  isLoading,
+                                                  handleSelectUser
+                                                }) => {
+  const {user} = useAuthContext()
   const [isCommandListOpen, setIsCommandListOpen] = useState(false)
   const commandListRef = useClickOutside(() => setIsCommandListOpen(false))
 
@@ -55,7 +55,7 @@ const AddMemberInput: FC<AddMemberInputProps> = ({
                 className="cursor-pointer gap-2"
                 disabled={member.id === user.id}
               >
-                <UserAvatar user={member} />
+                <UserAvatar user={member}/>
                 <span>{member.name}</span>
               </CommandItem>
             ))}
@@ -66,4 +66,4 @@ const AddMemberInput: FC<AddMemberInputProps> = ({
   )
 }
 
-export default AddMemberInput
+export default MemberCommand

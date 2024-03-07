@@ -1,5 +1,5 @@
-import { FC } from "react"
-import { Button } from "components/ui/button"
+import {FC} from "react"
+import {Button} from "components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,24 +12,25 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger
 } from "components/ui/dropdown-menu"
-import { Icons } from "components/ui/icons"
-import { signIn, signOut } from "next-auth/react"
-import { useTheme } from "next-themes"
+import {Icons} from "components/ui/icons"
+import {signIn, signOut} from "next-auth/react"
+import {useTheme} from "next-themes"
 
-import { useAuthContext } from "@/context/auth-context"
-import { UserAvatar } from "./user-avatar"
+import {useAuthContext} from "@/context/auth-context"
+import {UserAvatar} from "./user-avatar"
 
-interface AccountMenuProps {}
+interface AccountMenuProps {
+}
 
 const AccountMenu: FC<AccountMenuProps> = ({}) => {
-  const { user } = useAuthContext()
-  const { setTheme } = useTheme()
+  const {user} = useAuthContext()
+  const {setTheme} = useTheme()
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
         <UserAvatar
-          user={{ name: user.name || null, image: user.image || null }}
+          user={{name: user.name || null, image: user.image || null}}
           className="size-8"
         />
       </DropdownMenuTrigger>
@@ -46,15 +47,15 @@ const AccountMenu: FC<AccountMenuProps> = ({}) => {
           className="cursor-pointer"
           onSelect={(e) => {
             e.preventDefault()
-            signOut({
+            void signOut({
               redirect: false,
             })
-            signIn("google")
+            void signIn("google")
           }}
         >
           Alternar contas
         </DropdownMenuItem>
-        <DropdownMenuSeparator />
+        <DropdownMenuSeparator/>
         <DropdownMenuGroup>
           <DropdownMenuItem disabled className="text-xs font-bold">
             Drizzle Trello
@@ -69,22 +70,22 @@ const AccountMenu: FC<AccountMenuProps> = ({}) => {
             <DropdownMenuPortal>
               <DropdownMenuSubContent>
                 <DropdownMenuItem onClick={() => setTheme("light")}>
-                  <Icons.sun className="mr-2 size-4" />
+                  <Icons.sun className="mr-2 size-4"/>
                   <span>Claro</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setTheme("dark")}>
-                  <Icons.moon className="mr-2 size-4" />
+                  <Icons.moon className="mr-2 size-4"/>
                   <span>Escuro</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setTheme("system")}>
-                  <Icons.laptop className="mr-2 size-4" />
+                  <Icons.laptop className="mr-2 size-4"/>
                   <span>Sistema</span>
                 </DropdownMenuItem>
               </DropdownMenuSubContent>
             </DropdownMenuPortal>
           </DropdownMenuSub>
         </DropdownMenuGroup>
-        <DropdownMenuSeparator />
+        <DropdownMenuSeparator/>
         <DropdownMenuItem
           className="cursor-pointer"
           onSelect={(e) => {

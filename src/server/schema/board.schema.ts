@@ -15,6 +15,11 @@ export const getAllBoards = z.object({
 
 export type getAllBoardsSchema = z.TypeOf<typeof getAllBoards>
 
+export const getBoardPermission = z.object({
+  boardId: z.string(),
+  userId: z.string()
+})
+
 export const createBoard = z.object({
   title: z.string().min(2, "O título deve conter pelo menos 2 caracteres").max(54),
   background: z.object({

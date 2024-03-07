@@ -14,15 +14,15 @@ interface CardAreaProps {
 const CardArea: FC<CardAreaProps> = ({ cards, columnId }) => {
   return (
     <Droppable droppableId={columnId}>
-      {(provided) => (
+      {(provided, snapshot) => (
         <ScrollArea
           {...provided.droppableProps}
           ref={provided.innerRef}
-          className={cn("max-h-[70vh] rounded-md")}
           scrollHideDelay={0}
+          className={cn("min-h-4 rounded-md", snapshot.isDraggingOver && "bg-primary/[.055]")}
         >
           {cards.map((card, i) => (
-            <CardItem card={card} key={card.id} index={i} />
+            <CardItem card={card} index={i} key={card.id} />
           ))}
           {provided.placeholder}
         </ScrollArea>

@@ -54,13 +54,13 @@ export const boardMembers = mysqlTable(
     userId: varchar("user_id", { length: 128 }).references(() => users.id),
     role: mysqlEnum("role", ["admin", "member"]).notNull(),
     status: mysqlEnum("status", ["active", "invited", "removed"]).notNull(),
-    addedAt: timestamp("added_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+    addedAt: timestamp("added_at")
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
     removedAt: timestamp("removed_at").onUpdateNow()
   },
   (bm) => ({
-    boardIdIndex: index("boardId_idx").on(bm.boardId),
-    userIdIndex: index("userId_idx").on(bm.userId),
-    boardUserIndex: uniqueIndex("boardUser_idx").on(bm.boardId, bm.userId)
+    boardMembersPkey: primaryKey(bm.boardId, bm.userId),
   })
 )
 
@@ -99,9 +99,37 @@ export const cards = mysqlTable("cards", {
   position: int("position").notNull()
 })
 
-export const cardsRelations = relations(cards, ({ one }) => ({
-  list: one(lists, { fields: [cards.listId], references: [lists.id] })
+export const cardsRelations = relations(cards, ({ one, many }) => ({
+  list: one(lists, { fields: [cards.listId], references: [lists.id] }),
+  labels: many(cardLabels)
 }))
+
+export const labels = mysqlTable("labels", {
+  id: varchar("id", { length: ID_LENGTH })
+    .$defaultFn(() => createId())
+    .primaryKey(),
+  name: varchar("name", { length: 256 }).notNull(),
+  color: varchar("color", { length: 7 }).notNull()
+})
+
+export const labelsRelations = relations(labels, ({ many }) => ({
+  cards: many(cardLabels)
+}))
+
+export const cardLabels = mysqlTable(
+  "card_labels",
+  {
+    labelId: varchar("labelId", { length: ID_LENGTH })
+      .notNull()
+      .references(() => labels.id, { onDelete: "restrict", onUpdate: "cascade" }),
+    cardId: varchar("cardId", { length: ID_LENGTH })
+      .notNull()
+      .references(() => cards.id, { onDelete: "restrict", onUpdate: "cascade" })
+  },
+  (cl) => ({
+    cardLabelPkey: primaryKey(cl.labelId, cl.cardId)
+  })
+)
 
 export const users = mysqlTable("user", {
   id: varchar("id", { length: 255 }).notNull().primaryKey(),
@@ -117,13 +145,15 @@ export const users = mysqlTable("user", {
 
 export const usersRelations = relations(users, ({ many }) => ({
   accounts: many(accounts),
-  sessions: many(sessions),
+  sessions: many(sessions)
 }))
 
 export const accounts = mysqlTable(
   "account",
   {
-    userId: varchar("userId", { length: 255 }).notNull().references(() => users.id),
+    userId: varchar("userId", { length: 255 })
+      .notNull()
+      .references(() => users.id),
     type: varchar("type", { length: 255 }).$type<AdapterAccount["type"]>().notNull(),
     provider: varchar("provider", { length: 255 }).notNull(),
     providerAccountId: varchar("providerAccountId", { length: 255 }).notNull(),

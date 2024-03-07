@@ -18,8 +18,15 @@ export type updateCardPositionSchema = z.TypeOf<typeof updateCardPosition>
 export const updateCard = z.object({
   cardId: z.string(),
   card: z.object({
-    listId: z.string()
-  })
+    description: z.string(),
+    listId: z.string().nullish(),
+  }),
 })
 
 export type updateCardSchema = z.TypeOf<typeof updateCard>
+
+export const getCard = z.object({
+  cardId: z.string()
+})
+
+export type getCardSchema = z.TypeOf<typeof getCard>
