@@ -12,7 +12,4 @@ export default {
     password: env.DB_PASSWORD,
     database: env.DB_NAME,
   },
-  tablesFilter: ["trello-clone_*"],
-  verbose: true,
-  strict: true,
 } satisfies Config

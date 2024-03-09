@@ -32,37 +32,33 @@ export const boards = mysqlTable(
     ownerId: varchar("owner_id", { length: 128 }).references(() => users.id)
   },
   (boards) => ({
-    titleIndex: index("title_idx").on(boards.title)
+    uniqueIndex: uniqueIndex("boards_ownerId_title_unique").on(boards.ownerId, boards.title)
   })
 )
 
 export const boardsRelations = relations(boards, ({ many, one }) => ({
   lists: many(lists),
   owner: one(users, { fields: [boards.ownerId], references: [users.id] }),
-  members: many(boardMembers)
+  members: many(boardMembers),
+  labels: many(labels)
 }))
 
-export const boardMembers = mysqlTable(
-  "boardMembers",
-  {
-    id: varchar("id", { length: ID_LENGTH })
-      .$defaultFn(() => createId())
-      .primaryKey(),
-    boardId: varchar("board_id", { length: ID_LENGTH })
-      .notNull()
-      .references(() => boards.id),
-    userId: varchar("user_id", { length: 128 }).references(() => users.id),
-    role: mysqlEnum("role", ["admin", "member"]).notNull(),
-    status: mysqlEnum("status", ["active", "invited", "removed"]).notNull(),
-    addedAt: timestamp("added_at")
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    removedAt: timestamp("removed_at").onUpdateNow()
-  },
-  (bm) => ({
-    boardMembersPkey: primaryKey(bm.boardId, bm.userId),
-  })
-)
+// Many to many relation between boards and users
+export const boardMembers = mysqlTable("board_members", {
+  id: varchar("id", { length: ID_LENGTH })
+    .$defaultFn(() => createId())
+    .primaryKey(),
+  boardId: varchar("board_id", { length: ID_LENGTH })
+    .notNull()
+    .references(() => boards.id),
+  userId: varchar("user_id", { length: 128 }).references(() => users.id),
+  role: mysqlEnum("role", ["admin", "member"]).notNull(),
+  status: mysqlEnum("status", ["active", "invited", "removed"]).notNull(),
+  addedAt: timestamp("added_at")
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  removedAt: timestamp("removed_at").onUpdateNow()
+})
 
 export const boardMembersRelations = relations(boardMembers, ({ one }) => ({
   board: one(boards, { fields: [boardMembers.boardId], references: [boards.id] }),
@@ -104,32 +100,40 @@ export const cardsRelations = relations(cards, ({ one, many }) => ({
   labels: many(cardLabels)
 }))
 
+// Many to many relation between cards and labels
+export const cardLabels = mysqlTable(
+  "card_labels",
+  {
+    cardId: varchar("cardId", { length: ID_LENGTH })
+      .notNull()
+      .references(() => cards.id),
+    labelId: varchar("labelId", { length: ID_LENGTH })
+      .notNull()
+      .references(() => labels.id)
+  },
+  (cl) => ({
+    pk: primaryKey(cl.cardId, cl.labelId)
+  })
+)
+
+export const cardLabelsRelations = relations(cardLabels, ({ one }) => ({
+  card: one(cards, { fields: [cardLabels.cardId], references: [cards.id] }),
+  label: one(labels, { fields: [cardLabels.labelId], references: [labels.id] })
+}))
+
 export const labels = mysqlTable("labels", {
   id: varchar("id", { length: ID_LENGTH })
     .$defaultFn(() => createId())
     .primaryKey(),
-  name: varchar("name", { length: 256 }).notNull(),
-  color: varchar("color", { length: 7 }).notNull()
+  title: varchar("name", { length: 256 }).notNull(),
+  color: varchar("color", { length: 7 }).notNull(),
+  boardId: varchar("boardId", { length: 128 }).notNull()
 })
 
-export const labelsRelations = relations(labels, ({ many }) => ({
-  cards: many(cardLabels)
+export const labelsRelations = relations(labels, ({ one, many }) => ({
+  board: one(boards, { fields: [labels.boardId], references: [boards.id] }),
+  card: many(cardLabels)
 }))
-
-export const cardLabels = mysqlTable(
-  "card_labels",
-  {
-    labelId: varchar("labelId", { length: ID_LENGTH })
-      .notNull()
-      .references(() => labels.id, { onDelete: "restrict", onUpdate: "cascade" }),
-    cardId: varchar("cardId", { length: ID_LENGTH })
-      .notNull()
-      .references(() => cards.id, { onDelete: "restrict", onUpdate: "cascade" })
-  },
-  (cl) => ({
-    cardLabelPkey: primaryKey(cl.labelId, cl.cardId)
-  })
-)
 
 export const users = mysqlTable("user", {
   id: varchar("id", { length: 255 }).notNull().primaryKey(),

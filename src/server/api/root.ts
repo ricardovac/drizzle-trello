@@ -6,6 +6,7 @@ import { listRouter } from "./routers/list"
 import { searchRouter } from "./routers/search"
 import { memberRouter } from "./routers/member"
 import { recentRouter } from "./routers/recent"
+import { labelRouter } from "./routers/label"
 
 /**
  * This is the primary router for your server.
@@ -18,7 +19,8 @@ export const appRouter = createTRPCRouter({
   card: cardRouter,
   search: searchRouter,
   member: memberRouter,
-  recent: recentRouter
+  recent: recentRouter,
+  label: labelRouter
 })
 
 // export type definition of API

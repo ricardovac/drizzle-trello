@@ -1,14 +1,15 @@
 "use client"
 
-import { createContext, useContext, type FC, type PropsWithChildren } from "react"
+import { createContext, useContext, useState, type FC, type PropsWithChildren } from "react"
 import { RouterOutputs } from "@/trpc/shared"
-
-type List = RouterOutputs["card"]["get"]["lists"]
-type Card = RouterOutputs["card"]["get"]["cards"]
+import { InferSelectModel } from "drizzle-orm"
+import { labels } from "@/server/db/schema"
 
 interface CardContextType {
-  list: List
-  card: Card
+  card: RouterOutputs["card"]["get"]
+  board: RouterOutputs["board"]["get"]["board"]
+  permission: RouterOutputs["board"]["get"]["role"]
+  toggleLabel: (label: InferSelectModel<typeof labels>, remove: boolean) => void
 }
 
 const CardContext = createContext<CardContextType>({} as CardContextType)
@@ -18,14 +19,35 @@ export function useCardContext() {
 }
 
 interface CardContextProviderProps extends PropsWithChildren {
-  list: List
-  card: Card
+  card: RouterOutputs["card"]["get"]
+  board: RouterOutputs["board"]["get"]["board"]
+  permission: RouterOutputs["board"]["get"]["role"]
 }
+
+type Label = InferSelectModel<typeof labels>
 
 export const CardContextProvider: FC<CardContextProviderProps> = ({
   children,
-  list,
-  card
+  card: initialCard,
+  board: initialBoard,
+  permission,
 }) => {
-  return <CardContext.Provider value={{ list, card }}>{children}</CardContext.Provider>
+  const [card, setCard] = useState(initialCard)
+  const [board, setBoard] = useState(initialBoard)
+
+  const toggleLabel = (label: Label, remove: boolean) => {
+    setCard((prev) => {
+      const newCard = { ...prev }
+
+      if (remove) {
+        newCard.labels = prev?.labels.filter((l) => l.labelId !== label.id);
+      } else {
+        newCard.labels = prev?.labels.push(label);
+      }
+
+      return newCard;
+    })
+  }
+
+  return <CardContext.Provider value={{ card, board, permission, toggleLabel }}>{children}</CardContext.Provider>
 }

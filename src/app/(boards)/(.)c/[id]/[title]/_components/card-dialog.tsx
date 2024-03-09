@@ -1,6 +1,6 @@
 "use client"
 
-import { FC, useCallback } from "react"
+import { FC } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAuthContext } from "@/context/auth-context"
@@ -23,11 +23,13 @@ import CardSidebar from "./card-sidebar"
 const CardDialog: FC = () => {
   const router = useRouter()
   const { user } = useAuthContext()
-  const { list, card } = useCardContext()
+  const { card } = useCardContext()
+
+  const list = card?.list
 
   return (
-    <Dialog open onOpenChange={() => router.back()}>
-      <DialogContent className="sm:max-w-[725px]">
+    <Dialog open onOpenChange={() => void router.back()}>
+      <DialogContent className="top-48 sm:max-w-[725px]">
         <div className="w-full">
           <DialogHeader className="w-full">
             <DialogTitle>{card?.title}</DialogTitle>

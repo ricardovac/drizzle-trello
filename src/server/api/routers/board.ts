@@ -1,6 +1,6 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc"
 import { boardMembers, boards } from "@/server/db/schema"
-import { createBoard, getAllBoards, getBoardById, getBoardPermission, updateBoard } from "@/server/schema/board.schema"
+import { createBoard, getAllBoards, getBoardById, updateBoard } from "@/server/schema/board.schema"
 import { TRPCError } from "@trpc/server"
 import { and, desc, eq, sql } from "drizzle-orm"
 
@@ -11,11 +11,11 @@ export const boardRouter = createTRPCRouter({
     const userId = session.user.id
 
     const board = await ctx.db.query.boardMembers.findFirst({
-      columns: {
-        role: true
-      },
       with: {
         board: {
+          with: {
+            labels: true
+          },
           columns: {
             id: true,
             title: true,
@@ -149,15 +149,4 @@ export const boardRouter = createTRPCRouter({
       })
       .where(eq(boards.id, input.boardId))
   }),
-  permission: protectedProcedure.input(getBoardPermission).query(async ({ctx ,input}) => {
-    const {boardId, userId} = input
-
-    return  await ctx.db.query.boardMembers.findFirst({
-      columns: {
-        role: true
-      },
-      where: and(eq(boardMembers.userId, userId), eq(boardMembers.boardId, boardId))
-    })
-
-  })
 })

@@ -185,7 +185,7 @@ const MemberDialog = () => {
                 <p className="text-sm text-muted-foreground">{user.email}</p>
               </div>
             </div>
-            <div>{permission === "OWNER" && <Button variant="ghost">Adiministrador</Button>}</div>
+            <div>{permission === "OWNER" && <Button variant="ghost">Administrador</Button>}</div>
           </div>
         </DialogFooter>
       </DialogContent>

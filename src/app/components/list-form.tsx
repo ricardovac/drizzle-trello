@@ -42,7 +42,6 @@ interface CreateListFormProps {
 function ListFormField({ boardId, setMode, mode }: CreateListFormProps) {
   const { lists } = useBoardContext()
   const { user } = useAuthContext()
-  const ref = useRef<HTMLInputElement>(null)
   const utils = api.useUtils()
   const userId = user.id ?? ""
   const cardRef = useClickOutside(() => setMode("button"))
@@ -85,8 +84,8 @@ function ListFormField({ boardId, setMode, mode }: CreateListFormProps) {
   })
 
   useEffect(() => {
-    if (mode && ref.current) ref.current.focus()
-  }, [ref, mode])
+    if (mode) form.setFocus("title")
+  }, [form, mode])
 
   const onSubmit = (values: z.infer<typeof createList>) => {
     mutate({ title: values.title, boardId, position: (lists.at(-1)?.position ?? 0) + 1 })
@@ -104,7 +103,7 @@ function ListFormField({ boardId, setMode, mode }: CreateListFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input placeholder="Insira o título da lista..." {...field} ref={ref} />
+                    <Input placeholder="Insira o título da lista..." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

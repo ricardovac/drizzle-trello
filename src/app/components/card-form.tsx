@@ -25,7 +25,7 @@ const CardForm: FC<CardFormProps> = ({ list }) => {
     resolver: zodResolver(createCard),
     defaultValues: {
       title: "",
-      listId: ""
+      listId: "",
     }
   })
 
@@ -38,6 +38,7 @@ const CardForm: FC<CardFormProps> = ({ list }) => {
       setMode("button")
     }
   })
+
   const ref = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
@@ -45,7 +46,11 @@ const CardForm: FC<CardFormProps> = ({ list }) => {
       ref.current.focus()
       ref.current.select()
     }
-  }, [ref, mode])
+
+    if (mode === "form") {
+      form.reset();
+    }
+  }, [ref, mode, form])
 
   if (mode === "button") {
     return (
