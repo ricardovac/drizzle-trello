@@ -1,15 +1,16 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
 import { useCardContext } from "@/context/card-context"
 import { updateCard, updateCardSchema } from "@/server/schema/card.schema"
 import { api } from "@/trpc/react"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { Button } from "components/ui/button"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "components/ui/form"
 import { Textarea } from "components/ui/textarea"
+import { cn } from "lib/utils"
 import { useForm } from "react-hook-form"
-import { Button } from "components/ui/button"
+import { useRouter } from "next/navigation"
 
 const CardDescriptionForm = () => {
   const { card } = useCardContext()
@@ -32,18 +33,18 @@ const CardDescriptionForm = () => {
   const router = useRouter()
 
   const { mutate: update } = api.card.updateCard.useMutation({
-    onSuccess: () => {
-      router.refresh()
-    }
+    onSuccess: () => void router.refresh()
   })
 
   const previousDescription = card?.description
+
+  const description = form.watch("card.description")
 
   const onSubmit = useCallback(
     ({ card }: updateCardSchema) => {
       if (previousDescription === card.description || !card.description.length) {
         setMode("button")
-        return;
+        return
       }
 
       update({
@@ -52,14 +53,14 @@ const CardDescriptionForm = () => {
           description: card.description
         }
       })
-      
+
       setMode("button")
     },
     [cardId, previousDescription, update]
   )
 
   useEffect(() => {
-    if (mode) form.setFocus("card.description")
+    if (mode) form.setFocus("card.description", { shouldSelect: true })
   }, [form, mode])
 
   return (
@@ -75,12 +76,16 @@ const CardDescriptionForm = () => {
                 {mode === "button" ? (
                   <div className="w-full">
                     <Button
-                      {...field}
                       variant="ghost"
                       onClick={() => setMode("form")}
-                      className="w-full justify-start"
+                      className={cn(
+                        "w-full justify-start",
+                        !description.length && "hover:text-none text-muted-foreground"
+                      )}
                     >
-                      {card?.description}
+                      {!!description.length
+                        ? description
+                        : "Adicionar uma descrição mais detalhada"}
                     </Button>
                   </div>
                 ) : (

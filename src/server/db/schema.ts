@@ -1,6 +1,7 @@
 import { createId } from "@paralleldrive/cuid2"
 import { relations, sql } from "drizzle-orm"
 import {
+  boolean,
   index,
   int,
   json,
@@ -97,28 +98,7 @@ export const cards = mysqlTable("cards", {
 
 export const cardsRelations = relations(cards, ({ one, many }) => ({
   list: one(lists, { fields: [cards.listId], references: [lists.id] }),
-  labels: many(cardLabels)
-}))
-
-// Many to many relation between cards and labels
-export const cardLabels = mysqlTable(
-  "card_labels",
-  {
-    cardId: varchar("cardId", { length: ID_LENGTH })
-      .notNull()
-      .references(() => cards.id),
-    labelId: varchar("labelId", { length: ID_LENGTH })
-      .notNull()
-      .references(() => labels.id)
-  },
-  (cl) => ({
-    pk: primaryKey(cl.cardId, cl.labelId)
-  })
-)
-
-export const cardLabelsRelations = relations(cardLabels, ({ one }) => ({
-  card: one(cards, { fields: [cardLabels.cardId], references: [cards.id] }),
-  label: one(labels, { fields: [cardLabels.labelId], references: [labels.id] })
+  cardsToLabels: many(cardsToLabels)
 }))
 
 export const labels = mysqlTable("labels", {
@@ -132,7 +112,35 @@ export const labels = mysqlTable("labels", {
 
 export const labelsRelations = relations(labels, ({ one, many }) => ({
   board: one(boards, { fields: [labels.boardId], references: [boards.id] }),
-  card: many(cardLabels)
+  cardsToLabels: many(cardsToLabels)
+}))
+
+// Many to many relation between cards and labels
+export const cardsToLabels = mysqlTable(
+  "card_labels",
+  {
+    cardId: varchar("cardId", { length: ID_LENGTH })
+      .notNull()
+      .references(() => cards.id, { onDelete: "restrict", onUpdate: "cascade" }),
+    labelId: varchar("labelId", { length: ID_LENGTH })
+      .notNull()
+      .references(() => labels.id, { onDelete: "restrict", onUpdate: "cascade" }),
+    status: mysqlEnum("status", ["active", "removed"]).notNull(),
+    addedAt: timestamp("added_at")
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    removedAt: timestamp("removed_at")
+  },
+  (cl) => ({
+    pk: primaryKey(cl.cardId, cl.labelId),
+    card: index("card_labels_cardId_idx").on(cl.cardId),
+    label: index("card_labels_labelId_idx").on(cl.labelId)
+  })
+)
+
+export const cardLabelsRelations = relations(cardsToLabels, ({ one }) => ({
+  card: one(cards, { fields: [cardsToLabels.cardId], references: [cards.id] }),
+  label: one(labels, { fields: [cardsToLabels.labelId], references: [labels.id] })
 }))
 
 export const users = mysqlTable("user", {

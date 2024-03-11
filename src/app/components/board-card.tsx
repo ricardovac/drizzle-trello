@@ -14,7 +14,7 @@ export default function BoardCard({ board }: BoardCardProps) {
   return (
     <Link
       href={`/b/${board?.id}/${board?.title}`}
-      className="relative cursor-pointer overflow-hidden rounded-md border"
+      className="relative cursor-pointer overflow-hidden rounded-md border hover:brightness-90"
       shallow
       scroll={false}
       prefetch={false}

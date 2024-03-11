@@ -122,6 +122,7 @@ const BoardContextProvider: FC<BoardContextProviderProps> = ({
         updateCard({
           cardId: card.id,
           card: {
+            description: card.description!,
             listId: destColumn.id
           }
         })

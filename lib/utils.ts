@@ -16,16 +16,10 @@ export function generateRandomHex() {
   return `#${((Math.random() * 0xffffff) << 0).toString(16).padStart(6, "0")}`
 }
 
-export function generateRandomColors(length: number, byTime: boolean = false) {
+export function generateRandomColors(length: number) {
   const colors = []
   for (let i = 0; i < length; i++) {
     colors.push(`#${Math.floor(Math.random() * 16777215).toString(16)}`)
-  }
-
-  if (byTime) {
-    setTimeout(() => {
-      return generateRandomColors(length, byTime)
-    }, 1000)
   }
   return colors
 }

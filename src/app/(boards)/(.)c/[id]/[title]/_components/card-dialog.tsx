@@ -3,7 +3,6 @@
 import { FC } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useAuthContext } from "@/context/auth-context"
 import { useCardContext } from "@/context/card-context"
 import {
   Dialog,
@@ -13,23 +12,24 @@ import {
   DialogHeader,
   DialogTitle
 } from "components/ui/dialog"
-import { Input } from "components/ui/input"
-import { Label } from "components/ui/label"
-import { UserAvatar } from "@/app/components/user-avatar"
 
+import CardActivityForm from "./card-activity-form"
 import CardDescriptionForm from "./card-description-form"
+import CardLabels from "./card-labels"
 import CardSidebar from "./card-sidebar"
+import { api } from "@/trpc/react"
 
 const CardDialog: FC = () => {
   const router = useRouter()
-  const { user } = useAuthContext()
-  const { card } = useCardContext()
+  const { card: initialCard } = useCardContext()
+
+  const { data: card } = api.card.get.useQuery({ cardId: initialCard?.id! })
 
   const list = card?.list
 
   return (
     <Dialog open onOpenChange={() => void router.back()}>
-      <DialogContent className="top-48 sm:max-w-[725px]">
+      <DialogContent className="overflow-hidden sm:max-w-[725px]">
         <div className="w-full">
           <DialogHeader className="w-full">
             <DialogTitle>{card?.title}</DialogTitle>
@@ -43,16 +43,9 @@ const CardDialog: FC = () => {
           </DialogHeader>
           <div className="flex justify-between gap-4">
             <div className="grid flex-1 grid-rows-2 gap-6 py-4">
+              <CardLabels />
               <CardDescriptionForm />
-              <div className="flex flex-col items-start gap-4">
-                <Label htmlFor="username" className="text-right">
-                  Atividade
-                </Label>
-                <div className="flex w-full gap-2">
-                  <UserAvatar user={user} />
-                  <Input id="Activity" placeholder="Escrever um comentário..." />
-                </div>
-              </div>
+              <CardActivityForm />
             </div>
             <CardSidebar />
           </div>

@@ -23,7 +23,7 @@ const CardPage: FC<CardPageProps> = async ({ params }) => {
   })
 
   const boardQuery = await api.board.get.query({
-    boardId: card?.list.boardId!
+    boardId: card?.list?.boardId!
   })
 
   const permission = boardQuery.role

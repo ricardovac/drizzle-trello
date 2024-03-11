@@ -9,6 +9,7 @@ import { Form, FormField } from "components/ui/form"
 import { Input } from "components/ui/input"
 import { Label } from "components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "components/ui/popover"
+import { ScrollArea } from "components/ui/scroll-area"
 import { Separator } from "components/ui/separator"
 import { generateRandomColors, generateRandomHex, getTextColor } from "lib/utils"
 import { ChevronLeft, Edit, LoaderIcon } from "lucide-react"
@@ -26,7 +27,7 @@ const CreateLabel = z.object({
 
 const LabelPopover: FC<TagPopoverProps> = ({ children }) => {
   const { board, card, toggleLabel } = useCardContext()
-  const cardLabelIds = card?.labels.map((label) => label.labelId) ?? []
+  const cardLabelIds = card?.labels?.map((label) => label.id) ?? []
   const [search, setSearch] = useState("")
   const [mode, setMode] = useState<"select" | "create">("select")
 
@@ -38,9 +39,7 @@ const LabelPopover: FC<TagPopoverProps> = ({ children }) => {
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <Button className="w-full">{children}</Button>
-      </PopoverTrigger>
+      <PopoverTrigger asChild>{children}</PopoverTrigger>
       <PopoverContent className="w-80">
         {mode === "select" && (
           <div className="space-y-4">
@@ -65,25 +64,29 @@ const LabelPopover: FC<TagPopoverProps> = ({ children }) => {
                 </p>
               )}
 
-              {boardLabels.map((label, index) => (
-                <div className="flex w-full items-center gap-2" key={index}>
-                  <Checkbox
-                    id={`color-${label.id}`}
-                    onCheckedChange={(e) => toggleLabel(label, !e)}
-                    checked={cardLabelIds.includes(label.id)}
-                  />
-                  <label
-                    style={{ backgroundColor: label.color, color: getTextColor(label.color) }}
-                    className="h-8 w-full rounded"
-                    htmlFor={`color-${label.id}`}
-                  >
-                    {label.title}
-                  </label>
-                  <Button size="icon" variant="ghost">
-                    <Edit className="size-4" />
-                  </Button>
+              <ScrollArea className="h-44">
+                <div className="p-2">
+                  {boardLabels.map((label) => (
+                    <div className="flex w-full items-center gap-2" key={label.id}>
+                      <Checkbox
+                        id={`color-${label.id}`}
+                        onCheckedChange={(e) => toggleLabel(label, !e)}
+                        checked={cardLabelIds.includes(label.id)}
+                      />
+                      <label
+                        style={{ backgroundColor: label.color, color: getTextColor(label.color) }}
+                        className="h-8 w-full rounded px-2"
+                        htmlFor={`color-${label.id}`}
+                      >
+                        {label.title}
+                      </label>
+                      <Button size="icon" variant="ghost">
+                        <Edit className="size-4" />
+                      </Button>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </ScrollArea>
 
               <Button onClick={() => setMode("create")} className="w-full">
                 Criar nova etiqueta
@@ -104,7 +107,10 @@ interface NewLabelPopoverProps {
 }
 
 const NewLabelPopover: FC<NewLabelPopoverProps> = ({ setMode }) => {
-  const { board } = useCardContext()
+  const [colors] = useState(generateRandomColors(30))
+
+  const { board, card } = useCardContext()
+  const cardId = card?.id!
 
   const form = useForm<z.infer<typeof CreateLabel>>({
     resolver: zodResolver(CreateLabel),
@@ -114,19 +120,42 @@ const NewLabelPopover: FC<NewLabelPopoverProps> = ({ setMode }) => {
     }
   })
 
-  const title = form.watch("title")
-  const color = form.watch("color")
+  const utils = api.useUtils()
 
   const { mutate, isLoading } = api.label.create.useMutation({
-    onSuccess: () => {
-      form.reset()
-      setMode("select")
+    onMutate: async (label) => {
+      await utils.card.get.cancel({ cardId })
+
+      const previousCard = utils.card.get.getData({ cardId })
+
+      const newLabel = {
+        ...label,
+        id: Math.random().toString(36).substring(7)
+      }
+
+      utils.card.get.setData({ cardId }, (old) => {
+        return {
+          ...old,
+          labels: [...(old?.labels ?? []), newLabel]
+        }
+      })
+
+      return previousCard
+    },
+    onError: (_, __, context) => {
+      utils.card.get.setData({ cardId }, context)
+    },
+    onSettled: () => {
+      void utils.card.get.invalidate({ cardId })
     }
   })
 
   const onSubmit = async (values: z.infer<typeof CreateLabel>) => {
-    mutate({ ...values, boardId: board.id })
+    mutate({ ...values, boardId: board.id, cardId: card?.id! })
   }
+
+  const title = form.watch("title")
+  const color = form.watch("color")
 
   return (
     <Form {...form}>
@@ -168,7 +197,7 @@ const NewLabelPopover: FC<NewLabelPopoverProps> = ({ setMode }) => {
           <div className="space-y-2">
             <Label>Selecione uma cor</Label>
             <div className="grid grid-cols-6 gap-2">
-              {generateRandomColors(30).map((color, i) => (
+              {colors.map((color, i) => (
                 <div
                   key={i}
                   style={{ backgroundColor: color }}
