@@ -26,5 +26,6 @@ export type Cards = Pick<SingleList, "cards">["cards"]
 export type SingleCard = Pick<SingleList, "cards">["cards"][0]
 export type RecentBoards = RouterOutputs["recent"]["get"]
 export type BoardMembers = RouterOutputs["member"]["get"]
+export type SingleLabel = RouterOutputs["card"]["get"]["labels"][number]
 
 export type FieldType = ControllerRenderProps<FieldValues, string>;

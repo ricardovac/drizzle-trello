@@ -1,5 +1,4 @@
 import { FC } from "react"
-import { CardContextProvider } from "@/context/card-context"
 import { api } from "@/trpc/server"
 
 import CardDialog from "./_components/card-dialog"
@@ -22,18 +21,11 @@ const CardPage: FC<CardPageProps> = async ({ params }) => {
     cardId: params.id
   })
 
-  const boardQuery = await api.board.get.query({
+  const board = await api.board.get.query({
     boardId: card?.list?.boardId!
   })
 
-  const permission = boardQuery.role
-  const board = boardQuery.board
-
-  return (
-    <CardContextProvider card={card} board={board} permission={permission}>
-      <CardDialog />
-    </CardContextProvider>
-  )
+  return <CardDialog initialCard={card} initialBoard={board} />
 }
 
 export default CardPage

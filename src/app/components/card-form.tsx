@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FC } from "react"
-import { createCard } from "@/server/schema/card.schema"
+import { CreateCardInput, createCardSchema } from "@/server/schema/card.schema"
 import { api } from "@/trpc/react"
 import { type SingleList } from "@/trpc/shared"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -8,7 +8,6 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "components/
 import { Textarea } from "components/ui/textarea"
 import { Plus, X } from "lucide-react"
 import { useForm } from "react-hook-form"
-import { z } from "zod"
 
 import { useClickOutside } from "@/hooks/useClickOutside"
 
@@ -21,11 +20,11 @@ const CardForm: FC<CardFormProps> = ({ list }) => {
   const listRef = useClickOutside(() => setMode("button"))
   const utils = api.useUtils()
 
-  const form = useForm<z.infer<typeof createCard>>({
-    resolver: zodResolver(createCard),
+  const form = useForm<CreateCardInput>({
+    resolver: zodResolver(createCardSchema),
     defaultValues: {
       title: "",
-      listId: "",
+      listId: ""
     }
   })
 
@@ -48,7 +47,7 @@ const CardForm: FC<CardFormProps> = ({ list }) => {
     }
 
     if (mode === "form") {
-      form.reset();
+      form.reset()
     }
   }, [ref, mode, form])
 
@@ -61,7 +60,7 @@ const CardForm: FC<CardFormProps> = ({ list }) => {
     )
   }
 
-  const onSubmit = (values: z.infer<typeof createCard>) => {
+  const onSubmit = (values: CreateCardInput) => {
     mutate({ title: values.title, listId: list.id })
     form.reset()
   }

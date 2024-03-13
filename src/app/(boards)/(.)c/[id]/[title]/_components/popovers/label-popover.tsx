@@ -1,11 +1,12 @@
 import { FC, useMemo, useState } from "react"
-import { useRouter } from "next/navigation"
 import { useCardContext } from "@/context/card-context"
 import { api } from "@/trpc/react"
+import { SingleLabel } from "@/trpc/shared"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { CheckedState } from "@radix-ui/react-checkbox"
 import { Button } from "components/ui/button"
 import { Checkbox } from "components/ui/checkbox"
-import { Form, FormField } from "components/ui/form"
+import { Form, FormControl, FormField, FormItem, FormMessage } from "components/ui/form"
 import { Input } from "components/ui/input"
 import { Label } from "components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "components/ui/popover"
@@ -14,19 +15,14 @@ import { Separator } from "components/ui/separator"
 import { generateRandomColors, generateRandomHex, getTextColor } from "lib/utils"
 import { ChevronLeft, Edit, LoaderIcon } from "lucide-react"
 import { useForm } from "react-hook-form"
-import { z } from "zod"
+import { CreateLabelInput, createLabelSchema } from "@/server/schema/label.schema"
 
 interface TagPopoverProps {
   children: React.ReactNode
 }
 
-const CreateLabel = z.object({
-  title: z.string(),
-  color: z.string()
-})
-
 const LabelPopover: FC<TagPopoverProps> = ({ children }) => {
-  const { board, card, toggleLabel } = useCardContext()
+  const { board, card } = useCardContext()
   const cardLabelIds = card?.labels?.map((label) => label.id) ?? []
   const [search, setSearch] = useState("")
   const [mode, setMode] = useState<"select" | "create">("select")
@@ -36,6 +32,36 @@ const LabelPopover: FC<TagPopoverProps> = ({ children }) => {
 
     return board?.labels.filter((label) => label.title.toLowerCase().includes(search.toLowerCase()))
   }, [board.labels, search])
+
+  const utils = api.useUtils()
+
+  const addLabel = api.label.add.useMutation()
+  const removeLabel = api.label.remove.useMutation()
+
+  const handleCheckboxChange = (label: SingleLabel, e: CheckedState) => {
+    const cardId = card?.id!
+    const labelId = label.id
+
+    if (!e) {
+      removeLabel.mutate({ cardId, labelId })
+
+      utils.card.get.setData({ cardId }, (old) => {
+        return {
+          ...old,
+          labels: old?.labels?.filter((l) => l.id !== label.id)!
+        }
+      })
+    } else {
+      addLabel.mutate({ cardId, labelId })
+
+      utils.card.get.setData({ cardId }, (old) => {
+        return {
+          ...old,
+          labels: [...(old?.labels ?? []), label]
+        }
+      })
+    }
+  }
 
   return (
     <Popover>
@@ -70,7 +96,7 @@ const LabelPopover: FC<TagPopoverProps> = ({ children }) => {
                     <div className="flex w-full items-center gap-2" key={label.id}>
                       <Checkbox
                         id={`color-${label.id}`}
-                        onCheckedChange={(e) => toggleLabel(label, !e)}
+                        onCheckedChange={(e) => handleCheckboxChange(label, e)}
                         checked={cardLabelIds.includes(label.id)}
                       />
                       <label
@@ -112,8 +138,8 @@ const NewLabelPopover: FC<NewLabelPopoverProps> = ({ setMode }) => {
   const { board, card } = useCardContext()
   const cardId = card?.id!
 
-  const form = useForm<z.infer<typeof CreateLabel>>({
-    resolver: zodResolver(CreateLabel),
+  const form = useForm<CreateLabelInput>({
+    resolver: zodResolver(createLabelSchema),
     defaultValues: {
       title: "",
       color: generateRandomHex()
@@ -150,7 +176,7 @@ const NewLabelPopover: FC<NewLabelPopoverProps> = ({ setMode }) => {
     }
   })
 
-  const onSubmit = async (values: z.infer<typeof CreateLabel>) => {
+  const onSubmit = async (values: CreateLabelInput) => {
     mutate({ ...values, boardId: board.id, cardId: card?.id! })
   }
 
@@ -185,11 +211,16 @@ const NewLabelPopover: FC<NewLabelPopoverProps> = ({ setMode }) => {
               name="title"
               control={form.control}
               render={({ field }) => (
-                <Input
-                  {...field}
-                  className="text-sm text-muted-foreground"
-                  placeholder="Título para a nova etiqueta"
-                />
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      className="text-sm text-muted-foreground"
+                      placeholder="Título para a nova etiqueta"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
             />
           </div>

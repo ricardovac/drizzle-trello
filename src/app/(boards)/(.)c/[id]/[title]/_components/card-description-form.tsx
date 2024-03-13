@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react"
 import { useCardContext } from "@/context/card-context"
-import { updateCard, updateCardSchema } from "@/server/schema/card.schema"
+import { UpdateCardInput, updateCardSchema } from "@/server/schema/card.schema"
 import { api } from "@/trpc/react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "components/ui/button"
@@ -19,8 +19,8 @@ const CardDescriptionForm = () => {
   const cardId = card?.id as string
 
   const [mode, setMode] = useState<"button" | "form">("button")
-  const form = useForm<updateCardSchema>({
-    resolver: zodResolver(updateCard),
+  const form = useForm<UpdateCardInput>({
+    resolver: zodResolver(updateCardSchema),
     defaultValues: {
       cardId,
       card: {
@@ -41,7 +41,7 @@ const CardDescriptionForm = () => {
   const description = form.watch("card.description")
 
   const onSubmit = useCallback(
-    ({ card }: updateCardSchema) => {
+    ({ card }: UpdateCardInput) => {
       if (previousDescription === card.description || !card.description.length) {
         setMode("button")
         return

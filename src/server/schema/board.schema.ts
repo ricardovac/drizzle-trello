@@ -1,62 +1,63 @@
 import { z } from "zod"
 
-export const getBoardById = z.object({
+export const getBoardByIdSchema = z.object({
   boardId: z.string()
 })
 
-export type getBoardByIdSchema = z.TypeOf<typeof getBoardById>
+export type GetBoardByIdInput = z.TypeOf<typeof getBoardByIdSchema>
 
-export const getAllBoards = z.object({
+export const getAllBoardsSchema = z.object({
   cursor: z.string().nullish(),
   limit: z.number().min(1).max(100),
   userId: z.string(),
   onlyAdmin: z.boolean().default(false).optional()
 })
 
-export type getAllBoardsSchema = z.TypeOf<typeof getAllBoards>
+export type GetAllBoardsSchemaInput = z.TypeOf<typeof getAllBoardsSchema>
 
-export const createBoard = z.object({
+export const createBoardSchema = z.object({
   title: z.string().min(2, "O título deve conter pelo menos 2 caracteres").max(54),
   background: z.object({
     type: z.enum(["color", "image", "gradient"]),
     value: z.string()
-  }),
+  })
 })
 
-export type createBoardSchema = z.TypeOf<typeof createBoard>
+export type CreateBoardInput = z.TypeOf<typeof createBoardSchema>
 
-export type BackgroundTypeSchema = z.infer<typeof createBoard.shape.background>
+export type BackgroundTypeSchema = z.infer<typeof createBoardSchema.shape.background>
 
-export const updateBoard = z.object({
+export const updateBoardSchema = z.object({
   title: z.string().min(2, "O título deve conter pelo menos 2 caracteres").max(54),
   boardId: z.string()
 })
 
-export const createRecent = z.object({
+export type UpdateBoardInput = z.TypeOf<typeof updateBoardSchema>
+
+export const createRecentSchema = z.object({
   boardId: z.string(),
   userId: z.string()
 })
 
-export type createRecentSchema = z.TypeOf<typeof createRecent>
+export type CreateRecentInput = z.TypeOf<typeof createRecentSchema>
 
-export const getRecent = z.object({
-  userId: z.string(),
+export const getRecentSchema = z.object({
+  userId: z.string()
 })
 
-export type getRecentSchema = z.TypeOf<typeof getRecent>
+export type GetRecentInput = z.TypeOf<typeof getRecentSchema>
 
-
-export const addMember = z.object({
+export const addMemberSchema = z.object({
   boardId: z.string(),
   userId: z.string(),
   shareMessage: z.string().optional()
 })
 
-export type addMemberSchema = z.TypeOf<typeof addMember>
+export type AddMemberInput = z.TypeOf<typeof addMemberSchema>
 
-export const getMembers = z.object({
+export const getMembersSchema = z.object({
   boardId: z.string(),
   ownerId: z.string()
 })
 
-export type getMembersSchema = z.TypeOf<typeof getMembers>
+export type GetMembersInput = z.TypeOf<typeof getMembersSchema>

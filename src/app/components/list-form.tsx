@@ -1,7 +1,9 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
-import { createList } from "@/server/schema/list.schema"
+import { useEffect, useState } from "react"
+import { useAuthContext } from "@/context/auth-context"
+import { useBoardContext } from "@/context/board-context"
+import { CreateListInput, createListSchema } from "@/server/schema/list.schema"
 import { api } from "@/trpc/react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from "components/ui/button"
@@ -10,12 +12,8 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "components/
 import { Input } from "components/ui/input"
 import { X } from "lucide-react"
 import { useForm } from "react-hook-form"
-import { z } from "zod"
 
 import { useClickOutside } from "@/hooks/useClickOutside"
-import { useBoardContext } from "@/context/board-context"
-import { useAuthContext } from "@/context/auth-context"
-
 
 export default function ListForm() {
   const [mode, setMode] = useState<"button" | "form">("button")
@@ -46,8 +44,8 @@ function ListFormField({ boardId, setMode, mode }: CreateListFormProps) {
   const userId = user.id ?? ""
   const cardRef = useClickOutside(() => setMode("button"))
 
-  const form = useForm<z.infer<typeof createList>>({
-    resolver: zodResolver(createList),
+  const form = useForm<CreateListInput>({
+    resolver: zodResolver(createListSchema),
     defaultValues: {
       title: "",
       boardId: "",
@@ -87,7 +85,7 @@ function ListFormField({ boardId, setMode, mode }: CreateListFormProps) {
     if (mode) form.setFocus("title")
   }, [form, mode])
 
-  const onSubmit = (values: z.infer<typeof createList>) => {
+  const onSubmit = (values: CreateListInput) => {
     mutate({ title: values.title, boardId, position: (lists.at(-1)?.position ?? 0) + 1 })
     form.reset()
   }

@@ -1,11 +1,16 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc"
 import { boardMembers, boards } from "@/server/db/schema"
-import { createBoard, getAllBoards, getBoardById, updateBoard } from "@/server/schema/board.schema"
+import {
+  createBoardSchema,
+  getAllBoardsSchema,
+  getBoardByIdSchema,
+  updateBoardSchema
+} from "@/server/schema/board.schema"
 import { TRPCError } from "@trpc/server"
 import { and, desc, eq, sql } from "drizzle-orm"
 
 export const boardRouter = createTRPCRouter({
-  get: protectedProcedure.input(getBoardById).query(async ({ ctx, input }) => {
+  get: protectedProcedure.input(getBoardByIdSchema).query(async ({ ctx, input }) => {
     const { session } = ctx
     const { boardId } = input
     const userId = session.user.id
@@ -36,7 +41,7 @@ export const boardRouter = createTRPCRouter({
 
     return board
   }),
-  all: protectedProcedure.input(getAllBoards).query(async ({ ctx, input }) => {
+  all: protectedProcedure.input(getAllBoardsSchema).query(async ({ ctx, input }) => {
     const { db } = ctx
     const { onlyAdmin, userId } = input
 
@@ -84,7 +89,7 @@ export const boardRouter = createTRPCRouter({
       totalCount
     }
   }),
-  create: protectedProcedure.input(createBoard).mutation(async ({ ctx, input }) => {
+  create: protectedProcedure.input(createBoardSchema).mutation(async ({ ctx, input }) => {
     const { db, session } = ctx
     const userId = session.user.id
 
@@ -130,7 +135,7 @@ export const boardRouter = createTRPCRouter({
 
     return board
   }),
-  edit: protectedProcedure.input(updateBoard).mutation(async ({ ctx, input }) => {
+  edit: protectedProcedure.input(updateBoardSchema).mutation(async ({ ctx, input }) => {
     const foundBoard = await ctx.db.query.boards.findFirst({
       where: eq(boards.id, input.boardId)
     })
@@ -148,5 +153,5 @@ export const boardRouter = createTRPCRouter({
         title: input.title
       })
       .where(eq(boards.id, input.boardId))
-  }),
+  })
 })

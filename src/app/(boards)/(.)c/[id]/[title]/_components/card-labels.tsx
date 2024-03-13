@@ -1,5 +1,6 @@
-import { FC, useMemo } from "react"
+import { FC } from "react"
 import { useCardContext } from "@/context/card-context"
+import { Badge } from "components/ui/badge"
 import { Button } from "components/ui/button"
 import { getTextColor } from "lib/utils"
 import { Plus } from "lucide-react"
@@ -11,22 +12,22 @@ const CardLabels: FC = () => {
 
   return (
     <div>
-        <span className="text-xs">Etiquetas</span>
+      <span className="text-xs">Etiquetas</span>
       <div className="flex gap-2">
         {card.labels.map((label) => (
-          <div
+          <Badge
             style={{ backgroundColor: label.color, color: getTextColor(label.color) }}
-            className="h-8 rounded px-2.5"
+            className="rounded text-sm"
             key={label.id}
           >
             {label.title}
-          </div>
+          </Badge>
         ))}
-      <LabelPopover>
-        <Button size="icon" className="h-8" variant="secondary">
-          <Plus />
-        </Button>
-      </LabelPopover>
+        <LabelPopover>
+          <Button size="icon" className="h-8" variant="secondary">
+            <Plus />
+          </Button>
+        </LabelPopover>
       </div>
     </div>
   )

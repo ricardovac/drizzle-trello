@@ -1,11 +1,11 @@
 import { boards, users } from "@/server/db/schema"
-import { search } from "@/server/schema/search.schema"
+import { searchSchema } from "@/server/schema/search.schema"
 import { asc, desc, gte, like, or, sql } from "drizzle-orm"
 
 import { createTRPCRouter, protectedProcedure } from "../trpc"
 
 export const searchRouter = createTRPCRouter({
-  byType: protectedProcedure.input(search).query(async ({ ctx, input }) => {
+  byType: protectedProcedure.input(searchSchema).query(async ({ ctx, input }) => {
     const { limit, query, sort, cursor, offset, type } = input
     const { db } = ctx
 

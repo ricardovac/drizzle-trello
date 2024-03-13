@@ -1,28 +1,32 @@
-import { boards, lists } from "@/server/db/schema"
-import { createList, editList, getAllListsByBoardId } from "@/server/schema/list.schema"
+import { boards, cards, cardsToLabels, lists } from "@/server/db/schema"
+import { createListSchema, editListSchema, getAllListsByBoardIdSchema } from "@/server/schema/list.schema"
 import { TRPCClientError } from "@trpc/client"
 import { TRPCError } from "@trpc/server"
-import { eq } from "drizzle-orm"
+import { asc, eq } from "drizzle-orm"
 
 import { createTRPCRouter, protectedProcedure } from "../trpc"
 
 export const listRouter = createTRPCRouter({
-  all: protectedProcedure.input(getAllListsByBoardId).query(async ({ ctx, input }) => {
+  all: protectedProcedure.input(getAllListsByBoardIdSchema).query(async ({ ctx, input }) => {
     const { db } = ctx
 
     return await db.query.lists.findMany({
-      orderBy: (lists, { asc }) => [asc(lists.position)],
-      where(fields) {
-        return eq(fields.boardId, input.boardId)
-      },
+      orderBy: asc(lists.position),
+      where: eq(lists.boardId, input.boardId),
       with: {
         cards: {
-          orderBy: (cards, { asc }) => [asc(cards.position)]
+          orderBy: asc(cards.position),
+          with: {
+            cardsToLabels: {
+              where: eq(cardsToLabels.status, "active"),
+              with: { label: true }
+            }
+          }
         }
       }
     })
   }),
-  create: protectedProcedure.input(createList).mutation(async ({ ctx, input }) => {
+  create: protectedProcedure.input(createListSchema).mutation(async ({ ctx, input }) => {
     const { db, session } = ctx
     const { title, boardId, position } = input
 
@@ -45,7 +49,7 @@ export const listRouter = createTRPCRouter({
       throw new TRPCClientError("Error creating list")
     }
   }),
-  edit: protectedProcedure.input(editList).mutation(async ({ ctx, input }) => {
+  edit: protectedProcedure.input(editListSchema).mutation(async ({ ctx, input }) => {
     const { db } = ctx
     const { listId, title } = input
 
