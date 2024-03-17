@@ -142,11 +142,14 @@ const NewLabelPopover: FC<NewLabelPopoverProps> = ({ setMode }) => {
     resolver: zodResolver(createLabelSchema),
     defaultValues: {
       title: "",
-      color: generateRandomHex()
+      color: generateRandomHex(),
+      cardId,
+      boardId: board.id
     }
   })
 
   const utils = api.useUtils()
+  console.log(form.formState.errors)
 
   const { mutate, isLoading } = api.label.create.useMutation({
     onMutate: async (label) => {

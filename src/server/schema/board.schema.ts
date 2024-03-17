@@ -61,3 +61,5 @@ export const getMembersSchema = z.object({
 })
 
 export type GetMembersInput = z.TypeOf<typeof getMembersSchema>
+
+export const starBoardSchema = getBoardByIdSchema

@@ -1,13 +1,14 @@
-import { boards, users } from "@/server/db/schema"
+import { boardMembers, boards, users } from "@/server/db/schema"
 import { searchSchema } from "@/server/schema/search.schema"
-import { asc, desc, gte, like, or, sql } from "drizzle-orm"
+import { and, asc, desc, eq, gte, like, or, sql } from "drizzle-orm"
 
 import { createTRPCRouter, protectedProcedure } from "../trpc"
 
 export const searchRouter = createTRPCRouter({
   byType: protectedProcedure.input(searchSchema).query(async ({ ctx, input }) => {
     const { limit, query, sort, cursor, offset, type } = input
-    const { db } = ctx
+    const { db, session } = ctx
+    const userId = session.user.id
 
     const countRows = await db
       .select({
@@ -19,9 +20,15 @@ export const searchRouter = createTRPCRouter({
 
     const fetchBoards = async () => {
       let boardsQuery = db
-        .select()
+        .select({
+          id: boards.id,
+          title: boards.title,
+          background: boards.background,
+          ownerId: boards.ownerId
+        })
         .from(boards)
-        .where(like(boards.title, `%${query}%`))
+        .leftJoin(boardMembers, eq(boards.id, boardMembers.boardId))
+        .where(and(like(boards.title, `%${query}%`), eq(boardMembers.userId, userId)))
         .orderBy(sort === "desc" ? desc(boards.createdAt) : asc(boards.createdAt))
         .limit(limit)
         .offset(offset)
@@ -39,7 +46,8 @@ export const searchRouter = createTRPCRouter({
       const returnableItems = items.map((item) => ({
         id: item.id,
         title: item.title,
-        background: item.background
+        background: item.background,
+        ownerId: item.ownerId
       }))
 
       return {

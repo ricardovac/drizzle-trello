@@ -43,7 +43,7 @@ const EditableTitle: FC<EditableTitleProps> = ({ title: initialTitle, onSave, cl
     return (
       <Button
         tabIndex={-1}
-        variant="ghost"
+        variant="ghostforeground"
         className={cn("w-full justify-start px-2", className)}
         onClick={() => setMode("edit")}
       >

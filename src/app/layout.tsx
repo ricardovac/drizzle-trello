@@ -4,14 +4,14 @@ import { getServerAuthSession } from "@/server/auth"
 
 import "@/styles/globals.css"
 import { Viewport, type Metadata } from "next"
-import { Inter as FontSans } from "next/font/google"
-import { headers } from "next/headers"
+import { Public_Sans as FontSans } from "next/font/google"
 import { redirect } from "next/navigation"
 import { TRPCReactProvider } from "@/trpc/react"
 import { api } from "@/trpc/server"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { Toaster } from "components/ui/toaster"
 import { siteConfig } from "config/site"
+import NextTopLoader from "nextjs-toploader"
 
 import { MainNav } from "@/app/components/main-nav"
 
@@ -56,7 +56,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="en" suppressHydrationWarning>
       <head />
       <body className={cn("min-h-screen bg-background font-sans antialiased", fontSans.variable)}>
-        <TRPCReactProvider headers={headers()}>
+        <TRPCReactProvider>
           <AuthContextProvider user={session?.user}>
             <ThemeProvider
               attribute="class"
@@ -64,6 +64,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               enableSystem
               disableTransitionOnChange
             >
+              <NextTopLoader
+                color="#ffffff"
+                initialPosition={0.08}
+                height={1}
+                showSpinner={false}
+              />
               <RecentContextProvider recentBoards={data}>
                 <MainNav />
                 {children}

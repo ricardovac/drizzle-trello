@@ -1,6 +1,7 @@
 import { createId } from "@paralleldrive/cuid2"
 import { relations, sql } from "drizzle-orm"
 import {
+    boolean,
   index,
   int,
   json,
@@ -40,7 +41,30 @@ export const boardsRelations = relations(boards, ({ many, one }) => ({
   lists: many(lists),
   owner: one(users, { fields: [boards.ownerId], references: [users.id] }),
   members: many(boardMembers),
-  labels: many(labels)
+  labels: many(labels),
+  stars: many(stars)
+}))
+
+export const stars = mysqlTable(
+  "stars",
+  {
+    id: varchar("id", { length: ID_LENGTH })
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    boardId: varchar("board_id", { length: ID_LENGTH })
+      .notNull()
+      .references(() => boards.id),
+    userId: varchar("user_id", { length: 128 }).references(() => users.id),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (table) => ({
+    userIdx: index("userId_idx").on(table.userId),
+    boardIdx: index("boardId_idx").on(table.boardId)
+  })
+)
+
+export const starsRelations = relations(stars, ({ one }) => ({
+  board: one(boards, { fields: [stars.boardId], references: [boards.id] })
 }))
 
 // Many to many relation between boards and users

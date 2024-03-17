@@ -38,7 +38,7 @@ export default async function Page({params}: BoardPageProps) {
           <BoardHeader/>
           <div className="flex h-full flex-1 items-start gap-6 p-6">
             <List/>
-            {role === "admin" && <ListForm/>}
+            {(role === "admin" || role === "member") && <ListForm/>}
           </div>
         </div>
       </BoardAppShell>

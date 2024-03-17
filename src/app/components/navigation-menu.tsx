@@ -23,7 +23,7 @@ export function MainNavigationMenu() {
     <NavigationMenu>
       <NavigationMenuList>
         <NavigationMenuItem>
-          <NavigationMenuTrigger>Recentes</NavigationMenuTrigger>
+          <NavigationMenuTrigger>Recente</NavigationMenuTrigger>
           <NavigationMenuContent>
             {!recentBoards.length && (
               <div className="p-4 text-center text-muted-foreground md:w-[300px] lg:w-[400px]">

@@ -128,7 +128,7 @@ const SearchNav: FC<SearchNavProps> = ({ className }) => {
 }
 
 interface SearchNavItemProps {
-  board?: Pick<SingleBoard, "title" | "background" | "id">[]
+  board?: Pick<SingleBoard, "title" | "background" | "id" | "ownerId">[]
   users?: Session["user"][]
   type: SearchFilterTypes
 }
@@ -143,7 +143,7 @@ export const DropdownItem: FC<SearchNavItemProps> = ({ board, users }) => {
               <BoardBackground image={item.background as BackgroundTypeSchema} width={32} height={32} />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium">{item.title}</p>
-                <p className="text-sm text-gray-400">Área de trabalho de</p>
+                <p className="text-sm text-gray-400">Quadro de {item.ownerId}</p>
               </div>
             </div>
           </li>

@@ -1,9 +1,10 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc"
-import { boardMembers, boards } from "@/server/db/schema"
+import { boardMembers, boards, stars } from "@/server/db/schema"
 import {
   createBoardSchema,
   getAllBoardsSchema,
   getBoardByIdSchema,
+  starBoardSchema,
   updateBoardSchema
 } from "@/server/schema/board.schema"
 import { TRPCError } from "@trpc/server"
@@ -19,7 +20,8 @@ export const boardRouter = createTRPCRouter({
       with: {
         board: {
           with: {
-            labels: true
+            labels: true,
+            stars: true
           },
           columns: {
             id: true,
@@ -153,5 +155,22 @@ export const boardRouter = createTRPCRouter({
         title: input.title
       })
       .where(eq(boards.id, input.boardId))
+  }),
+  star: protectedProcedure.input(starBoardSchema).mutation(async ({ ctx, input }) => {
+    const { db, session } = ctx
+    const userId = session.user.id
+
+    return await db.insert(stars).values({
+      boardId: input.boardId,
+      userId,
+    })
+  }),
+  unstar: protectedProcedure.input(starBoardSchema).mutation(async ({ ctx, input }) => {
+    const { db, session } = ctx
+    const userId = session.user.id
+
+    return await db
+      .delete(stars)
+      .where(and(eq(stars.boardId, input.boardId), eq(stars.userId, userId)))
   })
 })
