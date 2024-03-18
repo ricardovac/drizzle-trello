@@ -1,4 +1,6 @@
+import { InferInsertModel } from "drizzle-orm"
 import { z } from "zod"
+import { cards } from "../db/schema"
 
 export const createCardSchema = z.object({
   title: z.string().min(1, "O título deve ter pelo menos 1 caractere"),
@@ -18,7 +20,7 @@ export type UpdateCardPositionInput = z.TypeOf<typeof updateCardPositionSchema>
 export const updateCardSchema = z.object({
   cardId: z.string(),
   card: z.object({
-    description: z.string(),
+    description: z.string().nullish(),
     listId: z.string().nullish()
   })
 })

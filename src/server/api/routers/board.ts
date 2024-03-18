@@ -172,5 +172,32 @@ export const boardRouter = createTRPCRouter({
     return await db
       .delete(stars)
       .where(and(eq(stars.boardId, input.boardId), eq(stars.userId, userId)))
+  }),
+  starredBoards: protectedProcedure.query(async ({ ctx }) => {
+    const { db, session } = ctx
+    const userId = session.user.id
+
+    const starredBoards = await db.query.stars.findMany({
+      where: eq(stars.userId, userId),
+      with: {
+        board: {
+          with: {owner: true},
+          columns: {
+            id: true,
+            title: true,
+            background: true
+          }
+        }
+      }
+    })
+
+    if (!starredBoards) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Starred boards not found"
+      })
+    }
+
+    return starredBoards;
   })
 })

@@ -8,6 +8,7 @@ import {
 import { asc, eq } from "drizzle-orm"
 
 import { createTRPCRouter, protectedProcedure } from "../trpc"
+import { TRPCClientError } from "@trpc/client"
 
 export const cardRouter = createTRPCRouter({
   get: protectedProcedure.input(getCardSchema).query(async ({ ctx, input }) => {
@@ -65,9 +66,13 @@ export const cardRouter = createTRPCRouter({
     const { db } = ctx
     const { cardId, card } = input
 
+    if (!card.description && !card.listId) {
+      throw new TRPCClientError("No data to update")
+    }
+
     return await db
       .update(cards)
-      .set({ id: cardId, listId: card.listId!, description: card.description! })
+      .set({ listId: card.listId!, description: card.description! })
       .where(eq(cards.id, cardId))
       .execute()
   })
