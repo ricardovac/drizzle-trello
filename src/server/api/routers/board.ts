@@ -198,6 +198,8 @@ export const boardRouter = createTRPCRouter({
       })
     }
 
-    return starredBoards;
+    const boards = starredBoards.map((b) => b.board)
+
+    return boards;
   })
 })

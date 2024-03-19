@@ -1,7 +1,6 @@
 import { useMemo, type FC } from "react"
 import Link from "next/link"
 import { useBoardContext } from "@/context/board-context"
-import { api } from "@/trpc/react"
 import { type SingleCard } from "@/trpc/shared"
 import { Draggable, DraggableStateSnapshot, DraggableStyle } from "@hello-pangea/dnd"
 import { Badge } from "components/ui/badge"
@@ -24,26 +23,11 @@ function getStyle(style: DraggableStyle | undefined, snapshot: DraggableStateSna
   }
 }
 
-const Card: FC<CardProps> = ({ card: initialCard, index }) => {
+const Card: FC<CardProps> = ({ card, index }) => {
   const { permission } = useBoardContext()
-
-  const { data: card, isLoading, isFetching } = api.card.get.useQuery(
-    {
-      cardId: initialCard.id
-    },
-    {
-      initialData: {
-        labels: [],
-        ...initialCard
-      },
-      enabled: !!initialCard.id,
-    }
-  )
 
   const labels =
     useMemo(() => card.cardsToLabels?.flatMap((cardToLabel) => cardToLabel.label), [card]) ?? []
-
-  const isCardLoading = isLoading || !card || isFetching
 
   return (
     <Draggable draggableId={card.id ?? ""} index={index} isDragDisabled={permission === "VISITOR"}>
@@ -62,7 +46,7 @@ const Card: FC<CardProps> = ({ card: initialCard, index }) => {
             scroll={false}
             prefetch={false}
             shallow
-            className={cn((permission === "VISITOR" || isCardLoading) && "pointer-events-none")}
+            className={cn(permission === "VISITOR" && "pointer-events-none")}
           >
             {labels.length > 0 && (
               <div className="flex flex-wrap items-center gap-2">

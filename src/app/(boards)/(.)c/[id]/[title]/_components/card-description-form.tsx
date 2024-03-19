@@ -10,7 +10,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Textarea } from "components/ui/textarea"
 import { cn } from "lib/utils"
 import { useForm } from "react-hook-form"
-import { useRouter } from "next/navigation"
 
 const CardDescriptionForm = () => {
   const { card } = useCardContext()
@@ -30,10 +29,12 @@ const CardDescriptionForm = () => {
     }
   })
 
-  const router = useRouter()
+  const utils = api.useUtils()
 
   const { mutate: update } = api.card.updateCard.useMutation({
-    onSuccess: () => void router.refresh()
+    onSuccess: () => {
+      utils.card.get.invalidate({ cardId })
+    }
   })
 
   const previousDescription = card?.description
@@ -42,7 +43,7 @@ const CardDescriptionForm = () => {
 
   const onSubmit = useCallback(
     ({ card }: UpdateCardInput) => {
-      if (previousDescription === card.description || !card.description.length) {
+      if (previousDescription === card.description || !card.description?.length) {
         setMode("button")
         return
       }
@@ -80,10 +81,10 @@ const CardDescriptionForm = () => {
                       onClick={() => setMode("form")}
                       className={cn(
                         "w-full justify-start",
-                        !description.length && "hover:text-none text-muted-foreground"
+                        !description?.length && "hover:text-none text-muted-foreground"
                       )}
                     >
-                      {!!description.length
+                      {!!description?.length
                         ? description
                         : "Adicionar uma descrição mais detalhada"}
                     </Button>
@@ -93,7 +94,7 @@ const CardDescriptionForm = () => {
                     placeholder="Adicione uma descrição mais detalhada"
                     className="resize-none"
                     onBlur={form.handleSubmit(onSubmit)}
-                    value={field.value}
+                    value={field.value as string}
                     ref={field.ref}
                     onChange={field.onChange}
                   />

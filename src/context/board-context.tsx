@@ -46,8 +46,6 @@ const BoardContextProvider: FC<BoardContextProviderProps> = ({
     { boardId: board.id },
     {
       initialData: initialLists,
-      refetchOnMount: false,
-      refetchOnReconnect: false
     }
   )
 
