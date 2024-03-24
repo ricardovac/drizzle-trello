@@ -16,36 +16,53 @@ export const boardRouter = createTRPCRouter({
     const { boardId } = input
     const userId = session.user.id
 
-    const board = await ctx.db.query.boardMembers.findFirst({
-      with: {
-        board: {
-          with: {
-            labels: true,
-            stars: true
-          },
-          columns: {
-            id: true,
-            title: true,
-            background: true,
-            ownerId: true
+    const [[starsCount], item] = await Promise.all([
+      ctx.db
+        .select({
+          value: sql<number>`count(${stars.id})`.as("value")
+        })
+        .from(stars)
+        .where(eq(stars.boardId, boardId))
+        .execute(),
+      ctx.db.query.boardMembers.findFirst({
+        with: {
+          board: {
+            with: {
+              labels: true,
+              stars: true,
+              owner: true
+            },
+            columns: {
+              id: true,
+              title: true,
+              background: true,
+              ownerId: true
+            }
           }
-        }
-      },
-      where: and(eq(boardMembers.userId, userId), eq(boardMembers.boardId, boardId))
-    })
+        },
+        where: and(eq(boardMembers.userId, userId), eq(boardMembers.boardId, boardId))
+      })
+    ])
 
-    if (!board) {
+    if (!item) {
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: "Board not found"
       })
     }
 
-    return board
+    return {
+      role: item.role,
+      board: {
+        ...item.board,
+        starsCount: starsCount.value
+      }
+    }
   }),
+
   all: protectedProcedure.input(getAllBoardsSchema).query(async ({ ctx, input }) => {
     const { db } = ctx
-    const { onlyAdmin, userId } = input
+    const { userId } = input
 
     const limit = input.limit ?? 20
     const countRows = await db
@@ -56,37 +73,46 @@ export const boardRouter = createTRPCRouter({
     const totalCount = countRows[0]?.board_count
     if (totalCount === undefined) throw new Error("totalCount is undefined")
 
-    let userBoards = await db.query.boardMembers.findMany({
-      columns: {
-        role: true
-      },
-      where: onlyAdmin
-        ? and(eq(boardMembers.userId, userId), eq(boardMembers.role, "admin"))
-        : and(eq(boardMembers.userId, userId), eq(boardMembers.role, "member")),
-      with: {
-        user: {
-          columns: {
-            name: true
-          }
-        },
-        board: {
-          columns: {
-            id: true,
-            title: true,
-            background: true
-          }
+    const [usersQuery, membersQuery] = await Promise.all([
+      db.query.boardMembers.findMany({
+        where: and(eq(boardMembers.userId, userId), eq(boardMembers.role, "admin")),
+        limit,
+        columns: { role: true },
+        with: {
+          user: {
+            columns: {
+              name: true
+            }
+          },
+          board: true
         }
-      }
-    })
+      }),
+      db.query.boardMembers.findMany({
+        where: and(eq(boardMembers.userId, userId), eq(boardMembers.role, "member")),
+        limit,
+        columns: { role: true },
+        with: {
+          user: {
+            columns: {
+              name: true
+            }
+          },
+          board: true
+        }
+      })
+    ])
 
-    let nextCursor: typeof input.cursor | undefined = undefined
-    if (userBoards.length > limit) {
-      const nextItem = userBoards.pop()!
-      nextCursor = nextItem.board.id
+    let nextCursor: string | undefined = undefined
+
+    if (usersQuery.length) {
+      nextCursor = usersQuery[usersQuery.length - 1].board.id
+    } else if (membersQuery.length) {
+      nextCursor = membersQuery[membersQuery.length - 1].board.id
     }
 
     return {
-      items: userBoards,
+      usersQuery,
+      membersQuery,
       nextCursor,
       totalCount
     }
@@ -162,7 +188,7 @@ export const boardRouter = createTRPCRouter({
 
     return await db.insert(stars).values({
       boardId: input.boardId,
-      userId,
+      userId
     })
   }),
   unstar: protectedProcedure.input(starBoardSchema).mutation(async ({ ctx, input }) => {
@@ -181,7 +207,7 @@ export const boardRouter = createTRPCRouter({
       where: eq(stars.userId, userId),
       with: {
         board: {
-          with: {owner: true},
+          with: { owner: true },
           columns: {
             id: true,
             title: true,
@@ -200,6 +226,6 @@ export const boardRouter = createTRPCRouter({
 
     const boards = starredBoards.map((b) => b.board)
 
-    return boards;
+    return boards
   })
 })

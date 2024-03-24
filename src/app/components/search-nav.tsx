@@ -37,6 +37,7 @@ const SearchNav: FC<SearchNavProps> = ({ className }) => {
     },
     {
       enabled: !!debouncedQuery && open,
+      // @ts-expect-error
       placeholderData: { boards: recentBoards, type: "boards" }
     }
   )
@@ -128,7 +129,7 @@ const SearchNav: FC<SearchNavProps> = ({ className }) => {
 }
 
 interface SearchNavItemProps {
-  board?: Pick<SingleBoard, "title" | "background" | "id" | "ownerId">[]
+  board?: Pick<SingleBoard, "title" | "background" | "id" | "owner">[]
   users?: Session["user"][]
   type: SearchFilterTypes
 }
@@ -143,7 +144,7 @@ export const DropdownItem: FC<SearchNavItemProps> = ({ board, users }) => {
               <BoardBackground image={item.background as BackgroundTypeSchema} width={32} height={32} />
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium">{item.title}</p>
-                <p className="text-sm text-gray-400">Quadro de {item.ownerId}</p>
+                <p className="text-sm text-gray-400">Quadro de {item.owner?.name}</p>
               </div>
             </div>
           </li>

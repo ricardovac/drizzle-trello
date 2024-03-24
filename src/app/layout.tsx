@@ -5,15 +5,12 @@ import { getServerAuthSession } from "@/server/auth"
 import "@/styles/globals.css"
 import { Viewport, type Metadata } from "next"
 import { Public_Sans as FontSans } from "next/font/google"
-import { redirect } from "next/navigation"
 import { TRPCReactProvider } from "@/trpc/react"
 import { api } from "@/trpc/server"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { Toaster } from "components/ui/toaster"
 import { siteConfig } from "config/site"
 import NextTopLoader from "nextjs-toploader"
-
-import { MainNav } from "@/app/components/main-nav"
 
 import { ThemeProvider } from "../../components/ui/theme-provider"
 import { cn } from "../../lib/utils"
@@ -46,23 +43,25 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerAuthSession()
 
-  if (!session?.user) redirect("/api/auth/signin")
+  let recentBoards;
 
-  const data = await api.recent.get.query({
-    userId: session.user.id
-  })
+  if (session) {
+    recentBoards = await api.recent.get.query({
+      userId: session?.user.id as string
+    })
+  }
 
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
       <body className={cn("min-h-screen bg-background font-sans antialiased", fontSans.variable)}>
         <TRPCReactProvider>
-          <AuthContextProvider user={session?.user}>
+          <AuthContextProvider user={session?.user!}>
             <ThemeProvider
               attribute="class"
               defaultTheme="system"
               enableSystem
-              disableTransitionOnChange
+              // disableTransitionOnChange
             >
               <NextTopLoader
                 color="#ffffff"
@@ -70,8 +69,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 height={1}
                 showSpinner={false}
               />
-              <RecentContextProvider recentBoards={data}>
-                <MainNav />
+              <RecentContextProvider recentBoards={recentBoards}>
                 {children}
                 <Toaster />
               </RecentContextProvider>

@@ -10,7 +10,6 @@ export const getAllBoardsSchema = z.object({
   cursor: z.string().nullish(),
   limit: z.number().min(1).max(100),
   userId: z.string(),
-  onlyAdmin: z.boolean().default(false).optional()
 })
 
 export type GetAllBoardsSchemaInput = z.TypeOf<typeof getAllBoardsSchema>

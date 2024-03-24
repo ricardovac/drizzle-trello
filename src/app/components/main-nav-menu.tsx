@@ -1,11 +1,11 @@
 "use client"
 
 import * as React from "react"
-import { useState } from "react"
+import {useState} from "react"
 import Link from "next/link"
-import { useRecentContext } from "@/context/recent-boards-context"
-import { BackgroundTypeSchema } from "@/server/schema/board.schema"
-import { api } from "@/trpc/react"
+import {useRecentContext} from "@/context/recent-boards-context"
+import {BackgroundTypeSchema} from "@/server/schema/board.schema"
+import {api} from "@/trpc/react"
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -14,14 +14,14 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger
 } from "components/ui/navigation-menu"
-import { cn } from "lib/utils"
+import {cn} from "lib/utils"
 
-import { BoardBackground } from "./board-background"
+import {BoardBackground} from "./board-background"
 
 export function MainNavigationMenu() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const { recentBoards } = useRecentContext()
-  const { data: starredBoards } = api.board.starredBoards.useQuery(undefined, {
+  const {recentBoards} = useRecentContext()
+  const {data: starredBoards} = api.board.starredBoards.useQuery(undefined, {
     enabled: isMenuOpen
   })
 
@@ -33,7 +33,7 @@ export function MainNavigationMenu() {
             Recente
           </NavigationMenuTrigger>
           <NavigationMenuContent>
-            {!recentBoards.length && (
+            {!recentBoards?.length && (
               <div className="p-4 text-center text-muted-foreground md:w-[300px] lg:w-[400px]">
                 Você não tem nenhum quadro recente.
               </div>
@@ -115,7 +115,7 @@ export function MainNavigationMenu() {
 }
 
 const ListItem = React.forwardRef<React.ElementRef<"a">, React.ComponentPropsWithoutRef<"a">>(
-  ({ className, title, children, ...props }, ref) => {
+  ({className, title, children, ...props}, ref) => {
     return (
       <li>
         <NavigationMenuLink asChild>

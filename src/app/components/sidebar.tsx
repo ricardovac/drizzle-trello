@@ -16,10 +16,6 @@ export function SidebarNav() {
       href: `/u/${user.id}/boards`
     },
     {
-      title: "Templates",
-      href: "/templates"
-    },
-    {
       title: "Início",
       href: "/"
     }
