@@ -2,7 +2,7 @@ import {homeConfig} from "config/home";
 import Link from "next/link";
 import {cn} from "lib/utils";
 import {buttonVariants} from "components/ui/button";
-import {HomeNav} from "@/app/components/home-nav";
+import {HomeNav} from "@/app/home/_components/home-nav";
 
 export default async function HomeLayout({children}: { children: React.ReactNode }) {
   return (

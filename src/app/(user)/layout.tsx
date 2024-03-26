@@ -4,8 +4,8 @@ import "@/styles/globals.css"
 import {redirect} from "next/navigation"
 import {AuthContextProvider} from "@/context/auth-context"
 
-import {MainHeader} from "@/app/components/main-header"
-import {SidebarNav} from "@/app/components/sidebar"
+import {MainHeader} from "@/app/components/header/main-header"
+import {SidebarNav} from "@/app/(user)/_components/sidebar"
 
 export default async function UserLayout({children}: { children: React.ReactNode }) {
   const session = await getServerAuthSession()

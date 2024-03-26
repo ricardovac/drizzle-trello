@@ -1,19 +1,19 @@
-import { AuthContextProvider } from "@/context/auth-context"
-import { RecentContextProvider } from "@/context/recent-boards-context"
-import { getServerAuthSession } from "@/server/auth"
+import {AuthContextProvider} from "@/context/auth-context"
+import {RecentContextProvider} from "@/context/recent-boards-context"
+import {getServerAuthSession} from "@/server/auth"
 
 import "@/styles/globals.css"
-import { Viewport, type Metadata } from "next"
-import { Public_Sans as FontSans } from "next/font/google"
-import { TRPCReactProvider } from "@/trpc/react"
-import { api } from "@/trpc/server"
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
-import { Toaster } from "components/ui/toaster"
-import { siteConfig } from "config/site"
+import {type Metadata, Viewport} from "next"
+import {Public_Sans as FontSans} from "next/font/google"
+import {TRPCReactProvider} from "@/trpc/react"
+import {api} from "@/trpc/server"
+import {ReactQueryDevtools} from "@tanstack/react-query-devtools"
+import {Toaster} from "components/ui/toaster"
+import {siteConfig} from "config/site"
 import NextTopLoader from "nextjs-toploader"
 
-import { ThemeProvider } from "../../components/ui/theme-provider"
-import { cn } from "../../lib/utils"
+import {ThemeProvider} from "../../components/ui/theme-provider"
+import {cn} from "lib/utils"
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -35,12 +35,12 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "white" },
-    { media: "(prefers-color-scheme: dark)", color: "black" }
+    {media: "(prefers-color-scheme: light)", color: "white"},
+    {media: "(prefers-color-scheme: dark)", color: "black"}
   ]
 }
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({children}: { children: React.ReactNode }) {
   const session = await getServerAuthSession()
 
   let recentBoards;
@@ -53,31 +53,31 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <head />
-      <body className={cn("min-h-screen bg-background font-sans antialiased", fontSans.variable)}>
-        <TRPCReactProvider>
-          <AuthContextProvider user={session?.user!}>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              // disableTransitionOnChange
-            >
-              <NextTopLoader
-                color="#ffffff"
-                initialPosition={0.08}
-                height={1}
-                showSpinner={false}
-              />
-              <RecentContextProvider recentBoards={recentBoards}>
-                {children}
-                <Toaster />
-              </RecentContextProvider>
-            </ThemeProvider>
-            <ReactQueryDevtools initialIsOpen={false} />
-          </AuthContextProvider>
-        </TRPCReactProvider>
-      </body>
+    <head/>
+    <body className={cn("min-h-screen bg-background font-sans antialiased", fontSans.variable)}>
+    <TRPCReactProvider>
+      <AuthContextProvider user={session?.user!}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <NextTopLoader
+            color="#ffffff"
+            initialPosition={0.08}
+            height={1}
+            showSpinner={false}
+          />
+          <RecentContextProvider recentBoards={recentBoards}>
+            {children}
+            <Toaster/>
+          </RecentContextProvider>
+        </ThemeProvider>
+        <ReactQueryDevtools initialIsOpen={false}/>
+      </AuthContextProvider>
+    </TRPCReactProvider>
+    </body>
     </html>
   )
 }
