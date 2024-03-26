@@ -1,11 +1,38 @@
-import { cards } from "@/server/db/schema"
-import { createCard, updateCard, updateCardPosition } from "@/server/schema/card.schema"
+import { cards, cardsToLabels } from "@/server/db/schema"
+import {
+  createCardSchema,
+  getCardSchema,
+  updateCardPositionSchema,
+  updateCardSchema
+} from "@/server/schema/card.schema"
 import { asc, eq } from "drizzle-orm"
 
 import { createTRPCRouter, protectedProcedure } from "../trpc"
+import { TRPCClientError } from "@trpc/client"
 
 export const cardRouter = createTRPCRouter({
-  create: protectedProcedure.input(createCard).mutation(async ({ ctx, input }) => {
+  get: protectedProcedure.input(getCardSchema).query(async ({ ctx, input }) => {
+    const cardsQuery = await ctx.db.query.cards.findFirst({
+      where: eq(cards.id, input.cardId),
+      with: {
+        list: true,
+        cardsToLabels: {
+          where: eq(cardsToLabels.status, "active"),
+          with: {
+            label: true
+          }
+        }
+      }
+    })
+
+    const item = cardsQuery?.cardsToLabels.map((l) => l.label) ?? []
+
+    return {
+      ...cardsQuery,
+      labels: item
+    }
+  }),
+  create: protectedProcedure.input(createCardSchema).mutation(async ({ ctx, input }) => {
     const { db } = ctx
 
     const cardsQuery = await db.query.cards.findMany({
@@ -27,7 +54,7 @@ export const cardRouter = createTRPCRouter({
       .execute()
   }),
   updateCardPositions: protectedProcedure
-    .input(updateCardPosition)
+    .input(updateCardPositionSchema)
     .mutation(async ({ ctx, input }) => {
       return await ctx.db
         .update(cards)
@@ -35,13 +62,17 @@ export const cardRouter = createTRPCRouter({
         .where(eq(cards.id, input.cardId))
         .execute()
     }),
-  updateCard: protectedProcedure.input(updateCard).mutation(async ({ ctx, input }) => {
+  updateCard: protectedProcedure.input(updateCardSchema).mutation(async ({ ctx, input }) => {
     const { db } = ctx
     const { cardId, card } = input
 
+    if (!card.description && !card.listId) {
+      throw new TRPCClientError("No data to update")
+    }
+
     return await db
       .update(cards)
-      .set({ id: cardId, listId: card.listId })
+      .set({ listId: card.listId!, description: card.description! })
       .where(eq(cards.id, cardId))
       .execute()
   })

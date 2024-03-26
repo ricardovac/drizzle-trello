@@ -1,13 +1,15 @@
-import { boards, users } from "@/server/db/schema"
-import { search } from "@/server/schema/search.schema"
-import { asc, desc, gte, like, or, sql } from "drizzle-orm"
+import { boardMembers, boards, users } from "@/server/db/schema"
+import { searchSchema } from "@/server/schema/search.schema"
+import { and, asc, desc, eq, like, or, sql } from "drizzle-orm"
+import { withCursorPagination } from "drizzle-pagination"
 
 import { createTRPCRouter, protectedProcedure } from "../trpc"
 
 export const searchRouter = createTRPCRouter({
-  byType: protectedProcedure.input(search).query(async ({ ctx, input }) => {
+  byType: protectedProcedure.input(searchSchema).query(async ({ ctx, input }) => {
     const { limit, query, sort, cursor, offset, type } = input
-    const { db } = ctx
+    const { db, session } = ctx
+    const userId = session.user.id
 
     const countRows = await db
       .select({
@@ -18,55 +20,44 @@ export const searchRouter = createTRPCRouter({
     if (totalCount === undefined) throw new Error("totalCount is undefined")
 
     const fetchBoards = async () => {
-      let boardsQuery = db
-        .select()
-        .from(boards)
-        .where(like(boards.title, `%${query}%`))
-        .orderBy(sort === "desc" ? desc(boards.createdAt) : asc(boards.createdAt))
-        .limit(limit)
-        .offset(offset)
+      const boardsQuery = db.query.boards.findMany({
+        ...withCursorPagination({
+          where: and(like(boards.title, `%${query}%`), eq(boardMembers.userId, userId)),
+          cursors: [[boards.id, "asc", cursor]],
+          limit
+        }),
+        with: { owner: true },
+        offset,
+        orderBy: sort === "desc" ? desc(boards.createdAt) : asc(boards.createdAt)
+      })
 
-      if (cursor) {
-        boardsQuery = boardsQuery.where(gte(boards.id, cursor))
-      }
       const items = await boardsQuery.execute()
-      let nextCursor: typeof input.cursor | undefined = undefined
-      if (items.length > limit) {
-        const nextItem = items.pop()!
-        nextCursor = nextItem.id
-      }
 
       const returnableItems = items.map((item) => ({
         id: item.id,
         title: item.title,
-        background: item.background
+        background: item.background,
+        ownerId: item.ownerId,
+        owner: item.owner
       }))
 
       return {
         items: returnableItems,
-        nextCursor
+        nextCursor: items.length ? items[items.length - 1].id : undefined
       }
     }
 
     const fetchUsers = async () => {
-      let usersQuery = db
-        .select()
-        .from(users)
-        .where(or(like(users.name, `%${query}%`), like(users.email, `%${query}%`)))
-        .orderBy(sort === "desc" ? desc(users.name) : asc(users.name))
-        .limit(limit)
-        .offset(offset)
-
-      if (cursor) {
-        usersQuery = usersQuery.where(gte(boards.id, cursor))
-      }
+      const usersQuery = db.query.users.findMany({
+        ...withCursorPagination({
+          where: or(like(users.name, `%${query}%`), like(users.email, `%${query}%`)),
+          cursors: [[users.id, "asc", cursor]],
+          limit
+        }),
+        orderBy: sort === "desc" ? desc(users.name) : asc(users.name)
+      })
 
       const items = await usersQuery.execute()
-      let nextCursor: typeof input.cursor | undefined = undefined
-      if (items.length > limit) {
-        const nextItem = items.pop()!
-        nextCursor = nextItem.id
-      }
 
       const returnableItems = items.map((item) => ({
         id: item.id,
@@ -77,7 +68,7 @@ export const searchRouter = createTRPCRouter({
 
       return {
         items: returnableItems,
-        nextCursor
+        nextCursor: items.length ? items[items.length - 1].id : undefined
       }
     }
 
@@ -86,12 +77,14 @@ export const searchRouter = createTRPCRouter({
         const fetchedBoards = await fetchBoards()
         return {
           boards: fetchedBoards.items,
+          nextCursor: fetchedBoards.nextCursor,
           type: "boards" as const
         }
       case "users":
         const fetchedUsers = await fetchUsers()
         return {
           users: fetchedUsers.items,
+          nextCursor: fetchedUsers.nextCursor,
           type: "users" as const
         }
       default:

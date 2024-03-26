@@ -1,12 +1,12 @@
 import { boardMembers, boards } from "@/server/db/schema"
-import { addMember, getMembers } from "@/server/schema/board.schema"
+import { addMemberSchema, getMembersSchema } from "@/server/schema/board.schema"
 import { TRPCError } from "@trpc/server"
 import { and, eq } from "drizzle-orm"
 
 import { createTRPCRouter, protectedProcedure } from "../trpc"
 
 export const memberRouter = createTRPCRouter({
-  add: protectedProcedure.input(addMember).mutation(async ({ ctx, input }) => {
+  add: protectedProcedure.input(addMemberSchema).mutation(async ({ ctx, input }) => {
     const { shareMessage, boardId, userId } = input
 
     const foundBoard = await ctx.db.query.boards.findFirst({
@@ -40,7 +40,7 @@ export const memberRouter = createTRPCRouter({
       status: "invited"
     })
   }),
-  get: protectedProcedure.input(getMembers).query(async ({ ctx, input }) => {
+  get: protectedProcedure.input(getMembersSchema).query(async ({ ctx, input }) => {
     const { boardId } = input
 
     const boardQuery = await ctx.db.query.boards.findFirst({

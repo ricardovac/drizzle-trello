@@ -2,7 +2,11 @@
 
 import React from "react"
 import Image from "next/image"
-import { BackgroundTypeSchema, createBoard } from "@/server/schema/board.schema"
+import {
+  BackgroundTypeSchema,
+  CreateBoardInput,
+  createBoardSchema
+} from "@/server/schema/board.schema"
 import { api } from "@/trpc/react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { VariantProps } from "class-variance-authority"
@@ -14,7 +18,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "components/ui/popover"
 import { cn, generateRandomHex } from "lib/utils"
 import { LoaderIcon } from "lucide-react"
 import { useForm } from "react-hook-form"
-import { z } from "zod"
 
 interface CreateBoardPopoverProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
@@ -28,8 +31,8 @@ export default function CreateBoardPopover({
   className
 }: CreateBoardPopoverProps) {
   const [open, setOpen] = React.useState(false)
-  const form = useForm<z.infer<typeof createBoard>>({
-    resolver: zodResolver(createBoard),
+  const form = useForm<CreateBoardInput>({
+    resolver: zodResolver(createBoardSchema),
     mode: "onSubmit",
     defaultValues: {
       title: "",
@@ -49,7 +52,7 @@ export default function CreateBoardPopover({
 
   const isSubmitButtonDisabled = !form.getValues("title")
 
-  const onSubmit = (values: z.infer<typeof createBoard>) => {
+  const onSubmit = (values: CreateBoardInput) => {
     mutate({
       ...values
     })

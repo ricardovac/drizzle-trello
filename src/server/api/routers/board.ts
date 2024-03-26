@@ -1,44 +1,68 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc"
-import { boardMembers, boards } from "@/server/db/schema"
-import { createBoard, getAllBoards, getBoardById, updateBoard } from "@/server/schema/board.schema"
+import { boardMembers, boards, stars } from "@/server/db/schema"
+import {
+  createBoardSchema,
+  getAllBoardsSchema,
+  getBoardByIdSchema,
+  starBoardSchema,
+  updateBoardSchema
+} from "@/server/schema/board.schema"
 import { TRPCError } from "@trpc/server"
 import { and, desc, eq, sql } from "drizzle-orm"
 
 export const boardRouter = createTRPCRouter({
-  get: protectedProcedure.input(getBoardById).query(async ({ ctx, input }) => {
+  get: protectedProcedure.input(getBoardByIdSchema).query(async ({ ctx, input }) => {
     const { session } = ctx
     const { boardId } = input
     const userId = session.user.id
 
-    const board = await ctx.db.query.boardMembers.findFirst({
-      columns: {
-        role: true
-      },
-      with: {
-        board: {
-          columns: {
-            id: true,
-            title: true,
-            background: true,
-            ownerId: true
+    const [[starsCount], item] = await Promise.all([
+      ctx.db
+        .select({
+          value: sql<number>`count(${stars.id})`.as("value")
+        })
+        .from(stars)
+        .where(eq(stars.boardId, boardId))
+        .execute(),
+      ctx.db.query.boardMembers.findFirst({
+        with: {
+          board: {
+            with: {
+              labels: true,
+              stars: true,
+              owner: true
+            },
+            columns: {
+              id: true,
+              title: true,
+              background: true,
+              ownerId: true
+            }
           }
-        }
-      },
-      where: and(eq(boardMembers.userId, userId), eq(boardMembers.boardId, boardId))
-    })
+        },
+        where: and(eq(boardMembers.userId, userId), eq(boardMembers.boardId, boardId))
+      })
+    ])
 
-    if (!board) {
+    if (!item) {
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: "Board not found"
       })
     }
 
-    return board
+    return {
+      role: item.role,
+      board: {
+        ...item.board,
+        starsCount: starsCount.value
+      }
+    }
   }),
-  all: protectedProcedure.input(getAllBoards).query(async ({ ctx, input }) => {
+
+  all: protectedProcedure.input(getAllBoardsSchema).query(async ({ ctx, input }) => {
     const { db } = ctx
-    const { onlyAdmin, userId } = input
+    const { userId } = input
 
     const limit = input.limit ?? 20
     const countRows = await db
@@ -49,42 +73,51 @@ export const boardRouter = createTRPCRouter({
     const totalCount = countRows[0]?.board_count
     if (totalCount === undefined) throw new Error("totalCount is undefined")
 
-    let userBoards = await db.query.boardMembers.findMany({
-      columns: {
-        role: true
-      },
-      where: onlyAdmin
-        ? and(eq(boardMembers.userId, userId), eq(boardMembers.role, "admin"))
-        : and(eq(boardMembers.userId, userId), eq(boardMembers.role, "member")),
-      with: {
-        user: {
-          columns: {
-            name: true
-          }
-        },
-        board: {
-          columns: {
-            id: true,
-            title: true,
-            background: true
-          }
+    const [usersQuery, membersQuery] = await Promise.all([
+      db.query.boardMembers.findMany({
+        where: and(eq(boardMembers.userId, userId), eq(boardMembers.role, "admin")),
+        limit,
+        columns: { role: true },
+        with: {
+          user: {
+            columns: {
+              name: true
+            }
+          },
+          board: true
         }
-      }
-    })
+      }),
+      db.query.boardMembers.findMany({
+        where: and(eq(boardMembers.userId, userId), eq(boardMembers.role, "member")),
+        limit,
+        columns: { role: true },
+        with: {
+          user: {
+            columns: {
+              name: true
+            }
+          },
+          board: true
+        }
+      })
+    ])
 
-    let nextCursor: typeof input.cursor | undefined = undefined
-    if (userBoards.length > limit) {
-      const nextItem = userBoards.pop()!
-      nextCursor = nextItem.board.id
+    let nextCursor: string | undefined = undefined
+
+    if (usersQuery.length) {
+      nextCursor = usersQuery[usersQuery.length - 1].board.id
+    } else if (membersQuery.length) {
+      nextCursor = membersQuery[membersQuery.length - 1].board.id
     }
 
     return {
-      items: userBoards,
+      usersQuery,
+      membersQuery,
       nextCursor,
       totalCount
     }
   }),
-  create: protectedProcedure.input(createBoard).mutation(async ({ ctx, input }) => {
+  create: protectedProcedure.input(createBoardSchema).mutation(async ({ ctx, input }) => {
     const { db, session } = ctx
     const userId = session.user.id
 
@@ -130,7 +163,7 @@ export const boardRouter = createTRPCRouter({
 
     return board
   }),
-  edit: protectedProcedure.input(updateBoard).mutation(async ({ ctx, input }) => {
+  edit: protectedProcedure.input(updateBoardSchema).mutation(async ({ ctx, input }) => {
     const foundBoard = await ctx.db.query.boards.findFirst({
       where: eq(boards.id, input.boardId)
     })
@@ -148,5 +181,51 @@ export const boardRouter = createTRPCRouter({
         title: input.title
       })
       .where(eq(boards.id, input.boardId))
+  }),
+  star: protectedProcedure.input(starBoardSchema).mutation(async ({ ctx, input }) => {
+    const { db, session } = ctx
+    const userId = session.user.id
+
+    return await db.insert(stars).values({
+      boardId: input.boardId,
+      userId
+    })
+  }),
+  unstar: protectedProcedure.input(starBoardSchema).mutation(async ({ ctx, input }) => {
+    const { db, session } = ctx
+    const userId = session.user.id
+
+    return await db
+      .delete(stars)
+      .where(and(eq(stars.boardId, input.boardId), eq(stars.userId, userId)))
+  }),
+  starredBoards: protectedProcedure.query(async ({ ctx }) => {
+    const { db, session } = ctx
+    const userId = session.user.id
+
+    const starredBoards = await db.query.stars.findMany({
+      where: eq(stars.userId, userId),
+      with: {
+        board: {
+          with: { owner: true },
+          columns: {
+            id: true,
+            title: true,
+            background: true
+          }
+        }
+      }
+    })
+
+    if (!starredBoards) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Starred boards not found"
+      })
+    }
+
+    const boards = starredBoards.map((b) => b.board)
+
+    return boards
   })
 })

@@ -6,7 +6,7 @@ import { RouterOutputs } from "@/trpc/shared"
 type RecentBoards = RouterOutputs["recent"]["get"]
 
 interface RecentContextType {
-  recentBoards: RecentBoards
+  recentBoards: RecentBoards | undefined
 }
 
 const RecentContext = createContext<RecentContextType>({} as RecentContextType)
@@ -16,7 +16,7 @@ export function useRecentContext() {
 }
 
 interface RecentContextProviderProps extends PropsWithChildren {
-  recentBoards: RecentBoards
+  recentBoards: RecentBoards | undefined
 }
 
 export const RecentContextProvider: FC<RecentContextProviderProps> = ({

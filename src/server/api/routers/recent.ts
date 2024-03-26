@@ -1,11 +1,11 @@
 import { boards } from "@/server/db/schema"
-import { createRecent, getRecent } from "@/server/schema/board.schema"
+import { createRecentSchema, getRecentSchema } from "@/server/schema/board.schema"
 import { and, desc, eq, isNotNull } from "drizzle-orm"
 
 import { createTRPCRouter, protectedProcedure } from "../trpc"
 
 export const recentRouter = createTRPCRouter({
-  create: protectedProcedure.input(createRecent).mutation(async ({ ctx, input }) => {
+  create: protectedProcedure.input(createRecentSchema).mutation(async ({ ctx, input }) => {
     return await ctx.db
       .update(boards)
       .set({
@@ -13,7 +13,7 @@ export const recentRouter = createTRPCRouter({
       })
       .where(and(eq(boards.id, input.boardId), eq(boards.ownerId, input.userId)))
   }),
-  get: protectedProcedure.input(getRecent).query(async ({ ctx, input }) => {
+  get: protectedProcedure.input(getRecentSchema).query(async ({ ctx, input }) => {
     const { userId } = input
 
     const board = await ctx.db.query.boards.findMany({

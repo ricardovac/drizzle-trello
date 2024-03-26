@@ -46,8 +46,6 @@ const BoardContextProvider: FC<BoardContextProviderProps> = ({
     { boardId: board.id },
     {
       initialData: initialLists,
-      refetchOnMount: false,
-      refetchOnReconnect: false
     }
   )
 
@@ -122,6 +120,7 @@ const BoardContextProvider: FC<BoardContextProviderProps> = ({
         updateCard({
           cardId: card.id,
           card: {
+            description: card.description!,
             listId: destColumn.id
           }
         })
